@@ -1,5 +1,6 @@
 const express = require('express');
 const healthRoutes = require('./routes/health.routes');
+const authRoutes = require('./modules/auth');
 const errorHandler = require('./middlewares/error.middleware');
 
 const app = express();
@@ -10,6 +11,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/v1/health', healthRoutes);
+app.use('/api/v1/auth', authRoutes);
+
 
 // 404 handler
 app.use((req, res, next) => {
