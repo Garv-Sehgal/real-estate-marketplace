@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
-export default function RegisterPage() {
+export default function LoginPage() {
+    const router = useRouter();
     const [formData, setFormData] = useState({
-        fullName: '',
         email: '',
-        mobile: '',
         password: '',
     });
 
@@ -19,76 +19,39 @@ export default function RegisterPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Registering user:', formData);
-        // Add registration logic here
+        console.log('Logging in user:', formData);
+        // Simulate login success and redirect to verify
+        router.push('/verify');
     };
 
-    const handleGoogleSignUp = () => {
-        console.log('Sign up with Google clicked');
-        // Add Google OAuth logic here
+    const handleGoogleSignIn = () => {
+        console.log('Sign in with Google clicked');
     };
 
     return (
         <div className="min-h-screen flex bg-white">
-            {/* Left Side - Hero Image */}
-            <div className="hidden lg:flex w-1/2 relative">
-                <Image
-                    src="/images/register-hero.png"
-                    alt="Luxury Property"
-                    fill
-                    className="object-cover"
-                    priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-12 text-white">
-                    <h1 className="text-5xl font-bold mb-4 font-sans tracking-tight">
-                        Discover Your <br />
-                        <span className="text-blue-400">Dream Home</span>
-                    </h1>
-                    <p className="text-lg text-gray-200 max-w-md">
-                        Join thousands of users in the most premium real estate marketplace. Experience luxury like never before.
-                    </p>
-                </div>
-            </div>
-
-            {/* Right Side - Registration Form */}
+            {/* Left Side - Login Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 bg-[url('/images/subtle-pattern.png')]">
                 <div className="w-full max-w-md space-y-8 bg-white/80 backdrop-blur-lg p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20">
                     <div className="text-center">
                         <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                            Create Account
+                            Welcome Back
                         </h2>
                         <p className="mt-2 text-sm text-gray-600">
-                            Start your journey with Elite Estates
+                            Sign in to continue to Elite Estates
                         </p>
                     </div>
 
                     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                         <div className="space-y-4">
                             <div>
-                                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 ml-1">
-                                    Full Name
-                                </label>
-                                <input
-                                    id="fullName"
-                                    name="fullName"
-                                    type="text"
-                                    required
-                                    value={formData.fullName}
-                                    onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
-                                    placeholder="John Doe"
-                                />
-                            </div>
-
-                            <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 ml-1">
-                                    Email Address
+                                    Email or Mobile Number
                                 </label>
                                 <input
                                     id="email"
                                     name="email"
-                                    type="email"
-                                    autoComplete="email"
+                                    type="text"
                                     required
                                     value={formData.email}
                                     onChange={handleInputChange}
@@ -98,30 +61,17 @@ export default function RegisterPage() {
                             </div>
 
                             <div>
-                                <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 ml-1">
-                                    Mobile Number
-                                </label>
-                                <input
-                                    id="mobile"
-                                    name="mobile"
-                                    type="tel"
-                                    required
-                                    value={formData.mobile}
-                                    onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
-                                    placeholder="+1 (555) 000-0000"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 ml-1">
-                                    Password
-                                </label>
+                                <div className="flex justify-between items-center ml-1">
+                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                                        Password
+                                    </label>
+                                    
+                                </div>
                                 <input
                                     id="password"
                                     name="password"
                                     type="password"
-                                    autoComplete="new-password"
+                                    autoComplete="current-password"
                                     required
                                     value={formData.password}
                                     onChange={handleInputChange}
@@ -135,7 +85,7 @@ export default function RegisterPage() {
                             type="submit"
                             className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02]"
                         >
-                            Sign Up
+                            Sign In
                         </button>
                     </form>
 
@@ -151,7 +101,7 @@ export default function RegisterPage() {
                     </div>
 
                     <button
-                        onClick={handleGoogleSignUp}
+                        onClick={handleGoogleSignIn}
                         className="w-full flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
                     >
                         <svg className="h-5 w-5 mr-3" viewBox="0 0 24 24">
@@ -172,17 +122,37 @@ export default function RegisterPage() {
                                 fill="#EA4335"
                             />
                         </svg>
-                        Sign up with Google
+                        Sign in with Google
                     </button>
 
                     <p className="mt-4 text-center text-sm text-gray-600">
-                        Already have an account?{' '}
+                        Don't have an account?{' '}
                         <Link
-                            href="/login"
+                            href="/register"
                             className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
                         >
-                            Log in
+                            Sign up
                         </Link>
+                    </p>
+                </div>
+            </div>
+
+            {/* Right Side - Hero Image */}
+            <div className="hidden lg:flex w-1/2 relative">
+                <Image
+                    src="/images/login-hero.png"
+                    alt="Luxury Interior"
+                    fill
+                    className="object-cover"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-12 text-white">
+                    <h1 className="text-4xl font-bold mb-4 font-sans tracking-tight">
+                        Premium Living <br />
+                        <span className="text-blue-400">Redefined</span>
+                    </h1>
+                    <p className="text-lg text-gray-200 max-w-md">
+                        Login to access exclusive properties and personalized recommendations tailored just for you.
                     </p>
                 </div>
             </div>
