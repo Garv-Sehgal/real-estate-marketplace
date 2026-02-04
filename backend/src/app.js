@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api', healthRoutes);
+app.use('/api/v1/health', healthRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
