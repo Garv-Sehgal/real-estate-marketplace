@@ -3,29 +3,37 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
+    const router = useRouter();
+    const [role, setRole] = useState('buyer'); // 'buyer' (Buyer/Tenant) or 'agent' (Agent/Landlord)
+
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
         mobile: '',
         password: '',
+        rememberMe: false,
     });
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Registering user:', formData);
-        // Add registration logic here
+        console.log('Registering user:', { ...formData, role });
+        // Simulate registration success and redirect
+        router.push('/verify');
     };
 
     const handleGoogleSignUp = () => {
         console.log('Sign up with Google clicked');
-        // Add Google OAuth logic here
     };
 
     return (
@@ -60,6 +68,30 @@ export default function RegisterPage() {
                         <p className="mt-2 text-sm text-gray-600">
                             Start your journey with Elite Estates
                         </p>
+                    </div>
+
+                    {/* Role Selection Switch */}
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                        <button
+                            type="button"
+                            onClick={() => setRole('buyer')}
+                            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${role === 'buyer'
+                                ? 'bg-white text-blue-700 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Buyer / Tenant
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setRole('agent')}
+                            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${role === 'agent'
+                                ? 'bg-white text-blue-700 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Agent / Landlord
+                        </button>
                     </div>
 
                     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -128,6 +160,20 @@ export default function RegisterPage() {
                                     className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
                                     placeholder="••••••••"
                                 />
+                            </div>
+
+                            <div className="flex items-center">
+                                <input
+                                    id="rememberMe"
+                                    name="rememberMe"
+                                    type="checkbox"
+                                    checked={formData.rememberMe}
+                                    onChange={handleInputChange}
+                                    className="h-5 w-5 text-blue-700 border-gray-300 rounded focus:ring-blue-500 transition duration-200 cursor-pointer"
+                                />
+                                <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900 cursor-pointer">
+                                    Remember me on this device
+                                </label>
                             </div>
                         </div>
 
