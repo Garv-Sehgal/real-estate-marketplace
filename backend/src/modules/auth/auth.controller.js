@@ -5,11 +5,10 @@ const authService = require('./auth.service');
  */
 const requestSignupOTP = async (req, res, next) => {
     try {
-        const { phone, password } = req.body;
-        const result = await authService.requestSignupOTP(phone, password);
+        const result = await authService.requestSignupOTP(req.body);
         res.status(201).json({
             success: true,
-            message: result.message,
+            ...result
         });
     } catch (error) {
     next(error);
@@ -22,8 +21,8 @@ const requestSignupOTP = async (req, res, next) => {
  */
 const verifySignupOTP = async (req, res, next) => {
     try {
-        const { phone, otp } = req.body;
-        const user = await authService.verifySignupOTP(phone, otp);
+        const { signupId, phoneOtp, emailOtp } = req.body;
+        const user = await authService.verifySignupOTP(signupId, phoneOtp, emailOtp);
         res.status(201).json({
             success: true,
             message: 'User created successfully', // or "Signup verified"

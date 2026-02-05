@@ -25,6 +25,10 @@ if (otpMap.has(phone)) {
     };
     otpMap.set(phone, entry);
 
+// ✅ TEMP DEV LOG — REMOVE LATER
+console.log(`OTP for ${phone}: ${otp}`);
+
+
     // Auto-expire
     setTimeout(() => {
         if (otpMap.has(phone)) {
