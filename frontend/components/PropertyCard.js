@@ -17,18 +17,20 @@ const PropertyCard = ({ property, onCompare, isSelected }) => {
                 {/* Overlay Gradients */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80"></div>
 
-                {/* Compare Checkbox */}
-                <div className="absolute top-3 left-3 z-20">
-                    <label className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-2 py-1.5 rounded cursor-pointer hover:bg-black/70 transition-colors">
-                        <input
-                            type="checkbox"
-                            checked={isSelected || false}
-                            onChange={(e) => onCompare && onCompare(e.target.checked)}
-                            className="w-4 h-4 rounded border-gray-300 text-[#4169E1] focus:ring-[#4169E1]"
-                        />
-                        <span className="text-xs font-semibold text-white">Compare</span>
-                    </label>
-                </div>
+                {/* Compare Checkbox - Only show if onCompare is provided */}
+                {onCompare && (
+                    <div className="absolute top-3 left-3 z-20">
+                        <label className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-2 py-1.5 rounded cursor-pointer hover:bg-black/70 transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={isSelected || false}
+                                onChange={(e) => onCompare && onCompare(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 text-[#4169E1] focus:ring-[#4169E1]"
+                            />
+                            <span className="text-xs font-semibold text-white">Compare</span>
+                        </label>
+                    </div>
+                )}
 
                 {/* Badges */}
                 {property.isVerified && (
