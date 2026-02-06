@@ -5,6 +5,10 @@ const { validatePhone, validatePassword } = require('./auth.validation');
 const { createPendingUser, getPendingUser, deletePendingUser } = require('./auth.pending.store');
 const { findUserByPhone, findUserByEmail, createUser } = require('./auth.user.store');
 const crypto = require('crypto');
+const { normalizePhone } = require('../../utils/phone/phone.util');
+const { generateAccessToken, generateRefreshToken } = require('../../utils/tokens/token.generator');
+const { storeRefreshToken } = require('./auth.refresh.store');
+const { SELF_REGISTER_ROLES } = require('../../config/roles');
 
 
 /**
@@ -15,30 +19,34 @@ const crypto = require('crypto');
  */
 const requestSignupOTP = async (data) => {
     const { fullName, phone, email, password, role } = data;
+    const normalizedPhone = normalizePhone(phone);
+    const normalizedEmail = email.toLowerCase();
+
 
     // Validate input
-    const phoneError = validatePhone(phone);
+    const phoneError = validatePhone(normalizedPhone);
     if (phoneError) throw new Error(phoneError);
 
-    if (!email || !email.includes('@')) {
+    const validator = require('validator');
+
+if (!validator.isEmail(normalizedEmail)) {
     throw new Error('Valid email is required');
 }
 
-const ALLOWED_ROLES = ['buyer', 'agent', 'landlord', 'tenant'];
 
-if (!ALLOWED_ROLES.includes(role)) {
-    throw new Error('Invalid role selected');
+if (!SELF_REGISTER_ROLES.includes(role)) {
+    throw new Error('Invalid role selection');
 }
 
     const passwordError = validatePassword(password);
     if (passwordError) throw new Error(passwordError);
 
     // Prevent duplicate registrations
-if (findUserByPhone(phone)) {
+if (findUserByPhone(normalizedPhone)) {
     throw new Error('Phone already registered');
 }
 
-if (findUserByEmail(email)) {
+if (findUserByEmail(normalizedEmail)) {
     throw new Error('Email already registered');
 }
 
@@ -51,8 +59,8 @@ if (findUserByEmail(email)) {
     // Create pending user (DO NOT create permanent user yet)
     createPendingUser(signupId, {
         fullName,
-        phone,
-        email,
+        phone: normalizedPhone,
+        email: normalizedEmail,
         passwordHash: hashedPassword,
         role
 });
@@ -61,13 +69,67 @@ if (findUserByEmail(email)) {
 const phoneOtp = generateOTP();
 const emailOtp = generateOTP();
 
-storeOTP(phone, phoneOtp);
-storeOTP(email, emailOtp);
+storeOTP(`phone:${normalizedPhone}`, phoneOtp);
+storeOTP(`email:${normalizedEmail}`, emailOtp);
 
 
 
     return { message: 'OTP sent successfully', signupId }; // Returning OTP for testing purposes
 };
+
+
+const loginUser = async (identifier, password) => {
+
+    let user;
+
+    // Detect identifier type
+    if (identifier.includes('@')) {
+
+    const normalizedEmail = identifier.toLowerCase();
+    user = findUserByEmail(normalizedEmail);
+
+} else {
+
+    const normalizedPhone = normalizePhone(identifier);
+    user = findUserByPhone(normalizedPhone);
+
+}
+
+
+
+    if (!user) {
+        throw new Error('Invalid credentials');
+    }
+
+    // Compare password
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isPasswordValid) {
+        throw new Error('Invalid credentials');
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken({
+        userId: user.id,
+        role: user.role
+    });
+
+    const refreshToken = generateRefreshToken({
+        userId: user.id
+    });
+
+    // Store refresh token
+    storeRefreshToken(user.id, refreshToken);
+
+    const { passwordHash, ...safeUser } = user;
+
+    return {
+    user: safeUser,
+    accessToken,
+    refreshToken
+};
+};
+
 
 /**
  * Service to handle OTP verification for signup
@@ -87,8 +149,8 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
     const { phone, email, fullName, passwordHash, role } = pendingUser;
 
     // Verify BOTH OTPs
-    const phoneValid = verifyOTP(phone, phoneOtp);
-    const emailValid = verifyOTP(email, emailOtp);
+    const phoneValid = verifyOTP(`phone:${phone}`, phoneOtp);
+    const emailValid = verifyOTP(`email:${email}`, emailOtp);
 
     if (!phoneValid || !emailValid) {
         throw new Error('Invalid or expired OTP');
@@ -116,4 +178,5 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
 module.exports = {
     requestSignupOTP,
     verifySignupOTP,
+    loginUser
 };

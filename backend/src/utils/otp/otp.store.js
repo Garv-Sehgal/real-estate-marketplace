@@ -2,15 +2,15 @@ const otpMap = new Map();
 const OTP_EXPIRY_MS = 5 * 60 * 1000;
 
 /**
- * Store OTP for a phone number with expiration
- * @param {string} phone - User's phone number
+ * Store OTP for a key number with expiration
+ * @param {string} key - User's key number
  * @param {string} otp - Generated OTP
  * @param {any} [data=null] - Optional data to store (e.g. hashed password)
  */
-const storeOTP = (phone, otp, data = null) => {
+const storeOTP = (key, otp, data = null) => {
     // Prevent OTP spam
-if (otpMap.has(phone)) {
-    const existing = otpMap.get(phone);
+if (otpMap.has(key)) {
+    const existing = otpMap.get(key);
 
     if (Date.now() < existing.expiresAt) {
         throw new Error('OTP already sent. Please wait before requesting again.');
@@ -23,16 +23,22 @@ if (otpMap.has(phone)) {
         attempts: 0,
         expiresAt: Date.now() + OTP_EXPIRY_MS, // 5 minutes
     };
-    otpMap.set(phone, entry);
+
+    // OTP enabling
+if (process.env.NODE_ENV === 'development') {
+    console.log(`[DEV OTP] ${key} -> ${otp}`);
+}
+
+    otpMap.set(key, entry);
 
 
     // Auto-expire
     setTimeout(() => {
-        if (otpMap.has(phone)) {
-            const currentEntry = otpMap.get(phone);
+        if (otpMap.has(key)) {
+            const currentEntry = otpMap.get(key);
             // Ensure we are deleting the same OTP instance (simple check)
             if (currentEntry && currentEntry.otp === otp) {
-                otpMap.delete(phone);
+                otpMap.delete(key);
             }
         }
     }, OTP_EXPIRY_MS);
@@ -40,19 +46,19 @@ if (otpMap.has(phone)) {
 
 /**
  * Verify OTP and retrieve stored data
- * @param {string} phone - User's phone number
+ * @param {string} key - User's key number
  * @param {string} otp - OTP to verify
  * @returns {any|null} Stored data if valid, null otherwise
  */
-const verifyOTP = (phone, otp) => {
-    if (!otpMap.has(phone)) {
+const verifyOTP = (key, otp) => {
+    if (!otpMap.has(key)) {
         return null;
     }
 
-    const entry = otpMap.get(phone);
+    const entry = otpMap.get(key);
     // Block brute-force attempts
 if (entry.attempts >= 5) {
-    otpMap.delete(phone);
+    otpMap.delete(key);
     return null;
 }
 
@@ -60,12 +66,12 @@ entry.attempts++;
 
 
     if (Date.now() > entry.expiresAt) {
-        otpMap.delete(phone);
+        otpMap.delete(key);
         return null;
     }
 
     if (entry.otp === otp) {
-        otpMap.delete(phone); // Prevent reuse
+        otpMap.delete(key); // Prevent reuse
         return entry.data ?? true;
     }
 

@@ -5,5 +5,6 @@ const authController = require('./auth.controller');
 // Mount routes
 router.post('/signup/request-otp', authController.requestSignupOTP);
 router.post('/signup/verify-otp', authController.verifySignupOTP);
+router.post('/login', authController.login);
 
 module.exports = router;

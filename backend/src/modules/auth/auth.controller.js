@@ -34,7 +34,33 @@ const verifySignupOTP = async (req, res, next) => {
 
 };
 
+//login function
+const login = async (req, res) => {
+    try {
+
+        const { identifier, password } = req.body;
+
+        const result = await authService.loginUser(identifier, password);
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            data: result
+        });
+
+    } catch (error) {
+
+        res.status(401).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+
 module.exports = {
     requestSignupOTP,
     verifySignupOTP,
+    login
 };
