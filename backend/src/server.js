@@ -1,5 +1,7 @@
-const app = require('./app');
+require('dotenv').config();   // ⭐ MUST BE FIRST LINE
+
 const config = require('./config/env');
+const app = require('./app');
 
 const PORT = config.port;
 
