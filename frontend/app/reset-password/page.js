@@ -12,7 +12,7 @@ export default function ResetPasswordPage() {
         confirmPassword: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [status, setStatus] = useState({ type: '', message: '' });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -27,55 +27,18 @@ export default function ResetPasswordPage() {
         }
 
         setIsSubmitting(true);
+        setStatus({ type: '', message: '' });
+
         // Simulate API call
         setTimeout(() => {
             setIsSubmitting(false);
-            setIsSuccess(true);
+            setStatus({ type: 'success', message: 'Password updated successfully' });
+
+            setTimeout(() => {
+                router.push('/login');
+            }, 2000);
         }, 1500);
     };
-
-    if (isSuccess) {
-        return (
-            <div className="min-h-screen flex bg-white">
-                <div className="hidden lg:flex w-1/2 relative bg-gray-900">
-                    <Image
-                        src="/images/reset-password-hero.png"
-                        alt="City Skyline"
-                        fill
-                        className="object-cover opacity-90"
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-12 text-white">
-                        <h1 className="text-4xl font-bold mb-4 font-sans tracking-tight">
-                            All Set!
-                        </h1>
-                        <p className="text-lg text-gray-200 max-w-md font-light leading-relaxed">
-                            Your password has been reset successfully. You can now explore Elite Estates.
-                        </p>
-                    </div>
-                </div>
-                <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 bg-[url('/images/subtle-pattern.png')]">
-                    <div className="max-w-md w-full text-center p-10 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
-                        <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                            <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Password Reset!</h2>
-                        <p className="text-gray-600 mb-8">
-                            Your password has been successfully updated. You can now log in with your new credentials.
-                        </p>
-                        <Link
-                            href="/login"
-                            className="w-full inline-flex justify-center py-3.5 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-lg shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02]"
-                        >
-                            Return to Login
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        )
-    }
 
     return (
         <div className="min-h-screen flex bg-white">
@@ -169,6 +132,13 @@ export default function ResetPasswordPage() {
                                 'Set New Password'
                             )}
                         </button>
+
+                        {/* Status Message */}
+                        {status.message && (
+                            <div className={`text-center text-sm font-medium mt-4 ${status.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                                {status.message}
+                            </div>
+                        )}
                     </form>
                 </div>
             </div>

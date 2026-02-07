@@ -4,14 +4,20 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import CountrySelector from '../../components/CountrySelector';
+
+import countryCodes from '../../utils/countryCodes';
 
 export default function LoginPage() {
     const router = useRouter();
+    const [countryCode, setCountryCode] = useState('+91');
     const [formData, setFormData] = useState({
         email: '',
         password: '',
         rememberMe: false,
     });
+
+    const isPhone = /^[0-9+]/.test(formData.email);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -23,7 +29,33 @@ export default function LoginPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Logging in user:', formData);
+
+        // Prepare payload with E.164 format for phone login
+        let finalEmail = formData.email;
+        let finalCountryCode = null;
+
+        if (isPhone) {
+            // Remove any non-digit chars from input
+            const cleanNumber = formData.email.replace(/\D/g, '');
+            if (cleanNumber) {
+                // E.164 format: +<country_code><number>
+                // countryCode has '+'
+                const cleanCountryCode = countryCode.replace('+', '');
+                // We send the combined number as 'email' or a specific 'mobile' field depending on backend
+                // For now, let's keep it in the log as a clear distinction
+                finalEmail = `+${cleanCountryCode}${cleanNumber}`;
+                finalCountryCode = countryCode;
+            }
+        }
+
+        console.log('Logging in user:', {
+            email: finalEmail,
+            password: formData.password,
+            rememberMe: formData.rememberMe,
+            isPhoneLogin: isPhone,
+            countryCode: finalCountryCode
+        });
+
         router.push('/');
     };
 
@@ -54,15 +86,30 @@ export default function LoginPage() {
                                 <label className="block text-sm font-medium text-gray-700 ml-1">
                                     Email or Mobile Number
                                 </label>
-                                <input
-                                    name="email"
-                                    type="text"
-                                    required
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/50"
-                                    placeholder="Enter email or phone"
-                                />
+
+                                <div className="relative mt-1 rounded-xl shadow-sm flex items-center border border-gray-300 focus-within:border-blue-600 bg-white h-[50px] transition-colors duration-200">
+
+                                    {/* Country Code Dropdown - Conditionally Rendered */}
+                                    {isPhone && (
+                                        <div className="relative h-full flex items-center bg-gray-50 border-r border-gray-200 rounded-l-xl">
+                                            <CountrySelector
+                                                value={countryCode}
+                                                onChange={setCountryCode}
+                                                countryCodes={countryCodes}
+                                            />
+                                        </div>
+                                    )}
+
+                                    <input
+                                        name="email"
+                                        type="text"
+                                        required
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        className={`block w-full h-full px-4 border-none text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none text-base bg-transparent ${isPhone ? 'rounded-r-xl' : 'rounded-xl'}`}
+                                        placeholder="Enter email or phone"
+                                    />
+                                </div>
                             </div>
 
                             <div>
