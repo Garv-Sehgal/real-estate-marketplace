@@ -9,7 +9,7 @@ const { normalizePhone } = require('../../utils/phone/phone.util');
 const { generateAccessToken, generateRefreshToken } = require('../../utils/tokens/token.generator');
 const { storeRefreshToken } = require('./auth.refresh.store');
 const { SELF_REGISTER_ROLES } = require('../../config/roles');
-
+const validator = require('validator');
 
 /**
  * Service to handle OTP request for signup
@@ -27,7 +27,6 @@ const requestSignupOTP = async (data) => {
     const phoneError = validatePhone(normalizedPhone);
     if (phoneError) throw new Error(phoneError);
 
-    const validator = require('validator');
 
 if (!validator.isEmail(normalizedEmail)) {
     throw new Error('Valid email is required');
@@ -171,7 +170,25 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
     // Delete pending user
     deletePendingUser(signupId);
 
-    return newUser;
+   const accessToken = generateAccessToken({
+    userId: newUser.id,
+    role: newUser.role
+});
+
+const refreshToken = generateRefreshToken({
+    userId: newUser.id
+});
+
+storeRefreshToken(newUser.id, refreshToken);
+
+const { passwordHash: _, ...safeUser } = newUser;
+
+return {
+    user: safeUser,
+    accessToken,
+    refreshToken
+};
+
 };
 
 
