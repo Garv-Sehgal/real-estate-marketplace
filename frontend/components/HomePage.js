@@ -45,10 +45,10 @@ const HomePage = () => {
                         </div>
 
                         {/* Search Inputs */}
-                        <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4 items-end">
+                        <div className="p-4 md:p-6 flex flex-col lg:flex-row gap-4 items-end">
 
                             {/* Location Input - Map Integration Ready */}
-                            <div className="w-full md:flex-[2]">
+                            <div className="w-full lg:flex-[2]">
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     Location
                                 </label>
@@ -68,7 +68,7 @@ const HomePage = () => {
                             </div>
 
                             {/* Property Type */}
-                            <div className="w-full md:flex-1">
+                            <div className="w-full lg:flex-1">
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     Type
                                 </label>
@@ -81,7 +81,7 @@ const HomePage = () => {
                             </div>
 
                             {/* Budget */}
-                            <div className="w-full md:flex-1">
+                            <div className="w-full lg:flex-1">
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     Budget
                                 </label>
@@ -95,8 +95,8 @@ const HomePage = () => {
                             </div>
 
                             {/* Search Button */}
-                            <div className="w-full md:w-auto">
-                                <button className="w-full md:w-auto bg-[#4169E1] hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-md transition-colors shadow-lg flex items-center justify-center gap-2">
+                            <div className="w-full lg:w-auto">
+                                <button className="w-full lg:w-auto bg-[#4169E1] hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-md transition-colors shadow-lg flex items-center justify-center gap-2">
                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>

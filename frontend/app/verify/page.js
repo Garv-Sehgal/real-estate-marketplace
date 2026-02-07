@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function VerifyPage() {
+    const router = useRouter(); // Initialize router
     // State for Mobile OTP
     const [mobileOtp, setMobileOtp] = useState(['', '', '', '', '', '']);
     const [mobileTimer, setMobileTimer] = useState(30);
@@ -69,6 +71,7 @@ export default function VerifyPage() {
             setIsVerifying(false);
             console.log('Mobile OTP:', mobileOtp.join(''));
             console.log('Email OTP:', emailOtp.join(''));
+            router.push('/login');
         }, 2000);
     };
 
@@ -99,8 +102,8 @@ export default function VerifyPage() {
             </div>
 
             {/* Right Side - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 bg-[url('/images/subtle-pattern.png')]">
-                <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-4 lg:p-6 bg-gray-50 bg-[url('/images/subtle-pattern.png')]">
+                <div className="w-full max-w-md space-y-8 bg-white p-6 sm:p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
 
                     {/* Header */}
                     <div className="text-center">
@@ -109,7 +112,7 @@ export default function VerifyPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
                             Account Verification
                         </h2>
                         <p className="mt-2 text-sm text-gray-600 font-medium">
@@ -117,7 +120,7 @@ export default function VerifyPage() {
                         </p>
                     </div>
 
-                    <div className="space-y-8 mt-8">
+                    <div className="space-y-6 sm:space-y-8 mt-8">
 
                         {/* Section 1: Mobile OTP */}
                         <div className="space-y-4">
@@ -127,10 +130,10 @@ export default function VerifyPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide">Enter Mobile OTP</h3>
+                                <h3 className="text-sm sm:text-base font-bold text-gray-900 uppercase tracking-wide">Enter Mobile OTP</h3>
                             </div>
 
-                            <div className="flex justify-between gap-2">
+                            <div className="flex justify-between gap-1 sm:gap-2">
                                 {mobileOtp.map((digit, index) => (
                                     <input
                                         key={`mobile-${index}`}
@@ -140,7 +143,7 @@ export default function VerifyPage() {
                                         value={digit}
                                         onChange={(e) => handleMobileChange(index, e.target.value)}
                                         onKeyDown={(e) => handleMobileKeyDown(index, e)}
-                                        className="w-12 h-12 text-center text-xl font-bold text-gray-900 bg-white border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all duration-200"
+                                        className="w-full h-10 sm:h-12 text-center text-lg sm:text-xl font-bold text-gray-900 bg-white border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all duration-200"
                                     />
                                 ))}
                             </div>
@@ -167,7 +170,7 @@ export default function VerifyPage() {
                                 <h3 className="text-base font-bold text-gray-900 uppercase tracking-wide">Enter Email OTP</h3>
                             </div>
 
-                            <div className="flex justify-between gap-2">
+                            <div className="flex justify-between gap-1 sm:gap-2">
                                 {emailOtp.map((digit, index) => (
                                     <input
                                         key={`email-${index}`}
@@ -177,7 +180,7 @@ export default function VerifyPage() {
                                         value={digit}
                                         onChange={(e) => handleEmailChange(index, e.target.value)}
                                         onKeyDown={(e) => handleEmailKeyDown(index, e)}
-                                        className="w-12 h-12 text-center text-xl font-bold text-gray-900 bg-white border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all duration-200"
+                                        className="w-full h-10 sm:h-12 text-center text-lg sm:text-xl font-bold text-gray-900 bg-white border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all duration-200"
                                     />
                                 ))}
                             </div>

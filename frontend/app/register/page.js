@@ -4,10 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import CountrySelector from '../../components/CountrySelector';
+
+import countryCodes from '../../utils/countryCodes';
 
 export default function RegisterPage() {
     const router = useRouter();
     const [role, setRole] = useState('buyer'); // 'buyer' (Buyer/Tenant) or 'agent' (Agent/Landlord)
+    const [countryCode, setCountryCode] = useState('+91');
 
     const [formData, setFormData] = useState({
         fullName: '',
@@ -26,8 +30,39 @@ export default function RegisterPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Registering user:', { ...formData, role });
-        // Simulate registration success and redirect
+        if (!role) {
+            alert('Please select a role');
+            return;
+        }
+
+        // Prepare payload with E.164 format for phone
+        let finalEmail = formData.email;
+        let finalMobile = null;
+        let contactType = 'email'; // Default contact type
+
+        // If mobile number is provided, format it to E.164
+        if (formData.mobile) {
+            contactType = 'mobile';
+            // Remove any non-digit chars from the mobile number
+            const cleanNumber = formData.mobile.replace(/\D/g, '');
+            if (cleanNumber) {
+                // E.164 format: +<country_code><number>
+                // countryCode already includes '+' (e.g. '+91')
+                // Remove '+' from countryCode if it exists to be safe, then add it back
+                const cleanCountryCode = countryCode.replace('+', '');
+                finalMobile = `+${cleanCountryCode}${cleanNumber}`;
+            }
+        }
+
+        console.log('Registering user:', {
+            fullName: formData.fullName,
+            email: finalEmail,
+            mobile: finalMobile, // This will be E.164 if provided, otherwise null
+            password: formData.password,
+            role,
+            contactType
+        });
+
         router.push('/verify');
     };
 
@@ -58,25 +93,25 @@ export default function RegisterPage() {
             </div>
 
             {/* Right Side - Registration Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 bg-[url('/images/subtle-pattern.png')]">
-                <div className="w-full max-w-md space-y-8 bg-white/80 backdrop-blur-lg p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-4 lg:p-6 bg-gray-50 bg-[url('/images/subtle-pattern.png')]">
+                <div className="w-full max-w-md space-y-5 bg-white/80 backdrop-blur-lg p-6 lg:p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20">
                     <div className="text-center">
-                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
                             Create Account
                         </h2>
-                        <p className="mt-2 text-sm text-gray-600">
+                        <p className="mt-1 text-sm text-gray-600">
                             Start your journey with Elite Estates
                         </p>
                     </div>
 
                     {/* Role Selection Switch */}
-                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                    <div className="flex bg-gray-100 p-1 rounded-xl gap-1">
                         <button
                             type="button"
                             onClick={() => setRole('buyer')}
-                            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${role === 'buyer'
+                            className={`flex-1 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${role === 'buyer'
                                 ? 'bg-white text-blue-700 shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                                 }`}
                         >
                             Buyer / Tenant
@@ -84,19 +119,29 @@ export default function RegisterPage() {
                         <button
                             type="button"
                             onClick={() => setRole('agent')}
-                            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${role === 'agent'
+                            className={`flex-1 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${role === 'agent'
                                 ? 'bg-white text-blue-700 shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                                 }`}
                         >
-                            Agent / Landlord
+                            Agent
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setRole('landlord')}
+                            className={`flex-1 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${role === 'landlord'
+                                ? 'bg-white text-blue-700 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                                }`}
+                        >
+                            Landlord
                         </button>
                     </div>
 
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                        <div className="space-y-4">
+                    <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
+                        <div className="space-y-3">
                             <div>
-                                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 ml-1">
+                                <label htmlFor="fullName" className="block text-xs font-semibold text-gray-700 ml-1 mb-1">
                                     Full Name
                                 </label>
                                 <input
@@ -106,13 +151,13 @@ export default function RegisterPage() {
                                     required
                                     value={formData.fullName}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
+                                    className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200 text-sm"
                                     placeholder="John Doe"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 ml-1">
+                                <label htmlFor="email" className="block text-xs font-semibold text-gray-700 ml-1 mb-1">
                                     Email Address
                                 </label>
                                 <input
@@ -123,29 +168,48 @@ export default function RegisterPage() {
                                     required
                                     value={formData.email}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
+                                    className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200 text-sm"
                                     placeholder="john@example.com"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 ml-1">
+                                <label htmlFor="mobile" className="block text-xs font-semibold text-gray-700 ml-1 mb-1">
                                     Mobile Number
                                 </label>
-                                <input
-                                    id="mobile"
-                                    name="mobile"
-                                    type="tel"
-                                    required
-                                    value={formData.mobile}
-                                    onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
-                                    placeholder="+1 (555) 000-0000"
-                                />
+                                <div className="relative flex items-center border border-gray-300 focus-within:border-blue-600 bg-white rounded-xl h-[46px] transition-colors duration-200">
+                                    {/* Country Code Dropdown */}
+                                    <div className="relative h-full flex items-center bg-gray-50 border-r border-gray-200 rounded-l-xl">
+                                        <CountrySelector
+                                            value={countryCode}
+                                            onChange={setCountryCode}
+                                            countryCodes={countryCodes}
+                                        />
+                                    </div>
+
+                                    {/* Phone Number Input */}
+                                    <input
+                                        id="mobile"
+                                        name="mobile"
+                                        type="tel"
+                                        pattern="[0-9]*"
+                                        required
+                                        value={formData.mobile}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            // Allow only numbers
+                                            if (val === '' || /^[0-9\b]+$/.test(val)) {
+                                                handleInputChange(e);
+                                            }
+                                        }}
+                                        className="block w-full h-full px-4 border-none text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none text-sm bg-transparent"
+                                        placeholder="98765 43210"
+                                    />
+                                </div>
                             </div>
 
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 ml-1">
+                                <label htmlFor="password" className="block text-xs font-semibold text-gray-700 ml-1 mb-1">
                                     Password
                                 </label>
                                 <input
@@ -156,7 +220,7 @@ export default function RegisterPage() {
                                     required
                                     value={formData.password}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
+                                    className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200 text-sm"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -166,7 +230,7 @@ export default function RegisterPage() {
 
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02]"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02]"
                         >
                             Sign Up
                         </button>
