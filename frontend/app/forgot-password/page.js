@@ -4,19 +4,32 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import CountrySelector from '../../components/CountrySelector';
+import countryCodes from '../../utils/countryCodes';
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
     const [identifier, setIdentifier] = useState('');
+    const [countryCode, setCountryCode] = useState('+91');
     const [isSending, setIsSending] = useState(false);
+
+    const isPhone = /^[0-9+]/.test(identifier);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSending(true);
+
+        let finalIdentifier = identifier;
+        if (isPhone) {
+            const cleanNumber = identifier.replace(/\D/g, '');
+            const cleanCountryCode = countryCode.replace('+', '');
+            finalIdentifier = `+${cleanCountryCode}${cleanNumber}`;
+        }
+
         // Simulate API call
         setTimeout(() => {
             setIsSending(false);
-            console.log('Sending OTP to:', identifier);
+            console.log('Sending OTP to:', finalIdentifier);
             router.push('/verify-reset');
         }, 1500);
     };
@@ -64,16 +77,31 @@ export default function ForgotPasswordPage() {
                             <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 ml-1">
                                 Email Address or Mobile Number
                             </label>
-                            <input
-                                id="identifier"
-                                name="identifier"
-                                type="text"
-                                required
-                                value={identifier}
-                                onChange={(e) => setIdentifier(e.target.value)}
-                                className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
-                                placeholder="john@example.com"
-                            />
+
+                            <div className="relative mt-1 rounded-xl shadow-sm flex items-center border border-gray-300 focus-within:border-blue-600 bg-white h-[50px] transition-colors duration-200">
+
+                                {/* Country Code Dropdown - Conditionally Rendered */}
+                                {isPhone && (
+                                    <div className="relative h-full flex items-center bg-gray-50 border-r border-gray-200 rounded-l-xl">
+                                        <CountrySelector
+                                            value={countryCode}
+                                            onChange={setCountryCode}
+                                            countryCodes={countryCodes}
+                                        />
+                                    </div>
+                                )}
+
+                                <input
+                                    id="identifier"
+                                    name="identifier"
+                                    type="text"
+                                    required
+                                    value={identifier}
+                                    onChange={(e) => setIdentifier(e.target.value)}
+                                    className={`block w-full h-full px-4 border-none text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none text-base bg-transparent ${isPhone ? 'rounded-r-xl' : 'rounded-xl'}`}
+                                    placeholder="Enter email or phone"
+                                />
+                            </div>
                         </div>
 
                         <button
