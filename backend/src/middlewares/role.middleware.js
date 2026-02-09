@@ -1,6 +1,6 @@
 const { ROLE_LEVEL } = require('../config/roles');
 
-const requireRole = (...allowedRoles) => {
+const requireLevel = (requiredLevel) => {
 
     return (req, res, next) => {
 
@@ -11,13 +11,10 @@ const requireRole = (...allowedRoles) => {
             });
         }
 
-        const userRoleLevel = ROLE_LEVEL[req.user.role];
+        const userRole = req.user.role;
+        const userLevel = ROLE_LEVEL[userRole];
 
-        const hasAccess = allowedRoles.some(role => {
-            return userRoleLevel >= ROLE_LEVEL[role];
-        });
-
-        if (!hasAccess) {
+        if (!userLevel || userLevel < requiredLevel) {
             return res.status(403).json({
                 success: false,
                 message: 'Forbidden: insufficient permissions'
@@ -28,4 +25,4 @@ const requireRole = (...allowedRoles) => {
     };
 };
 
-module.exports = requireRole;
+module.exports = requireLevel;
