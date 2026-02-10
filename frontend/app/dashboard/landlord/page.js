@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Home, Eye, MessageSquare, PlusCircle, LayoutDashboard, Settings, LogOut, CheckCircle, XCircle, Clock, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 
 export default function LandlordDashboard() {
@@ -14,10 +15,13 @@ export default function LandlordDashboard() {
                     <h1 className="text-2xl font-bold text-slate-900">Landlord Dashboard</h1>
                     <p className="text-slate-500 text-sm">Manage your listings and viewing requests.</p>
                 </div>
-                <button className="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-all shadow-sm">
+                <Link
+                    href="/dashboard/landlord/post-property"
+                    className="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-all shadow-sm"
+                >
                     <PlusCircle size={18} />
-                    Post New Property
-                </button>
+                    List New Property
+                </Link>
             </header>
 
             <main className="p-8 max-w-7xl mx-auto space-y-8">

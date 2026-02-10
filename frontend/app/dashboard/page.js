@@ -395,6 +395,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-5">
                     {/* Quick Action Icons */}
                     <div className="flex items-center gap-2 border-r border-gray-100 pr-5">
+
                         <button className="p-2.5 text-gray-400 hover:text-[#4169E1] hover:bg-blue-50/50 rounded-full transition-all duration-300 relative group">
                             <Search className="w-5 h-5" />
                         </button>

@@ -63,11 +63,11 @@ const HomeExtensions = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {/* Listing 1 */}
                         <div className="bg-white dark:bg-surface-dark rounded-[2rem] overflow-hidden border border-slate-100 dark:border-border-dark group hover:shadow-2xl transition-all duration-500">
                             <div className="relative h-72 overflow-hidden">
-                                <img alt="Modern Penthouse" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80" />
+                                <img alt="Modern Penthouse" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=2340&q=80" />
                                 <div className="absolute top-6 left-6 flex gap-2">
                                     <span className="bg-primary text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Premium</span>
                                 </div>
@@ -106,7 +106,7 @@ const HomeExtensions = () => {
                         {/* Listing 2 */}
                         <div className="bg-white dark:bg-surface-dark rounded-[2rem] overflow-hidden border border-slate-100 dark:border-border-dark group hover:shadow-2xl transition-all duration-500">
                             <div className="relative h-72 overflow-hidden">
-                                <img alt="Modern Villa" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1600596542815-2a4d9f03229e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1175&q=80" />
+                                <img alt="Modern Villa" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" />
                                 <div className="absolute top-6 left-6">
                                     <span className="bg-emerald-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Verified</span>
                                 </div>
@@ -145,7 +145,7 @@ const HomeExtensions = () => {
                         {/* Listing 3 */}
                         <div className="bg-white dark:bg-surface-dark rounded-[2rem] overflow-hidden border border-slate-100 dark:border-border-dark group hover:shadow-2xl transition-all duration-500">
                             <div className="relative h-72 overflow-hidden">
-                                <img alt="Modern Home" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80" />
+                                <img alt="Modern Home" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2053&q=80" />
                                 <div className="absolute top-6 left-6">
                                     <span className="bg-orange-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">New</span>
                                 </div>
@@ -174,6 +174,45 @@ const HomeExtensions = () => {
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-slate-400">square_foot</span>
                                         <span className="text-sm font-bold">2.1k sqft</span>
+                                    </div>
+                                </div>
+                                <button className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all transform hover:scale-[1.02]">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                        {/* Listing 4 - New */}
+                        <div className="bg-white dark:bg-surface-dark rounded-[2rem] overflow-hidden border border-slate-100 dark:border-border-dark group hover:shadow-2xl transition-all duration-500">
+                            <div className="relative h-72 overflow-hidden">
+                                <img alt="Luxury Loft" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" />
+                                <div className="absolute top-6 left-6">
+                                    <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Hot</span>
+                                </div>
+                                <button className="absolute top-6 right-6 w-10 h-10 bg-white/30 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-xl">favorite</span>
+                                </button>
+                            </div>
+                            <div className="p-8">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="text-2xl font-bold dark:text-white">Urban Loft</h3>
+                                    <span className="text-primary font-black text-2xl">$1.2M</span>
+                                </div>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center gap-1 mb-8">
+                                    <span className="material-symbols-outlined text-base">location_on</span>
+                                    SoHo, New York, NY
+                                </p>
+                                <div className="flex items-center justify-between py-6 border-y border-slate-100 dark:border-border-dark mb-8">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-slate-400">bed</span>
+                                        <span className="text-sm font-bold">2 Beds</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-slate-400">bathtub</span>
+                                        <span className="text-sm font-bold">2 Baths</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-slate-400">square_foot</span>
+                                        <span className="text-sm font-bold">1.8k sqft</span>
                                     </div>
                                 </div>
                                 <button className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all transform hover:scale-[1.02]">
@@ -210,7 +249,7 @@ const HomeExtensions = () => {
                         </button>
                     </div>
                     <div className="flex-1 w-full h-[400px] bg-slate-100 rounded-3xl overflow-hidden shadow-2xl relative group">
-                        <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1774&q=80" alt="Map Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?ixlib=rb-4.0.3&auto=format&fit=crop&w=2062&q=80" alt="Map Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
                             <div className="bg-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform">
                                 <span className="material-symbols-outlined text-primary">near_me</span>
@@ -219,10 +258,10 @@ const HomeExtensions = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Role-Based Entry Section */}
-            <section className="bg-slate-900 py-16 text-white">
+            < section className="bg-slate-900 py-16 text-white" >
                 <div className="w-full px-6 md:px-12 lg:px-16">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-5xl font-extrabold mb-6">Real Estate for Everyone</h2>
@@ -261,10 +300,10 @@ const HomeExtensions = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Smart Tools Highlights */}
-            <section className="w-full px-6 md:px-12 lg:px-16 py-16">
+            < section className="w-full px-6 md:px-12 lg:px-16 py-16" >
                 <div className="grid lg:grid-cols-2 gap-20 items-center">
                     <div className="order-2 lg:order-1">
                         <div className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-border-dark p-10 rounded-[3rem] shadow-2xl relative">
@@ -332,10 +371,10 @@ const HomeExtensions = () => {
                         </button>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Booking & Payments Teaser */}
-            <section className="bg-slate-50 py-16">
+            < section className="bg-slate-50 py-16" >
                 <div className="w-full px-6 md:px-12 lg:px-16 text-center">
                     <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Streamlined Transactions</h2>
                     <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-16">
@@ -366,10 +405,10 @@ const HomeExtensions = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Knowledge & Resources */}
-            <section className="py-24 w-full px-6 md:px-12 lg:px-16">
+            < section className="py-24 w-full px-6 md:px-12 lg:px-16" >
                 <div className="flex justify-between items-end mb-12">
                     <div>
                         <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">Knowledge Hub</h2>
@@ -381,7 +420,7 @@ const HomeExtensions = () => {
                 <div className="grid md:grid-cols-3 gap-8">
                     <div className="group cursor-pointer">
                         <div className="h-60 rounded-2xl overflow-hidden mb-6 relative">
-                            <img src="https://images.unsplash.com/photo-1560518883-ce09059ee971?ixlib=rb-4.0.3&auto=format&fit=crop&w=1036&q=80" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Blog 1" />
+                            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Blog 1" />
                             <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-800">Guide</div>
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">First-Time Home Buyer's Checklist</h3>
@@ -389,7 +428,7 @@ const HomeExtensions = () => {
                     </div>
                     <div className="group cursor-pointer">
                         <div className="h-60 rounded-2xl overflow-hidden mb-6 relative">
-                            <img src="https://images.unsplash.com/photo-1556740758-90de374c12ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Blog 2" />
+                            <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Blog 2" />
                             <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-800">Analysis</div>
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">2024 Real Estate Market Forecast</h3>
@@ -397,17 +436,17 @@ const HomeExtensions = () => {
                     </div>
                     <div className="group cursor-pointer">
                         <div className="h-60 rounded-2xl overflow-hidden mb-6 relative">
-                            <img src="https://images.unsplash.com/photo-1513584685908-22762331eb79?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Blog 3" />
+                            <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Blog 3" />
                             <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-800">Tips</div>
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">Staging Secrets to Sell Faster</h3>
                         <p className="text-slate-500 text-sm line-clamp-2">Simple design tweaks that can increase your property's value and attract more offers.</p>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Subscribe / Footer Teaser */}
-            <section className="py-24 bg-slate-900">
+            < section className="py-24 bg-slate-900" >
                 <div className="w-full max-w-5xl mx-auto px-6 md:px-12 lg:px-16 text-center">
                     <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">Never Miss a Listing</h2>
                     <p className="text-slate-400 text-lg mb-12">Get early access to exclusive off-market properties and weekly AI-driven market trends delivered to your inbox.</p>
@@ -416,10 +455,10 @@ const HomeExtensions = () => {
                         <button className="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-2xl font-extrabold transition-all whitespace-nowrap">Subscribe Now</button>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Footer */}
-            <footer className="bg-white dark:bg-background-dark py-20 border-t border-slate-100 dark:border-border-dark">
+            < footer className="bg-white dark:bg-background-dark py-20 border-t border-slate-100 dark:border-border-dark" >
                 <div className="w-full px-6 md:px-12 lg:px-16">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-16">
                         <div className="col-span-1 md:col-span-1">
@@ -489,7 +528,7 @@ const HomeExtensions = () => {
                         </div>
                     </div>
                 </div>
-            </footer>
+            </footer >
         </>
     );
 };
