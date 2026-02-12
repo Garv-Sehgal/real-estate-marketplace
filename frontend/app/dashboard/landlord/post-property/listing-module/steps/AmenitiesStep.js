@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import StepWrapper from '@/components/property/StepWrapper';
-import CheckboxGroup from '@/components/property/inputs/CheckboxGroup';
+
 import { AMENITIES_LIST } from '../constants';
 
 const AmenitiesStep = ({ formData, toggleAmenity, isActive }) => {
@@ -28,37 +28,35 @@ const AmenitiesStep = ({ formData, toggleAmenity, isActive }) => {
     return (
         <StepWrapper isActive={isActive}>
             <div className="space-y-6">
-                <CheckboxGroup
-                    label="Select Amenities"
-                    options={AMENITIES_LIST}
-                    selectedValues={formData.amenities}
-                    onChange={(newVal) => {
-                        // This component needs setFieldValue
-                        // For now, let's use the toggleAmenity individually approach 
-                        // by mapping the UI manually to ensure 100% control
-                    }}
-                />
+                <h3 className="text-lg font-bold text-slate-900">Select Amenities</h3>
 
-                {/* Manual implementation since my CheckboxGroup component interface 
-                    might conflict with the toggleAmenity single-item logic. 
-                    Let's use the explicit rendering to be safe and precise. 
-                */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div className="flex flex-wrap gap-3">
                     {AMENITIES_LIST.map((item) => {
                         const Icon = item.icon;
                         const isSelected = formData.amenities.includes(item.id);
                         return (
-                            <div
+                            <button
                                 key={item.id}
+                                type="button"
                                 onClick={() => toggleAmenity(item.id)}
-                                className={`cursor-pointer rounded-xl border p-4 flex flex-col items-center justify-center gap-3 transition-all ${isSelected ? 'bg-blue-50 border-blue-600 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                                className={`
+                                    px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border flex items-center gap-2
+                                    ${isSelected
+                                        ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105'
+                                        : 'bg-white border-slate-300 text-slate-600 hover:border-blue-400 hover:bg-blue-50'
+                                    }
+                                `}
                             >
-                                <Icon className={`w-8 h-8 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
-                                <span className="text-xs font-bold text-center">{item.label}</span>
-                            </div>
+                                <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-slate-500'}`} />
+                                {item.label}
+                                {isSelected && <span className="ml-1 text-blue-100">✓</span>}
+                            </button>
                         );
                     })}
                 </div>
+                <p className="text-xs text-slate-500">
+                    Select all the amenities available at the property.
+                </p>
             </div>
         </StepWrapper>
     );

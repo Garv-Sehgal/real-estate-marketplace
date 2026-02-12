@@ -1,144 +1,211 @@
 "use client";
-import React from 'react';
+import React, { useMemo } from 'react';
 import StepWrapper from '@/components/property/StepWrapper';
 import TextInput from '@/components/property/inputs/TextInput';
-import CheckboxGroup from '@/components/property/inputs/CheckboxGroup';
+import SelectInput from '@/components/property/inputs/SelectInput';
 import { NEARBY_FACILITIES } from '../constants';
+import { Country, State, City } from 'country-state-city';
 
 const LocationStep = ({ formData, handleInputChange, toggleFacility, isActive }) => {
+
+    // 1. Fetch Countries
+    const countries = useMemo(() => {
+        return Country.getAllCountries().map(country => ({
+            label: country.name,
+            value: country.isoCode
+        }));
+    }, []);
+
+    // 2. Fetch States based on selected country
+    const states = useMemo(() => {
+        if (!formData.country) return [];
+        return State.getStatesOfCountry(formData.country).map(state => ({
+            label: state.name,
+            value: state.isoCode
+        }));
+    }, [formData.country]);
+
+    // 3. Fetch Cities based on selected state
+    const cities = useMemo(() => {
+        if (!formData.country || !formData.state) return [];
+        return City.getCitiesOfState(formData.country, formData.state).map(city => ({
+            label: city.name,
+            value: city.name
+        }));
+    }, [formData.country, formData.state]);
+
+    // Handlers to manage resets
+    const handleCountryChange = (e) => {
+        const newCountry = e.target.value;
+        handleInputChange({
+            target: { name: 'country', value: newCountry }
+        });
+        // Reset State and City whenever country changes
+        handleInputChange({ target: { name: 'state', value: '' } });
+        handleInputChange({ target: { name: 'city', value: '' } });
+    };
+
+    const handleStateChange = (e) => {
+        const newState = e.target.value;
+        handleInputChange({
+            target: { name: 'state', value: newState }
+        });
+        // Reset City whenever state changes
+        handleInputChange({ target: { name: 'city', value: '' } });
+    };
+
     return (
         <StepWrapper isActive={isActive}>
-            <div className="space-y-6">
+            <div className="space-y-8">
 
-                {/* Address */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <TextInput
-                        label="Country"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        required
-                    />
-                    <TextInput
-                        label="State"
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        required
-                    />
+                {/* SECTION 1: PROPERTY ADDRESS */}
+                <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center gap-2">
+                        <span className="w-1 h-6 bg-blue-600 rounded-full"></span>
+                        Property Address
+                    </h3>
+
+                    <div className="space-y-6">
+                        {/* Row 1: Country & State */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <SelectInput
+                                label="Country"
+                                name="country"
+                                value={formData.country}
+                                onChange={handleCountryChange}
+                                options={countries}
+                                placeholder="Select Country"
+                                required
+                            />
+                            <SelectInput
+                                label="State"
+                                name="state"
+                                value={formData.state}
+                                onChange={handleStateChange}
+                                options={states}
+                                placeholder="Select State"
+                                required
+                                disabled={!formData.country}
+                            />
+                        </div>
+
+                        {/* Row 2: City & Pincode */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <SelectInput
+                                label="City"
+                                name="city"
+                                value={formData.city}
+                                onChange={handleInputChange}
+                                options={cities}
+                                placeholder="Select City"
+                                required
+                                disabled={!formData.state}
+                            />
+                            <TextInput
+                                label="Pincode"
+                                name="pincode"
+                                value={formData.pincode}
+                                onChange={handleInputChange}
+                                type="number"
+                                required
+                            />
+                        </div>
+
+                        {/* Row 3: Locality & Sub-locality */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <TextInput
+                                label="Locality / Area"
+                                name="locality"
+                                value={formData.locality}
+                                onChange={handleInputChange}
+                                placeholder="e.g. Indiranagar"
+                            />
+                            <TextInput
+                                label="Sub-locality / Street"
+                                name="subLocality"
+                                value={formData.subLocality}
+                                onChange={handleInputChange}
+                                placeholder="e.g. 1st Main Road"
+                            />
+                        </div>
+
+                        {/* Row 4: Landmark */}
+                        <TextInput
+                            label="Landmark"
+                            name="landmark"
+                            value={formData.landmark}
+                            onChange={handleInputChange}
+                            placeholder="e.g. Near Metro Station"
+                        />
+
+                        {/* Row 5: Full Address */}
+                        <div>
+                            <TextInput
+                                label="Full Address"
+                                name="address"
+                                value={formData.address}
+                                onChange={handleInputChange}
+                                required
+                                placeholder="#123, Sunshine Apartments..."
+                            />
+                            <p className="text-xs text-slate-500 mt-1.5 ml-1">
+                                Enter complete building / society / house number for better reach.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <TextInput
-                        label="City"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        required
-                    />
-                    <TextInput
-                        label="Pincode"
-                        name="pincode"
-                        value={formData.pincode}
-                        onChange={handleInputChange}
-                        type="number"
-                        required
-                    />
+                {/* SECTION 2: EXACT LOCATION (Secondary) */}
+                <div className="border-t border-slate-200 pt-6">
+                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+                        Exact Location <span className="text-slate-400 font-normal normal-case ml-1">(Optional – Auto-filled via map if enabled)</span>
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-80 hover:opacity-100 transition-opacity">
+                        <TextInput
+                            label="Latitude"
+                            name="latitude"
+                            value={formData.latitude}
+                            onChange={handleInputChange}
+                            placeholder="e.g. 12.9716"
+                        />
+                        <TextInput
+                            label="Longitude"
+                            name="longitude"
+                            value={formData.longitude}
+                            onChange={handleInputChange}
+                            placeholder="e.g. 77.5946"
+                        />
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <TextInput
-                        label="Locality"
-                        name="locality"
-                        value={formData.locality}
-                        onChange={handleInputChange}
-                    />
-                    <TextInput
-                        label="Sub-locality"
-                        name="subLocality"
-                        value={formData.subLocality}
-                        onChange={handleInputChange}
-                    />
-                </div>
-
-                <TextInput
-                    label="Landmark"
-                    name="landmark"
-                    value={formData.landmark}
-                    onChange={handleInputChange}
-                />
-
-                <TextInput
-                    label="Full Address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                />
-
-                {/* Coordinates */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <TextInput
-                        label="Latitude"
-                        name="latitude"
-                        value={formData.latitude}
-                        onChange={handleInputChange}
-                        placeholder="e.g. 12.9716"
-                    />
-                    <TextInput
-                        label="Longitude"
-                        name="longitude"
-                        value={formData.longitude}
-                        onChange={handleInputChange}
-                        placeholder="e.g. 77.5946"
-                    />
-                </div>
-
-                {/* Nearby Facilities */}
-                <div>
-                    <CheckboxGroup
-                        label="Nearby Facilities"
-                        options={NEARBY_FACILITIES}
-                        selectedValues={formData.nearbyFacilities}
-                        onChange={(newValues) => {
-                            // This part is a bit tricky because CheckboxGroup returns array
-                            // but we have a dedicated toggle function in useListingForm
-                            // We'll simplisticly handle it here or update logic later.
-                            // Re-reading useListingForm: it has toggleFacility.
-                            // Better to pass a direct handler or iterate.
-
-                            // Since CheckboxGroup expects `onChange` to receive updated array allow flexible usage.
-                            // But my CheckboxGroup implementation returns the *new array*.
-
-                            // Let's assume we can set key directly or map changes.
-                            // HOWEVER, useListingForm only exposes `toggleFacility`.
-                            // I should probably expose a generic setFieldValue in hook.
-                            // CHECK: yes I added `setFieldValue`.
-                        }}
-                    // Actually, I need to pass a handler that calls setFieldValue
-                    // The CheckboxGroup implementation: onChange(newValues)
-                    />
-                    {/* Wait, the CheckboxGroup needs to integrate with the hook's state directly */}
-                    {/* Let's manually map the checkbox group here since I didn't update the CheckboxGroup to use the toggle logic perfectly */}
-                    <div className="mt-2">
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Nearby Facilities</label>
-                        <div className="flex flex-wrap gap-2">
-                            {NEARBY_FACILITIES.map(facility => (
+                {/* SECTION 3: NEARBY FACILITIES (Chips) */}
+                <div className="border-t border-slate-200 pt-6">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Nearby Facilities</h3>
+                    <div className="flex flex-wrap gap-3">
+                        {NEARBY_FACILITIES.map(facility => {
+                            const isSelected = formData.nearbyFacilities?.includes(facility);
+                            return (
                                 <button
                                     key={facility}
                                     type="button"
                                     onClick={() => toggleFacility(facility)}
-                                    className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors
-                                     ${formData.nearbyFacilities.includes(facility)
-                                            ? 'bg-blue-600 border-blue-600 text-white'
-                                            : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400'
-                                        }`}
+                                    className={`
+                                        px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
+                                        ${isSelected
+                                            ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105'
+                                            : 'bg-white border-slate-300 text-slate-600 hover:border-blue-400 hover:bg-blue-50'
+                                        }
+                                    `}
                                 >
+                                    {isSelected && <span className="mr-1.5">✓</span>}
                                     {facility}
                                 </button>
-                            ))}
-                        </div>
+                            );
+                        })}
                     </div>
+                    <p className="text-xs text-slate-500 mt-3">
+                        Select all facilities that are within 2km of the property.
+                    </p>
                 </div>
 
             </div>

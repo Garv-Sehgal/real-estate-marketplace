@@ -1,6 +1,6 @@
 {
-    "name": "Elite Estates",
-    "short_name": "Elite",
+    "name": "SPRxElite Estates",
+    "short_name": "SPRx",
     "description": "AI-powered Real Estate Marketplace PWA",
     "start_url": "/",
     "display": "standalone",

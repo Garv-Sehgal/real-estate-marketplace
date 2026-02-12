@@ -132,52 +132,7 @@ const SellDetailsStep = ({ formData, handleInputChange, isActive }) => {
                     </div>
                 )}
 
-                {/* 3. FINANCIAL DETAILS */}
-                <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 border-b pb-2">Financial Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <SelectInput
-                            label="Home Loan Available"
-                            name="homeLoanAvailable"
-                            value={formData.homeLoanAvailable}
-                            onChange={handleInputChange}
-                            options={['No', 'Yes']}
-                        />
-                        <TextInput
-                            label="Bank Approvals"
-                            name="bankApprovedBy"
-                            value={formData.bankApprovedBy}
-                            onChange={handleInputChange}
-                            placeholder="e.g. HDFC, SBI, ICICI"
-                        />
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                        <TextInput
-                            label="Estimated EMI"
-                            name="emiEstimate"
-                            value={formData.emiEstimate}
-                            onChange={handleInputChange}
-                            prefix="₹"
-                        />
-                        <TextInput
-                            label="Stamp Duty"
-                            name="stampDuty"
-                            value={formData.stampDuty}
-                            onChange={handleInputChange}
-                            suffix="%"
-                            type="number"
-                        />
-                        <TextInput
-                            label="Registration Cost"
-                            name="registrationCost"
-                            value={formData.registrationCost}
-                            onChange={handleInputChange}
-                            suffix="%"
-                            type="number"
-                        />
-                    </div>
-                </div>
 
             </div>
         </StepWrapper>

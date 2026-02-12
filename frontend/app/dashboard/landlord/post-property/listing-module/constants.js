@@ -1,6 +1,6 @@
 import {
     Zap, ArrowUp, Dumbbell, Droplets, Shield, Car, Coffee, Wifi,
-    Monitor, Users, Fan, TreePine, ChefHat, LayoutGrid
+    Monitor, Users, Fan, TreePine, ChefHat, LayoutGrid, Thermometer
 } from 'lucide-react';
 
 export const INITIAL_STATE = {
@@ -21,7 +21,7 @@ export const INITIAL_STATE = {
     availabilityStatus: 'Ready to Move',
 
     // 2. LOCATION DETAILS
-    country: 'India',
+    country: 'IN',
     state: '',
     city: '',
     locality: '',
@@ -52,12 +52,7 @@ export const INITIAL_STATE = {
     societyName: '',
     propertyId: '',
 
-    // Financial Details
-    homeLoanAvailable: 'No',
-    bankApprovedBy: '',
-    emiEstimate: '',
-    stampDuty: '',
-    registrationCost: '',
+    // Financial Details Removed
 
     // Plot Specific
     plotArea: '',
@@ -139,6 +134,7 @@ export const INITIAL_STATE = {
 
     // 9. OWNER DETAILS
     ownerName: '',
+    ownerCountryCode: '+91',
     ownerPhone: '',
     ownerEmail: '',
     role: 'Owner',
@@ -195,6 +191,7 @@ export const AMENITIES_LIST = [
     { id: 'ac', label: 'AC', icon: Fan },
     { id: 'wardrobe', label: 'Wardrobe', icon: LayoutGrid },
     { id: 'wifi', label: 'Internet/WiFi', icon: Wifi },
+    { id: 'geyser', label: 'Geyser', icon: Thermometer },
 ];
 
 export const NEARBY_FACILITIES = [

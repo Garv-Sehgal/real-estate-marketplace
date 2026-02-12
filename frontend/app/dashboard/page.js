@@ -80,7 +80,7 @@ const BOOKINGS = [
 
 const MESSAGES = [
     { id: 1, sender: "Sarah Smith", role: "Real Estate Agent", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80", time: "2m ago", preview: "Hi Alex, are you still interested in the Villa?", unread: true },
-    { id: 2, sender: "Elite Support", role: "Customer Service", avatar: "https://ui-avatars.com/api/?name=Elite+Support&background=0D8ABC&color=fff", time: "1d ago", preview: "Your verification request has been approved.", unread: false },
+    { id: 2, sender: "SPRxElite Support", role: "Customer Service", avatar: "https://ui-avatars.com/api/?name=SPRxElite+Support&background=0D8ABC&color=fff", time: "1d ago", preview: "Your verification request has been approved.", unread: false },
 ];
 
 // --- COMPONENTS ---
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                 {/* Left: Brand */}
                 <div className="flex items-center gap-3 group cursor-pointer">
                     <div className="w-9 h-9 bg-gradient-to-br from-[#4169E1] to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-200 group-hover:shadow-blue-300 transition-all duration-300 transform group-hover:scale-105">E</div>
-                    <span className="text-xl font-bold text-gray-900 tracking-tight group-hover:text-[#4169E1] transition-colors">Elite Estates</span>
+                    <span className="text-xl font-bold text-gray-900 tracking-tight group-hover:text-[#4169E1] transition-colors">SPRxElite Estates</span>
                 </div>
 
                 <nav className="flex items-center gap-2 bg-white/50 p-1.5 rounded-full border border-gray-100 shadow-sm backdrop-blur-sm">
@@ -429,7 +429,7 @@ export default function DashboardPage() {
 
                 {/* Mobile Header (Keep strict) */}
                 <header className="md:hidden sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-100 p-4 flex justify-between items-center mb-6">
-                    <div className="font-bold text-lg text-gray-900">Elite Estates</div>
+                    <div className="font-bold text-lg text-gray-900">SPRxElite Estates</div>
                     <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden">
                         <img src={USER_PROFILE.avatar} alt="User" className="w-full h-full object-cover" />
                     </div>

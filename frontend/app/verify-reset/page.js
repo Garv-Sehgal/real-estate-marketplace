@@ -64,7 +64,7 @@ export default function VerifyResetPage() {
                         Secure Your Account
                     </h1>
                     <p className="text-lg text-gray-200 max-w-md font-light leading-relaxed">
-                        One Step Closer to Elite Estates. Verify your identity to reset your password.
+                        One Step Closer to SPRxElite Estates. Verify your identity to reset your password.
                     </p>
                 </div>
             </div>

@@ -12,7 +12,7 @@ export default function AdminDashboard() {
                 <div className="p-6 border-b border-slate-800">
                     <div className="flex items-center gap-2 text-white font-bold text-lg tracking-tight">
                         <LayoutDashboard className="text-blue-500" size={24} />
-                        Elite<span className="text-slate-500">Admin</span>
+                        SPRxElite<span className="text-slate-500">Admin</span>
                     </div>
                 </div>
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
