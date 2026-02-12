@@ -58,9 +58,26 @@ const login = async (req, res) => {
     }
 };
 
+const logout = async (req, res, next) => {
+    try {
+
+        const userId = req.user.userId;
+
+        const result = await authService.logoutUser(userId);
+
+        res.status(200).json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 module.exports = {
     requestSignupOTP,
     verifySignupOTP,
-    login
+    login,
+    logout
 };

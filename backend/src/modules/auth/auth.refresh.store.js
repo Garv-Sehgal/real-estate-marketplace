@@ -1,19 +1,22 @@
-const refreshTokenMap = new Map();
+// userId -> refreshToken
+const refreshTokens = new Map();
 
 const storeRefreshToken = (userId, token) => {
-    refreshTokenMap.set(userId, token);
+    refreshTokens.set(userId, token);
 };
 
-const getRefreshToken = (userId) => {
-    return refreshTokenMap.get(userId);
+const verifyRefreshToken = (userId, token) => {
+    const storedToken = refreshTokens.get(userId);
+
+    return storedToken === token;
 };
 
 const deleteRefreshToken = (userId) => {
-    refreshTokenMap.delete(userId);
+    refreshTokens.delete(userId);
 };
 
 module.exports = {
     storeRefreshToken,
-    getRefreshToken,
+    verifyRefreshToken,
     deleteRefreshToken
 };
