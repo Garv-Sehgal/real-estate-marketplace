@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const crypto = require('crypto');
-
 const { generateOTP } = require('../../utils/otp/otp.generator');
 const { storeOTP, verifyOTP } = require('../../utils/otp/otp.store');
 const { validatePhone, validatePassword } = require('./auth.validation');
@@ -9,7 +8,7 @@ const { createPendingUser, getPendingUser, deletePendingUser } = require('./auth
 const { findUserByPhone, findUserByEmail, createUser } = require('./auth.user.store');
 const { normalizePhone } = require('../../utils/phone/phone.util');
 const { generateAccessToken, generateRefreshToken } = require('../../utils/tokens/token.generator');
-const { storeRefreshToken } = require('./auth.refresh.store');
+const { storeRefreshToken, verifyRefreshToken, deleteRefreshToken } = require('./auth.refresh.store');
 const { SELF_REGISTER_ROLES } = require('../../config/roles');
 
 
@@ -124,7 +123,8 @@ const loginUser = async (identifier, password) => {
     });
 
     const refreshToken = generateRefreshToken({
-        userId: user.id
+        userId: user.id,
+        role: user.role
     });
 
     storeRefreshToken(user.id, refreshToken);
@@ -177,14 +177,15 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
 
     deletePendingUser(signupId);
 
-    // AUTO LOGIN AFTER SIGNUP ✅
+    // AUTO LOGIN AFTER SIGNUP
     const accessToken = generateAccessToken({
         userId: newUser.id,
         role: newUser.role
     });
 
     const refreshToken = generateRefreshToken({
-        userId: newUser.id
+        userId: newUser.id,
+        role: newUser.role
     });
 
     storeRefreshToken(newUser.id, refreshToken);
@@ -198,10 +199,17 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
     };
 };
 
+const logoutUser = async (userId) => {
+
+    deleteRefreshToken(userId);
+
+    return { message: 'Logged out successfully' };
+};
 
 
 module.exports = {
     requestSignupOTP,
     verifySignupOTP,
-    loginUser
+    loginUser,
+    logoutUser
 };
