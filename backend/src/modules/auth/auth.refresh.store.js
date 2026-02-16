@@ -1,18 +1,35 @@
-// userId -> refreshToken
-const refreshTokens = new Map();
+const User = require('./auth.user.model');
 
-const storeRefreshToken = (userId, token) => {
-    refreshTokens.set(userId, token);
+const storeRefreshToken = async (userId, token, expiresAt) => {
+    await User.findOneAndUpdate(
+        { id: userId },
+        {
+            refreshToken: token,
+            refreshTokenExpiresAt: expiresAt
+        }
+    );
 };
 
-const verifyRefreshToken = (userId, token) => {
-    const storedToken = refreshTokens.get(userId);
+const verifyRefreshToken = async (userId, token) => {
+    const user = await User.findOne({ id: userId });
 
-    return storedToken === token;
+    if (!user) return false;
+    if (!user.refreshToken) return false;
+    if (user.refreshToken !== token) return false;
+    if (!user.refreshTokenExpiresAt) return false;
+    if (user.refreshTokenExpiresAt < new Date()) return false;
+
+    return true;
 };
 
-const deleteRefreshToken = (userId) => {
-    refreshTokens.delete(userId);
+const deleteRefreshToken = async (userId) => {
+    await User.findOneAndUpdate(
+        { id: userId },
+        {
+            refreshToken: null,
+            refreshTokenExpiresAt: null
+        }
+    );
 };
 
 module.exports = {

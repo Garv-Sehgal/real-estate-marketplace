@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const crypto = require('crypto');
+
 const { generateOTP } = require('../../utils/otp/otp.generator');
 const { storeOTP, verifyOTP } = require('../../utils/otp/otp.store');
 const { validatePhone, validatePassword } = require('./auth.validation');
@@ -19,7 +20,6 @@ const requestSignupOTP = async (data) => {
 
     const { fullName, phone, email, password, role } = data;
 
-    // Defensive checks
     if (!fullName || !phone || !email || !password || !role) {
         throw new Error('All fields are required');
     }
@@ -27,34 +27,29 @@ const requestSignupOTP = async (data) => {
     const normalizedPhone = normalizePhone(phone);
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Validate phone
     const phoneError = validatePhone(normalizedPhone);
     if (phoneError) throw new Error(phoneError);
 
-    // Validate email
     if (!validator.isEmail(normalizedEmail)) {
         throw new Error('Valid email is required');
     }
 
-    // Validate role
     if (!SELF_REGISTER_ROLES.includes(role)) {
         throw new Error('Invalid role selection');
     }
 
-    // Validate password
     const passwordError = validatePassword(password);
     if (passwordError) throw new Error(passwordError);
 
-    // Prevent duplicate registrations
-    if (findUserByPhone(normalizedPhone)) {
+    // DB duplicate checks
+    if (await findUserByPhone(normalizedPhone)) {
         throw new Error('Phone already registered');
     }
 
-    if (findUserByEmail(normalizedEmail)) {
+    if (await findUserByEmail(normalizedEmail)) {
         throw new Error('Email already registered');
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(
         password,
         Number(process.env.BCRYPT_ROUNDS) || 10
@@ -62,7 +57,6 @@ const requestSignupOTP = async (data) => {
 
     const signupId = crypto.randomUUID();
 
-    // Create pending user
     createPendingUser(signupId, {
         fullName,
         phone: normalizedPhone,
@@ -71,7 +65,6 @@ const requestSignupOTP = async (data) => {
         role
     });
 
-    // Generate OTPs
     const phoneOtp = generateOTP();
     const emailOtp = generateOTP();
 
@@ -79,63 +72,6 @@ const requestSignupOTP = async (data) => {
     storeOTP(`email:${normalizedEmail}`, emailOtp);
 
     return { message: 'OTP sent successfully', signupId };
-};
-
-
-
-/**
- * LOGIN USER
- */
-const loginUser = async (identifier, password) => {
-
-    if (!identifier || !password) {
-        throw new Error('Identifier and password are required');
-    }
-
-    let user;
-
-    const normalizedIdentifier = identifier.trim().toLowerCase();
-
-    if (normalizedIdentifier.includes('@')) {
-
-        user = findUserByEmail(normalizedIdentifier);
-
-    } else {
-
-        const normalizedPhone = normalizePhone(normalizedIdentifier);
-        user = findUserByPhone(normalizedPhone);
-    }
-
-    if (!user) {
-        throw new Error('Invalid credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-    if (!isPasswordValid) {
-        throw new Error('Invalid credentials');
-    }
-
-    // Generate tokens
-    const accessToken = generateAccessToken({
-        userId: user.id,
-        role: user.role
-    });
-
-    const refreshToken = generateRefreshToken({
-        userId: user.id,
-        role: user.role
-    });
-
-    storeRefreshToken(user.id, refreshToken);
-
-    const { passwordHash, ...safeUser } = user;
-
-    return {
-        user: safeUser,
-        accessToken,
-        refreshToken
-    };
 };
 
 
@@ -164,7 +100,7 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
         throw new Error('Invalid or expired OTP');
     }
 
-    const newUser = createUser({
+    const newUser = await createUser({
         id: crypto.randomUUID(),
         fullName,
         phone,
@@ -190,7 +126,7 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
 
     storeRefreshToken(newUser.id, refreshToken);
 
-    const { passwordHash: _, ...safeUser } = newUser;
+    const { passwordHash: _, ...safeUser } = newUser.toObject();
 
     return {
         user: safeUser,
@@ -199,6 +135,69 @@ const verifySignupOTP = async (signupId, phoneOtp, emailOtp) => {
     };
 };
 
+
+
+/**
+ * LOGIN USER
+ */
+const loginUser = async (identifier, password) => {
+
+    if (!identifier || !password) {
+        throw new Error('Identifier and password are required');
+    }
+
+    let user;
+
+    const normalizedIdentifier = identifier.trim().toLowerCase();
+
+    if (normalizedIdentifier.includes('@')) {
+        user = await findUserByEmail(normalizedIdentifier);
+    } else {
+        const normalizedPhone = normalizePhone(normalizedIdentifier);
+        user = await findUserByPhone(normalizedPhone);
+    }
+
+    if (!user) {
+        throw new Error('Invalid credentials');
+    }
+
+    // 🚫 BLOCK SUSPENDED USERS
+    if (user.status === 'suspended') {
+        throw new Error('Account suspended. Contact super admin.');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isPasswordValid) {
+        throw new Error('Invalid credentials');
+    }
+
+    const accessToken = generateAccessToken({
+        userId: user.id,
+        role: user.role
+    });
+
+    const refreshToken = generateRefreshToken({
+        userId: user.id,
+        role: user.role
+    });
+
+    storeRefreshToken(user.id, refreshToken);
+
+    const { passwordHash: _, ...safeUser } = user.toObject();
+
+    return {
+        user: safeUser,
+        accessToken,
+        refreshToken
+    };
+};
+
+
+
+/**
+ * LOGOUT USER
+ */
 const logoutUser = async (userId) => {
 
     deleteRefreshToken(userId);

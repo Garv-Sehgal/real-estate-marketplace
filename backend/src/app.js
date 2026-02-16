@@ -1,10 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./modules/auth');
 const errorHandler = require('./middlewares/error.middleware');
 const adminRoutes = require('./modules/admin/admin.routes');
-
 const app = express();
+
+const connectDB = require('./config/db');
+
+connectDB();
 
 // Middleware
 app.use(express.json());
