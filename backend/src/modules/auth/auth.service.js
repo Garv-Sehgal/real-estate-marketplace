@@ -11,6 +11,8 @@ const { normalizePhone } = require('../../utils/phone/phone.util');
 const { generateAccessToken, generateRefreshToken } = require('../../utils/tokens/token.generator');
 const { storeRefreshToken, verifyRefreshToken, deleteRefreshToken } = require('./auth.refresh.store');
 const { SELF_REGISTER_ROLES } = require('../../config/roles');
+const { sendEmailOTP } = require('../../utils/email/email.sender');
+const { sendSMSOTP } = require('../../utils/sms/sms.sender');
 
 
 /**
@@ -66,12 +68,22 @@ const requestSignupOTP = async (data) => {
     });
 
     const phoneOtp = generateOTP();
-    const emailOtp = generateOTP();
+const emailOtp = generateOTP();
 
-    storeOTP(`phone:${normalizedPhone}`, phoneOtp);
-    storeOTP(`email:${normalizedEmail}`, emailOtp);
+storeOTP(`phone:${normalizedPhone}`, phoneOtp);
+storeOTP(`email:${normalizedEmail}`, emailOtp);
 
-    return { message: 'OTP sent successfully', signupId };
+// send OTPs
+await sendEmailOTP(normalizedEmail, emailOtp);
+
+try {
+    await sendSMSOTP(normalizedPhone, phoneOtp);
+} catch (err) {
+    console.warn("SMS failed but email sent:", err.message);
+}
+
+return { message: 'OTP sent successfully', signupId };
+
 };
 
 
