@@ -1,0 +1,88 @@
+# ===============================
+# OS / Editor junk
+# ===============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+.idea/
+*.swp
+*.swo
+
+# ===============================
+# Logs
+# ===============================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===============================
+# Environment variables (SECRETS)
+# ===============================
+.env
+.env.*
+!.env.example
+
+# ===============================
+# Node dependencies (ALL apps)
+# ===============================
+node_modules/
+**/node_modules/
+
+# lock files (keep per-app only if needed)
+package-lock.json
+**/package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ===============================
+# Next.js (frontend)
+# ===============================
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.turbo/
+frontend/.vercel/
+
+# Next image cache
+frontend/public/uploads/
+frontend/public/temp/
+
+# ===============================
+# Backend build / runtime
+# ===============================
+backend/dist/
+backend/build/
+backend/tmp/
+backend/uploads/
+backend/public/uploads/
+backend/*.sqlite
+
+# ===============================
+# Coverage / testing
+# ===============================
+coverage/
+.nyc_output/
+
+# ===============================
+# Docker
+# ===============================
+docker-data/
+*.pid
+*.seed
+
+# ===============================
+# Misc
+# ===============================
+*.tsbuildinfo
+.cache/
+.tmp/
+temp/
