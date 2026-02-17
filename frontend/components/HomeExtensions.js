@@ -1,8 +1,10 @@
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 const HomeExtensions = () => {
+    const router = useRouter();
     return (
         <>
             {/* Explore Categories */}
@@ -243,7 +245,10 @@ const HomeExtensions = () => {
                                 <span className="font-medium text-slate-700">Interactive neighborhood boundaries</span>
                             </li>
                         </ul>
-                        <button className="mt-4 bg-slate-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-primary transition-all flex items-center gap-2">
+                        <button
+                            onClick={() => router.push('/properties?view=map')}
+                            className="mt-4 bg-slate-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-primary transition-all flex items-center gap-2"
+                        >
                             <span className="material-symbols-outlined">map</span>
                             Open Map View
                         </button>
@@ -251,7 +256,10 @@ const HomeExtensions = () => {
                     <div className="flex-1 w-full h-[400px] bg-slate-100 rounded-3xl overflow-hidden shadow-2xl relative group">
                         <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?ixlib=rb-4.0.3&auto=format&fit=crop&w=2062&q=80" alt="Map Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                            <div className="bg-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform">
+                            <div
+                                onClick={() => router.push('/properties?view=map')}
+                                className="bg-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
+                            >
                                 <span className="material-symbols-outlined text-primary">near_me</span>
                                 <span className="font-bold text-slate-800">Search this area</span>
                             </div>
