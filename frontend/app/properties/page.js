@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import PropertyCard from '@/components/PropertyCard';
 import CompareBar from '@/components/CompareBar';
-import { X, Map as MapIcon, ChevronDown, Filter, List, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, Map as MapIcon, ChevronDown, Filter, List, ArrowRight, ArrowLeft, Loader } from 'lucide-react';
 
 // Mock Data
 const MOCK_PROPERTIES = [
@@ -106,10 +107,18 @@ const MOCK_PROPERTIES = [
 ];
 
 export default function PropertiesPage() {
+    const searchParams = useSearchParams();
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     const [sortBy, setSortBy] = useState('newest');
     const [viewMode, setViewMode] = useState('list'); // 'list' | 'map'
     const [activePropertyId, setActivePropertyId] = useState(null);
+
+    // Handle initial view mode from URL
+    useEffect(() => {
+        if (searchParams.get('view') === 'map') {
+            setViewMode('map');
+        }
+    }, [searchParams]);
 
     // Comparison State
     const [comparedProperties, setComparedProperties] = useState([]);
@@ -222,11 +231,45 @@ export default function PropertiesPage() {
     const MapView = ({ className }) => {
         // Current property focusing logic for mobile or desktop hover
         const activeMarker = activePropertyId || (viewMode === 'map' && window.innerWidth < 1024 ? MOCK_PROPERTIES[currentMobileIndex].id : null);
+        const [isSearching, setIsSearching] = useState(false);
+
+        const handleSearchArea = () => {
+            setIsSearching(true);
+            console.log('Scanning coordinates...');
+            // Mock fetching properties with bounds
+            // const bounds = { north: ..., south: ..., east: ..., west: ... };
+            // fetchProperties(bounds);
+
+            setTimeout(() => {
+                setIsSearching(false);
+            }, 1000);
+        };
 
         return (
             <div className={`w-full h-full bg-gray-200 relative overflow-hidden group ${className}`}>
                 {/* Map Background Pattern */}
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#4169E1_1px,transparent_1px)] [background-size:20px_20px]"></div>
+
+                {/* Search This Area Floating Button */}
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
+                    <button
+                        onClick={handleSearchArea}
+                        disabled={isSearching}
+                        className="bg-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold text-gray-700 hover:scale-105 transition-transform disabled:opacity-70 disabled:scale-100"
+                    >
+                        {isSearching ? (
+                            <>
+                                <Loader className="w-4 h-4 animate-spin text-[#4169E1]" />
+                                Searching...
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined text-primary text-lg">near_me</span>
+                                Search this area
+                            </>
+                        )}
+                    </button>
+                </div>
 
                 {/* Center Label */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl flex flex-col items-center pointer-events-none select-none">

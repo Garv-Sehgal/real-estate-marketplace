@@ -1,19 +1,22 @@
 "use client";
 
 import React, { useState } from 'react';
+import Header from './Header';
+import HomeExtensions from './HomeExtensions';
 
 const HomePage = () => {
     const [activeTab, setActiveTab] = useState('buy');
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-display">
+            <Header />
             {/* Hero Section */}
-            <div className="relative w-full h-[500px] bg-slate-900 flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")' }}>
+            <div className="relative w-full min-h-screen bg-slate-900 flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")' }}>
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/40"></div>
 
                 {/* Content Container */}
-                <div className="relative z-10 w-full max-w-4xl px-4 flex flex-col items-center">
+                <div className="relative z-10 w-full max-w-5xl px-6 md:px-12 lg:px-16 flex flex-col items-center">
 
                     <h1 className="text-3xl md:text-5xl text-white font-bold mb-8 text-center drop-shadow-md">
                         Find Your Dream Home
@@ -108,11 +111,11 @@ const HomePage = () => {
                     </div>
 
                     {/* Quick Links */}
-                    <div className="mt-8 flex flex-wrap justify-center gap-6">
+                    <div className="mt-8 grid grid-cols-4 gap-2 px-4 md:flex md:justify-center md:gap-6 w-full max-w-4xl mx-auto">
                         <QuickLinkButton
                             label="Owner Properties"
                             icon={
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
                             }
@@ -120,7 +123,7 @@ const HomePage = () => {
                         <QuickLinkButton
                             label="Verified Agents"
                             icon={
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             }
@@ -128,7 +131,7 @@ const HomePage = () => {
                         <QuickLinkButton
                             label="Ready to Move"
                             icon={
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                             }
@@ -136,7 +139,7 @@ const HomePage = () => {
                         <QuickLinkButton
                             label="New Projects"
                             icon={
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                             }
@@ -145,16 +148,18 @@ const HomePage = () => {
 
                 </div>
             </div>
+            {/* Extended Sections */}
+            <HomeExtensions />
         </div>
     );
 };
 
 const QuickLinkButton = ({ label, icon }) => (
-    <button className="flex flex-col items-center gap-2 group cursor-pointer">
-        <div className="w-12 h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-[#4169E1] shadow-lg group-hover:scale-110 group-hover:bg-[#4169E1] group-hover:text-white transition-all duration-300">
+    <button className="flex flex-col items-center gap-2 group cursor-pointer w-full">
+        <div className="w-10 h-10 md:w-12 md:h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-[#4169E1] shadow-lg group-hover:scale-110 group-hover:bg-[#4169E1] group-hover:text-white transition-all duration-300">
             {icon}
         </div>
-        <span className="text-white text-sm font-medium drop-shadow-md">{label}</span>
+        <span className="text-white text-[10px] md:text-sm font-medium drop-shadow-md text-center leading-tight">{label}</span>
     </button>
 );
 

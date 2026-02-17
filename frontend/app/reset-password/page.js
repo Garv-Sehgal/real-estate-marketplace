@@ -56,7 +56,7 @@ export default function ResetPasswordPage() {
                         Set Your New Password
                     </h1>
                     <p className="text-lg text-gray-200 max-w-md font-light leading-relaxed">
-                        Ready to Explore Elite Estates? Secure your account with a strong new password.
+                        Ready to Explore SPRxElite Estates? Secure your account with a strong new password.
                     </p>
                 </div>
             </div>

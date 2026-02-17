@@ -100,7 +100,7 @@ export default function RegisterPage() {
                             Create Account
                         </h2>
                         <p className="mt-1 text-sm text-gray-600">
-                            Start your journey with Elite Estates
+                            Start your journey with SPRxElite Estates
                         </p>
                     </div>
 
