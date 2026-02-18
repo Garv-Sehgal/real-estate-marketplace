@@ -1,34 +1,42 @@
 require('dotenv').config();
+
 const express = require('express');
+const cors = require('cors');
+
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./modules/auth');
-const errorHandler = require('./middlewares/error.middleware');
 const adminRoutes = require('./modules/admin/admin.routes');
-const app = express();
-
+const errorHandler = require('./middlewares/error.middleware');
 const connectDB = require('./config/db');
+
+const app = express();
 
 connectDB();
 
-// Middleware
+/* ---------------- CORS ---------------- */
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+}));
+
+/* ---------------- Body Parsers ---------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+/* ---------------- Routes ---------------- */
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
-
-// 404 handler
-app.use((req, res, next) => {
+/* ---------------- 404 Handler ---------------- */
+app.use((req, res) => {
     res.status(404).json({
         success: false,
         message: 'Route not found',
     });
 });
 
-// Global Error Handler
+/* ---------------- Error Handler ---------------- */
 app.use(errorHandler);
 
 module.exports = app;
