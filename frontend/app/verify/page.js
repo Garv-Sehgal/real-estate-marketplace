@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { verifySignupOTP } from '../../lib/auth';
 
 export default function VerifyPage() {
     const router = useRouter(); // Initialize router
@@ -64,16 +65,37 @@ export default function VerifyPage() {
         }
     };
 
-    const handleVerify = () => {
+
+const handleVerify = async () => {
+    try {
         setIsVerifying(true);
-        // Simulate verification delay
-        setTimeout(() => {
-            setIsVerifying(false);
-            console.log('Mobile OTP:', mobileOtp.join(''));
-            console.log('Email OTP:', emailOtp.join(''));
-            router.push('/login');
-        }, 2000);
-    };
+
+        const stored = JSON.parse(sessionStorage.getItem('signupData'));
+
+        if (!stored?.signupId) {
+            alert("Signup session expired. Please register again.");
+            router.push('/register');
+            return;
+        }
+
+        await verifySignupOTP({
+            signupId: stored.signupId,
+            phoneOtp: mobileOtp.join(''),
+            emailOtp: emailOtp.join('')
+        });
+
+        sessionStorage.removeItem('signupData');
+
+        alert("Account created successfully!");
+        router.push('/login');
+
+    } catch (err) {
+        alert(err.message || "OTP verification failed");
+    } finally {
+        setIsVerifying(false);
+    }
+};
+
 
     const handleResendMobile = () => setMobileTimer(30);
     const handleResendEmail = () => setEmailTimer(30);

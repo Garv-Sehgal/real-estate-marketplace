@@ -67,14 +67,3 @@ function saveAuthSession(authData) {
     localStorage.setItem("refreshToken", authData.refreshToken);
     localStorage.setItem("user", JSON.stringify(authData.user));
 }
-
-/* =========================
-   REFRESH USER SESSION
-========================= */
-export async function refreshUserSession() {
-    const data = await apiRequest("/auth/me", { method: "GET" });
-
-    localStorage.setItem("user", JSON.stringify(data.data));
-
-    return data.data;
-}
