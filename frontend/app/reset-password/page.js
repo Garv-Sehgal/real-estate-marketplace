@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { setNewPassword } from "../../lib/passwordReset";
+import { validatePassword } from "../../utils/passwordRules";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
@@ -33,6 +34,12 @@ const handleSubmit = async (e) => {
 
     if (passwords.newPassword !== passwords.confirmPassword) {
         alert("Passwords don't match!");
+        return;
+    }
+
+        const passwordError = validatePassword(passwords.newPassword);
+    if (passwordError) {
+        alert(passwordError);
         return;
     }
 

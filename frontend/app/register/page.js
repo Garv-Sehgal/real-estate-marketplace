@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import CountrySelector from '../../components/CountrySelector';
 import countryCodes from '../../utils/countryCodes';
 import { requestSignupOTP } from '../../lib/auth';
+import { getPasswordValidation, isPasswordValid } from '../../utils/passwordRules';
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export default function RegisterPage() {
         password: '',
     });
 
+    const passwordRules = getPasswordValidation(formData.password);
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData((prev) => ({
@@ -40,6 +42,9 @@ const handleSubmit = async (e) => {
         return;
     }
 
+    if (!isPasswordValid(formData.password)) {
+        return;
+    }
     try {
         setLoading(true);
 
@@ -228,6 +233,25 @@ const handleSubmit = async (e) => {
                                         </button>
                                     )}
                                 </div>
+                                {formData.password && (
+                                <div className="mt-2 space-y-1 text-xs ml-1">
+                                    <p className={passwordRules.minLength ? "text-green-600" : "text-gray-400"}>
+                                        • At least 8 characters
+                                    </p>
+                                    <p className={passwordRules.hasUppercase ? "text-green-600" : "text-gray-400"}>
+                                        • One uppercase letter
+                                    </p>
+                                    <p className={passwordRules.hasLowercase ? "text-green-600" : "text-gray-400"}>
+                                        • One lowercase letter
+                                    </p>
+                                    <p className={passwordRules.hasNumber ? "text-green-600" : "text-gray-400"}>
+                                        • One number
+                                    </p>
+                                    <p className={passwordRules.hasSpecial ? "text-green-600" : "text-gray-400"}>
+                                        • One special character
+                                    </p>
+                                </div>
+                            )}
                             </div>
                         </div>
 
