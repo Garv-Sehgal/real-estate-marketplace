@@ -72,34 +72,68 @@ const MediaStep = ({ formData, handleInputChange, handleFileUpload, removeFile, 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">Floor Plan</label>
                         {formData.floorPlan ? (
-                            <div className="flex items-center justify-between p-3 border rounded-xl bg-slate-50">
-                                <span className="text-sm font-medium truncate">{formData.floorPlan.name}</span>
-                                <button onClick={() => removeFile('floorPlan')} className="text-red-500 text-xs font-bold">Remove</button>
+                            <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                                        <FileText className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-sm font-medium text-slate-700 truncate">{formData.floorPlan.name}</span>
+                                </div>
+                                <button
+                                    onClick={() => removeFile('floorPlan')}
+                                    className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                >
+                                    <span className="sr-only">Remove</span>
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
                             </div>
                         ) : (
-                            <input
-                                type="file"
-                                accept=".pdf,.jpg,.png"
-                                onChange={(e) => handleFileUpload(e, 'floorPlan')}
-                                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            />
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    accept=".pdf,.jpg,.png"
+                                    onChange={(e) => handleFileUpload(e, 'floorPlan')}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="flex items-center gap-3 p-4 border border-dashed border-slate-300 rounded-xl bg-slate-50 text-slate-500 group-hover:border-blue-500 group-hover:bg-blue-50/10 group-hover:text-blue-600 transition-all">
+                                    <FileText className="w-5 h-5" />
+                                    <span className="text-sm font-medium">Upload Floor Plan</span>
+                                </div>
+                            </div>
                         )}
                     </div>
 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">Brochure</label>
                         {formData.brochure ? (
-                            <div className="flex items-center justify-between p-3 border rounded-xl bg-slate-50">
-                                <span className="text-sm font-medium truncate">{formData.brochure.name}</span>
-                                <button onClick={() => removeFile('brochure')} className="text-red-500 text-xs font-bold">Remove</button>
+                            <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0">
+                                        <FileText className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-sm font-medium text-slate-700 truncate">{formData.brochure.name}</span>
+                                </div>
+                                <button
+                                    onClick={() => removeFile('brochure')}
+                                    className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                >
+                                    <span className="sr-only">Remove</span>
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
                             </div>
                         ) : (
-                            <input
-                                type="file"
-                                accept=".pdf"
-                                onChange={(e) => handleFileUpload(e, 'brochure')}
-                                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            />
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => handleFileUpload(e, 'brochure')}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="flex items-center gap-3 p-4 border border-dashed border-slate-300 rounded-xl bg-slate-50 text-slate-500 group-hover:border-blue-500 group-hover:bg-blue-50/10 group-hover:text-blue-600 transition-all">
+                                    <FileText className="w-5 h-5" />
+                                    <span className="text-sm font-medium">Upload Brochure</span>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>

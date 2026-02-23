@@ -3,9 +3,9 @@ import React from 'react';
 
 const TextArea = ({ label, name, value, onChange, placeholder, rows = 4, required = false, className = "" }) => {
     return (
-        <div className={`flex flex-col gap-2 ${className}`}>
+        <div className={`flex flex-col gap-1.5 ${className}`}>
             {label && (
-                <label className="text-sm font-bold text-slate-700">
+                <label className="text-sm font-semibold text-slate-700 ml-1">
                     {label} {required && <span className="text-red-500">*</span>}
                 </label>
             )}
@@ -16,7 +16,10 @@ const TextArea = ({ label, name, value, onChange, placeholder, rows = 4, require
                 placeholder={placeholder}
                 rows={rows}
                 required={required}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all placeholder:text-slate-300 font-medium resize-none"
+                className="w-full px-4 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium transition-all duration-200
+                placeholder:text-slate-400 outline-none resize-none
+                hover:border-slate-400
+                focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10"
             />
         </div>
     );

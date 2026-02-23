@@ -2,7 +2,7 @@
 import React from 'react';
 import StepWrapper from '@/components/property/StepWrapper';
 import FileUpload from '@/components/property/inputs/FileUpload';
-import { ShieldCheck, MapPin, BadgeCheck, FileCheck } from 'lucide-react';
+import { ShieldCheck, MapPin, BadgeCheck, FileCheck, FileText, X } from 'lucide-react';
 
 const VerificationStep = ({ formData, handleFileUpload, removeFile, setFieldValue, isActive }) => {
     return (
@@ -73,39 +73,65 @@ const VerificationStep = ({ formData, handleFileUpload, removeFile, setFieldValu
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Proof of Ownership / Power of Attorney</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Proof of Ownership</label>
                             {formData.ownershipProof ? (
-                                <div className="flex items-center justify-between p-3 border rounded-xl bg-slate-50">
-                                    <span className="text-sm font-medium truncate">{formData.ownershipProof.name}</span>
-                                    <button onClick={() => removeFile('ownershipProof')} className="text-red-500 text-xs font-bold">Remove</button>
+                                <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+                                            <FileText className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-sm font-medium text-slate-700 truncate">{formData.ownershipProof.name}</span>
+                                    </div>
+                                    <button onClick={() => removeFile('ownershipProof')} className="text-red-500 hover:text-red-700">
+                                        <X className="w-5 h-5" />
+                                    </button>
                                 </div>
                             ) : (
-                                <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.png"
-                                    onChange={(e) => handleFileUpload(e, 'ownershipProof')}
-                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border border-slate-200 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer"
-                                />
+                                <div className="relative group">
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.jpg,.png"
+                                        onChange={(e) => handleFileUpload(e, 'ownershipProof')}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    />
+                                    <div className="flex items-center gap-3 p-4 border border-dashed border-slate-300 rounded-xl bg-slate-50 text-slate-500 group-hover:border-indigo-500 group-hover:bg-indigo-50/10 group-hover:text-indigo-600 transition-all">
+                                        <FileCheck className="w-5 h-5" />
+                                        <span className="text-sm font-medium">Upload Deed / Bill</span>
+                                    </div>
+                                </div>
                             )}
-                            <p className="text-xs text-slate-400 mt-1">Sale Deeed, Mutation Certificate, or Electricity Bill</p>
+                            <p className="text-xs text-slate-400 mt-2 ml-1">Sale Deed, Mutation Certificate, or Tax Receipt</p>
                         </div>
 
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-2">Latest Utility Bill</label>
                             {formData.utilityBill ? (
-                                <div className="flex items-center justify-between p-3 border rounded-xl bg-slate-50">
-                                    <span className="text-sm font-medium truncate">{formData.utilityBill.name}</span>
-                                    <button onClick={() => removeFile('utilityBill')} className="text-red-500 text-xs font-bold">Remove</button>
+                                <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+                                            <FileText className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-sm font-medium text-slate-700 truncate">{formData.utilityBill.name}</span>
+                                    </div>
+                                    <button onClick={() => removeFile('utilityBill')} className="text-red-500 hover:text-red-700">
+                                        <X className="w-5 h-5" />
+                                    </button>
                                 </div>
                             ) : (
-                                <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.png"
-                                    onChange={(e) => handleFileUpload(e, 'utilityBill')}
-                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border border-slate-200 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer"
-                                />
+                                <div className="relative group">
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.jpg,.png"
+                                        onChange={(e) => handleFileUpload(e, 'utilityBill')}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    />
+                                    <div className="flex items-center gap-3 p-4 border border-dashed border-slate-300 rounded-xl bg-slate-50 text-slate-500 group-hover:border-indigo-500 group-hover:bg-indigo-50/10 group-hover:text-indigo-600 transition-all">
+                                        <FileText className="w-5 h-5" />
+                                        <span className="text-sm font-medium">Upload Bill</span>
+                                    </div>
+                                </div>
                             )}
-                            <p className="text-xs text-slate-400 mt-1">Electricity, Water, or Gas Bill (Max 3 months old)</p>
+                            <p className="text-xs text-slate-400 mt-2 ml-1">Electricity, Water, or Gas Bill (Max 3 months old)</p>
                         </div>
                     </div>
                 </div>
