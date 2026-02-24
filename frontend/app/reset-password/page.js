@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { setNewPassword } from "../../lib/passwordReset";
-import { validatePassword } from "../../utils/passwordRules";
+import { getPasswordValidation, isPasswordValid } from "../../utils/passwordRules";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
@@ -33,16 +33,17 @@ const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (passwords.newPassword !== passwords.confirmPassword) {
-        alert("Passwords don't match!");
+        setStatus({ type: 'error', message: "Passwords don't match" });
         return;
     }
 
-        const passwordError = validatePassword(passwords.newPassword);
-    if (passwordError) {
-        alert(passwordError);
+    if (!isPasswordValid(passwords.newPassword)) {
+        setStatus({
+            type: 'error',
+            message: 'Password does not meet required rules'
+        });
         return;
     }
-
     setIsSubmitting(true);
     setStatus({ type: '', message: '' });
 
@@ -126,6 +127,17 @@ const handleSubmit = async (e) => {
                                     className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
                                     
                                 />
+                                <div className="text-xs mt-2 space-y-1">
+                                {Object.entries(getPasswordValidation(passwords.newPassword)).map(([rule, passed]) => (
+                                    <div key={rule} className={passed ? "text-green-600" : "text-gray-400"}>
+                                        {rule === "length" && "• At least 8 characters"}
+                                        {rule === "uppercase" && "• One uppercase letter"}
+                                        {rule === "lowercase" && "• One lowercase letter"}
+                                        {rule === "number" && "• One number"}
+                                        {rule === "special" && "• One special character"}
+                                    </div>
+                                ))}
+                            </div>
                             </div>
 
                             <div>
