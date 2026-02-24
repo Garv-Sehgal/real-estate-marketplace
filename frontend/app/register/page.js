@@ -34,6 +34,12 @@ export default function RegisterPage() {
         }));
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && formData.fullName && formData.email && formData.phone && formData.password && !loading) {
+            handleSubmit(e);
+        }
+    };
+
 const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -153,6 +159,7 @@ const handleSubmit = async (e) => {
                                     required
                                     value={formData.fullName}
                                     onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
                                     className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
                                     placeholder="John Doe"
                                 />
@@ -168,6 +175,7 @@ const handleSubmit = async (e) => {
                                     required
                                     value={formData.email}
                                     onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
                                     className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
                                     placeholder="john@example.com"
                                 />
@@ -191,6 +199,7 @@ const handleSubmit = async (e) => {
                                         required
                                         value={formData.phone}
                                         onChange={handleInputChange}
+                                        onKeyDown={handleKeyDown}
                                         className="block w-full h-full px-4 border-none text-sm bg-transparent"
                                         placeholder="9876543210"
                                     />
@@ -210,6 +219,7 @@ const handleSubmit = async (e) => {
                                         onChange={handleInputChange}
                                         onFocus={() => setPasswordFocused(true)}
                                         onBlur={() => setPasswordFocused(false)}
+                                        onKeyDown={handleKeyDown}
                                         className="block w-full px-4 py-2.5 pr-12 bg-white border border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none text-sm"
                                         placeholder="Enter your password"
                                     />
@@ -233,8 +243,6 @@ const handleSubmit = async (e) => {
                                         </button>
                                     )}
                                 </div>
-<<<<<<< HEAD
-=======
                                 {formData.password && (
                                 <div className="mt-2 space-y-1 text-xs ml-1">
                                     <p className={passwordRules.minLength ? "text-green-600" : "text-gray-400"}>
@@ -254,7 +262,6 @@ const handleSubmit = async (e) => {
                                     </p>
                                 </div>
                             )}
->>>>>>> origin/feature/frontend-integration
                             </div>
                         </div>
 
