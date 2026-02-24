@@ -75,9 +75,135 @@ const logout = async (req, res, next) => {
     }
 };
 
+/**
+ * Change password (logged-in user)
+ */
+const changePassword = async (req, res, next) => {
+    try {
+
+        const userId = req.user.userId;
+        const { currentPassword, newPassword } = req.body;
+
+        const result = await authService.changePassword(userId, currentPassword, newPassword);
+
+        res.status(200).json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Request password reset OTP
+ */
+const requestPasswordResetOTP = async (req, res, next) => {
+    try {
+
+        const { identifier } = req.body;
+
+        const result = await authService.requestPasswordResetOTP(identifier);
+
+        res.status(200).json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Verify password reset OTP
+ */
+const verifyPasswordResetOTP = async (req, res, next) => {
+    try {
+
+        const { identifier, otp } = req.body;
+
+        const result = await authService.verifyPasswordResetOTP(identifier, otp);
+
+        res.status(200).json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Set new password after OTP verification
+ */
+const setNewPassword = async (req, res, next) => {
+    try {
+
+        const { resetToken, newPassword } = req.body;
+
+        const result = await authService.setNewPassword(resetToken, newPassword);
+
+        res.status(200).json({
+            success: true,
+            ...result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Get current logged-in user profile
+ */
+const getMe = async (req, res, next) => {
+    try {
+
+        const userId = req.user.userId;
+
+        const result = await authService.getMe(userId);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Update current logged-in user profile
+ */
+const updateMe = async (req, res, next) => {
+    try {
+
+        const userId = req.user.userId;
+        const result = await authService.updateMe(userId, req.body);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     requestSignupOTP,
     verifySignupOTP,
     login,
-    logout
+    logout,
+    changePassword,
+    requestPasswordResetOTP,
+    verifyPasswordResetOTP,
+    setNewPassword,
+    getMe,
+    updateMe
 };

@@ -30,8 +30,39 @@ const createUser = async (userData) => {
   }
 };
 
+/**
+ * Find user by ID
+ */
+const findUserById = async (userId) => {
+  return await User.findOne({ id: userId });
+};
+
+/**
+ * Update user password
+ */
+const updateUserPassword = async (userId, newPasswordHash) => {
+  return await User.updateOne(
+    { id: userId },
+    { $set: { passwordHash: newPasswordHash } }
+  );
+};
+
+/**
+ * Update user fields
+ */
+const updateUserById = async (userId, updateData) => {
+  return await User.findOneAndUpdate(
+    { id: userId },
+    { $set: updateData },
+    { new: true }
+  );
+};
+
 module.exports = {
   findUserByPhone,
   findUserByEmail,
-  createUser
+  createUser,
+  findUserById,
+  updateUserPassword,
+  updateUserById
 };

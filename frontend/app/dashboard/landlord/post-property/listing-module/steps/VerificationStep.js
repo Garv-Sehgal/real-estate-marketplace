@@ -15,7 +15,7 @@ const VerificationStep = ({ formData, handleFileUpload, removeFile, setFieldValu
                 <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-3 border-b pb-2 flex items-center gap-2">
                         <BadgeCheck className="w-5 h-5 text-purple-600" />
-                        Identity Verification
+                        Identity Verificationgit add .
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* 1.1 Government ID */}

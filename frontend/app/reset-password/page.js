@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { setNewPassword } from "../../lib/passwordReset";
+import { validatePassword } from "../../utils/passwordRules";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
@@ -11,6 +13,14 @@ export default function ResetPasswordPage() {
         newPassword: '',
         confirmPassword: '',
     });
+    
+    useEffect(() => {
+    const token = localStorage.getItem("resetToken");
+    if (!token) {
+        router.replace("/forgot-password");
+    }
+}, []);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [status, setStatus] = useState({ type: '', message: '' });
 
@@ -19,26 +29,48 @@ export default function ResetPasswordPage() {
         setPasswords((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (passwords.newPassword !== passwords.confirmPassword) {
-            alert("Passwords don't match!");
-            return;
+const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (passwords.newPassword !== passwords.confirmPassword) {
+        alert("Passwords don't match!");
+        return;
+    }
+
+        const passwordError = validatePassword(passwords.newPassword);
+    if (passwordError) {
+        alert(passwordError);
+        return;
+    }
+
+    setIsSubmitting(true);
+    setStatus({ type: '', message: '' });
+
+    try {
+        const resetToken = localStorage.getItem("resetToken");
+
+        if (!resetToken) {
+            throw new Error("Reset session expired. Please restart the process.");
         }
 
-        setIsSubmitting(true);
-        setStatus({ type: '', message: '' });
+        await setNewPassword(resetToken, passwords.newPassword);
 
-        // Simulate API call
+        // cleanup
+        localStorage.removeItem("resetToken");
+        localStorage.removeItem("resetIdentifier");
+
+        setStatus({ type: 'success', message: 'Password updated successfully' });
+
         setTimeout(() => {
-            setIsSubmitting(false);
-            setStatus({ type: 'success', message: 'Password updated successfully' });
-
-            setTimeout(() => {
-                router.push('/login');
-            }, 2000);
+            router.push('/login');
         }, 1500);
-    };
+
+    } catch (error) {
+        setStatus({ type: 'error', message: error.message || "Failed to reset password" });
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
     return (
         <div className="min-h-screen flex bg-white">
@@ -92,7 +124,11 @@ export default function ResetPasswordPage() {
                                     value={passwords.newPassword}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
+<<<<<<< HEAD
                                    
+=======
+                                    
+>>>>>>> origin/feature/frontend-integration
                                 />
                             </div>
 
@@ -108,7 +144,11 @@ export default function ResetPasswordPage() {
                                     value={passwords.confirmPassword}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
+<<<<<<< HEAD
                                   
+=======
+                                    
+>>>>>>> origin/feature/frontend-integration
                                 />
                             </div>
                         </div>

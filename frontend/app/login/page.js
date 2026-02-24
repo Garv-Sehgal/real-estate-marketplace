@@ -6,12 +6,15 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import CountrySelector from '../../components/CountrySelector';
 import { loginUser } from '../../lib/auth';
-
+import { useEffect } from "react";
 import countryCodes from '../../utils/countryCodes';
 
 export default function LoginPage() {
     const router = useRouter();
-
+    useEffect(() => {
+    localStorage.removeItem("resetToken");
+    localStorage.removeItem("resetIdentifier");
+}, []);
     const [countryCode, setCountryCode] = useState('+91');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');

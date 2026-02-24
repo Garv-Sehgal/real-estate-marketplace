@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { verifyResetOTP } from "../../lib/passwordReset";
+import { requestResetOTP } from "../../lib/passwordReset";
 
 export default function VerifyResetPage() {
     const router = useRouter();
@@ -10,6 +12,13 @@ export default function VerifyResetPage() {
     const [timer, setTimer] = useState(30);
     const [isVerifying, setIsVerifying] = useState(false);
     const inputRefs = useRef([]);
+
+    useEffect(() => {
+        const identifier = localStorage.getItem("resetIdentifier");
+        if (!identifier) {
+            router.replace("/forgot-password");
+        }
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -35,19 +44,38 @@ export default function VerifyResetPage() {
         }
     };
 
-    const handleVerify = () => {
-        setIsVerifying(true);
-        setTimeout(() => {
-            setIsVerifying(false);
-            console.log('Reset OTP Verified:', otp.join(''));
-            router.push('/reset-password');
-        }, 2000);
-    };
+const handleVerify = async () => {
+    setIsVerifying(true);
 
-    const handleResend = () => {
+    try {
+        const identifier = localStorage.getItem("resetIdentifier");
+        const code = otp.join('');
+
+        const res = await verifyResetOTP(identifier, code);
+
+        // store reset token for next page
+        localStorage.setItem("resetToken", res.resetToken);
+
+        router.push('/reset-password');
+
+    } catch (error) {
+        alert(error.message || "Invalid or expired OTP");
+    } finally {
+        setIsVerifying(false);
+    }
+};
+
+const handleResend = async () => {
+    const identifier = localStorage.getItem("resetIdentifier");
+    if (!identifier) return;
+
+    try {
+        await requestResetOTP(identifier);
         setTimer(30);
-    };
-
+    } catch (err) {
+        alert(err.message || "Failed to resend OTP");
+    }
+};
     return (
         <div className="min-h-screen flex bg-white">
             {/* Left Side - Hero Image */}
