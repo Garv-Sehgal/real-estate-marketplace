@@ -92,7 +92,7 @@ export default function ResetPasswordPage() {
                                     value={passwords.newPassword}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
-                                    placeholder="••••••••"
+                                   
                                 />
                             </div>
 
@@ -108,7 +108,7 @@ export default function ResetPasswordPage() {
                                     value={passwords.confirmPassword}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition duration-200"
-                                    placeholder="••••••••"
+                                  
                                 />
                             </div>
                         </div>

@@ -7,7 +7,7 @@ const FileUpload = ({ label, accept, multiple = false, onChange, files = [], onR
     const fileArray = Array.isArray(files) ? files : files ? [files] : [];
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {label && <label className="block text-sm font-bold text-slate-700 ml-1">{label}</label>}
 
             <div className="relative group cursor-pointer">
@@ -19,11 +19,11 @@ const FileUpload = ({ label, accept, multiple = false, onChange, files = [], onR
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
 
-                <div className="relative border-2 border-dashed border-blue-200 bg-blue-50/30 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300 group-hover:border-blue-400 group-hover:bg-blue-50 group-hover:shadow-sm">
-                    <div className="w-16 h-16 bg-white text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-blue-100 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <Icon className="w-8 h-8" />
+                <div className="relative border-2 border-dashed border-blue-200 bg-blue-50/30 rounded-2xl p-5 flex flex-col items-center justify-center text-center transition-all duration-300 group-hover:border-blue-400 group-hover:bg-blue-50 group-hover:shadow-sm">
+                    <div className="w-12 h-12 bg-white text-blue-600 rounded-xl flex items-center justify-center mb-3 shadow-sm border border-blue-100 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Icon className="w-6 h-6" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-blue-700 transition-colors">
+                    <h3 className="text-base font-bold text-slate-900 mb-1 group-hover:text-blue-700 transition-colors">
                         {multiple ? 'Drop files here or click to upload' : 'Click to upload your file'}
                     </h3>
                     <p className="text-slate-500 text-sm font-medium">
