@@ -11,7 +11,7 @@ export default function CreateAdminModal({ isOpen, onClose }) {
         email: '',
         phone: '',
         password: '',
-        role: 'Admin'
+        role: 'admin'
     });
     const [countryCode, setCountryCode] = useState('+91');
     const [showPassword, setShowPassword] = useState(false);
@@ -22,12 +22,24 @@ export default function CreateAdminModal({ isOpen, onClose }) {
     // Reset state when modal closes
     useEffect(() => {
         if (!isOpen) {
-            setFormData({ fullName: '', email: '', phone: '', password: '', role: 'Admin' });
+            setFormData({ fullName: '', email: '', phone: '', password: '', role: 'admin' });
             setCountryCode('+91');
             setIsSuccess(false);
             setErrors({});
             setIsLoading(false);
         }
+    }, [isOpen]);
+
+    // Handle body scroll lock
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [isOpen]);
 
     if (!isOpen) return null;
@@ -58,7 +70,14 @@ export default function CreateAdminModal({ isOpen, onClose }) {
         const cleanCountryCode = countryCode.replace('+', '');
         const fullPhone = `+${cleanCountryCode}${formData.phone}`;
 
-        console.log("Creating Admin:", { ...formData, phone: fullPhone });
+        const payload = {
+            fullName: formData.fullName,
+            phone: fullPhone,
+            email: formData.email,
+            password: formData.password,
+            role: formData.role
+        };
+        console.log("Creating Admin payload:", payload);
 
         // Simulate API call
         setTimeout(() => {
@@ -78,8 +97,11 @@ export default function CreateAdminModal({ isOpen, onClose }) {
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
-                    <h3 className="text-lg font-bold text-slate-900">Create New Admin</h3>
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-start bg-slate-50/50 rounded-t-2xl">
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-900">Create Admin</h3>
+                        <p className="text-sm text-slate-500 mt-0.5">Create a new administrator account</p>
+                    </div>
                     {!isSuccess && (
                         <button
                             onClick={onClose}
@@ -104,37 +126,35 @@ export default function CreateAdminModal({ isOpen, onClose }) {
                         <form onSubmit={handleSubmit} className="space-y-4">
 
                             {/* Full Name */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Full Name</label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Full Name</label>
                                 <input
                                     type="text"
-                                    placeholder="e.g. Sarah Connor"
-                                    className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.fullName ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500'} rounded-lg text-sm transition-all outline-none`}
+                                    className={`w-full px-4 py-3 bg-slate-50 border ${errors.fullName ? 'border-red-500 focus:ring-4 focus:ring-red-500/10' : 'border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 hover:border-slate-300'} rounded-xl text-sm transition-all duration-200 outline-none shadow-sm focus:bg-white`}
                                     value={formData.fullName}
                                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                 />
-                                {errors.fullName && <p className="text-xs text-red-500 font-medium">{errors.fullName}</p>}
+                                {errors.fullName && <p className="text-xs text-red-500 font-medium mt-1">{errors.fullName}</p>}
                             </div>
 
                             {/* Email */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Email Address</label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Email Address</label>
                                 <input
                                     type="email"
-                                    placeholder="admin@sprxelite.com"
-                                    className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.email ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500'} rounded-lg text-sm transition-all outline-none`}
+                                    className={`w-full px-4 py-3 bg-slate-50 border ${errors.email ? 'border-red-500 focus:ring-4 focus:ring-red-500/10' : 'border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 hover:border-slate-300'} rounded-xl text-sm transition-all duration-200 outline-none shadow-sm focus:bg-white`}
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
-                                {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email}</p>}
+                                {errors.email && <p className="text-xs text-red-500 font-medium mt-1">{errors.email}</p>}
                             </div>
 
                             {/* Phone - Updated with CountrySelector */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Phone Number</label>
-                                <div className={`relative flex items-center border ${errors.phone ? 'border-red-500' : 'border-slate-200'} focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-100 bg-white rounded-lg transition-colors duration-200`}>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Phone Number</label>
+                                <div className={`relative flex items-center bg-slate-50 border ${errors.phone ? 'border-red-500 focus-within:ring-4 focus-within:ring-red-500/10' : 'border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 hover:border-slate-300'} rounded-xl shadow-sm transition-all duration-200 focus-within:bg-white`}>
                                     {/* Country Code Dropdown */}
-                                    <div className="relative h-[42px] flex items-center bg-slate-50 border-r border-slate-200 rounded-l-lg z-20">
+                                    <div className="relative h-[46px] flex items-center bg-transparent border-r border-slate-200 rounded-l-xl z-20">
                                         <CountrySelector
                                             value={countryCode}
                                             onChange={setCountryCode}
@@ -144,8 +164,7 @@ export default function CreateAdminModal({ isOpen, onClose }) {
 
                                     <input
                                         type="tel"
-                                        placeholder="98765 43210"
-                                        className="block w-full h-[42px] px-4 border-none text-slate-900 placeholder-slate-400 focus:ring-0 focus:outline-none text-sm bg-transparent rounded-r-lg"
+                                        className="block w-full h-[46px] px-4 border-none text-slate-900 placeholder-slate-400 focus:ring-0 focus:outline-none text-sm bg-transparent rounded-r-xl"
                                         value={formData.phone}
                                         onChange={(e) => {
                                             const val = e.target.value;
@@ -155,65 +174,57 @@ export default function CreateAdminModal({ isOpen, onClose }) {
                                         }}
                                     />
                                 </div>
-                                {errors.phone && <p className="text-xs text-red-500 font-medium">{errors.phone}</p>}
+                                {errors.phone && <p className="text-xs text-red-500 font-medium mt-1">{errors.phone}</p>}
                             </div>
 
                             {/* Password */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Password</label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Password</label>
                                 <div className="relative">
                                     <input
                                         type={showPassword ? "text" : "password"}
-                                        placeholder="••••••••"
-                                        className={`w-full px-4 py-2.5 bg-slate-50 border ${errors.password ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-100 focus:border-blue-500'} rounded-lg text-sm transition-all outline-none pr-10`}
+                                        className={`w-full px-4 py-3 bg-slate-50 border ${errors.password ? 'border-red-500 focus:ring-4 focus:ring-red-500/10' : 'border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 hover:border-slate-300'} rounded-xl text-sm transition-all duration-200 outline-none shadow-sm focus:bg-white pr-12`}
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     />
                                     <button
                                         type="button"
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                         onClick={() => setShowPassword(!showPassword)}
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
-                                {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password}</p>}
+                                {errors.password && <p className="text-xs text-red-500 font-medium mt-1">{errors.password}</p>}
                             </div>
 
                             {/* Role Selection - Auto-selected Admin */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Role</label>
+                            <div className="space-y-1.5 pt-2">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Role</label>
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        value="Admin"
-                                        readOnly
-                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium outline-none cursor-default"
+                                        value="admin"
+                                        disabled
+                                        className="w-full px-4 py-3 bg-slate-100/80 border border-slate-200 rounded-xl text-sm text-slate-500 font-medium outline-none cursor-not-allowed shadow-inner"
                                     />
                                 </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="pt-4 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-bold text-sm rounded-lg hover:bg-slate-50 transition-colors"
-                                >
-                                    Cancel
-                                </button>
+                            <div className="pt-6 pb-2">
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="flex-1 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:via-indigo-700 hover:to-indigo-800 text-white font-bold text-sm lg:text-base rounded-xl transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(79,70,229,0.6)] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0"
                                 >
                                     {isLoading ? (
                                         <>
-                                            <Loader2 size={16} className="animate-spin" />
-                                            Adding...
+                                            <Loader2 size={18} className="animate-spin" />
+                                            Creating...
                                         </>
                                     ) : (
-                                        'Add Admin'
+                                        'Create Administrator'
                                     )}
                                 </button>
                             </div>

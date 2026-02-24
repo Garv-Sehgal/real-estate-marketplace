@@ -6,12 +6,14 @@ import {
     Globe, Settings, Lock, Activity, Database, Shield, DollarSign,
     TrendingUp, Users, AlertTriangle, Power, UserPlus, FileCheck,
     Building, Zap, Search, MoreVertical, CheckCircle, XCircle, AlertOctagon,
-    Flag, FileText
+    Flag, FileText, UserMinus
 } from 'lucide-react';
 import CreateAdminModal from '../../../components/admin-management/CreateAdminModal';
+import SuspendAdminModal from '../../../components/admin-management/SuspendAdminModal';
 
 export default function SuperAdminDashboard() {
     const [isCreateAdminOpen, setIsCreateAdminOpen] = useState(false);
+    const [isSuspendAdminOpen, setIsSuspendAdminOpen] = useState(false);
     const [revokeModal, setRevokeModal] = useState({ isOpen: false, adminName: '' });
 
     const handleRevokeClick = (name) => {
@@ -143,13 +145,22 @@ export default function SuperAdminDashboard() {
                                 </h2>
                                 <p className="text-sm text-slate-500 mt-1">Manage platform administrators and access controls</p>
                             </div>
-                            <button
-                                onClick={() => setIsCreateAdminOpen(true)}
-                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-600/30 transition-all font-medium text-sm group"
-                            >
-                                <UserPlus size={18} className="group-hover:scale-110 transition-transform" />
-                                Create New Admin
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsSuspendAdminOpen(true)}
+                                    className="flex items-center gap-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 hover:border-red-300 px-5 py-2.5 rounded-lg transition-all font-medium text-sm group"
+                                >
+                                    <UserMinus size={18} className="group-hover:scale-110 transition-transform" />
+                                    Suspend Admin
+                                </button>
+                                <button
+                                    onClick={() => setIsCreateAdminOpen(true)}
+                                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-600/30 transition-all font-medium text-sm group"
+                                >
+                                    <UserPlus size={18} className="group-hover:scale-110 transition-transform" />
+                                    Create New Admin
+                                </button>
+                            </div>
                         </div>
 
                         {/* Enhanced Admin Table */}
@@ -242,6 +253,11 @@ export default function SuperAdminDashboard() {
                 <CreateAdminModal
                     isOpen={isCreateAdminOpen}
                     onClose={() => setIsCreateAdminOpen(false)}
+                />
+
+                <SuspendAdminModal
+                    isOpen={isSuspendAdminOpen}
+                    onClose={() => setIsSuspendAdminOpen(false)}
                 />
 
                 {/* Revoke Confirmation Modal */}
