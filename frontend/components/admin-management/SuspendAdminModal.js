@@ -1,5 +1,5 @@
 "use client";
-
+import { apiRequest } from '../../lib/api';
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, CheckCircle, AlertOctagon } from 'lucide-react';
 
@@ -49,18 +49,31 @@ export default function SuspendAdminModal({ isOpen, onClose }) {
 
         setIsLoading(true);
 
-        const payload = { email };
+       const payload = { identifier: email };
         console.log("Suspending Admin payload:", payload);
+try {
+    const response = await apiRequest('/admin/suspend', {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
 
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            setIsSuccess(true);
+    console.log("Suspend Success:", response);
 
-            setTimeout(() => {
-                onClose();
-            }, 2000);
-        }, 1500);
+    setIsLoading(false);
+    setIsSuccess(true);
+
+    setTimeout(() => {
+        onClose();
+    }, 2000);
+
+} catch (error) {
+    console.error("Suspend Error:", error.message);
+
+    setIsLoading(false);
+
+    setError(error.message); // show backend error in UI
+}
+        
     };
 
     return (

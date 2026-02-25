@@ -1,5 +1,5 @@
 "use client";
-
+import { apiRequest } from '../../lib/api';
 import React, { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, CheckCircle, Loader2 } from 'lucide-react';
 import CountrySelector from '../CountrySelector';
@@ -78,17 +78,30 @@ export default function CreateAdminModal({ isOpen, onClose }) {
             role: formData.role
         };
         console.log("Creating Admin payload:", payload);
+try {
+    const response = await apiRequest('/admin/create', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
 
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            setIsSuccess(true);
+    console.log("Create Admin Success:", response);
 
-            // Close modal after showing success message
-            setTimeout(() => {
-                onClose();
-            }, 2000);
-        }, 1500);
+    setIsLoading(false);
+    setIsSuccess(true);
+
+    setTimeout(() => {
+        onClose();
+    }, 2000);
+
+} catch (error) {
+    console.error("Create Admin Error:", error.message);
+
+    setIsLoading(false);
+
+    // Show backend error in form
+    setErrors({ apiError: error.message });
+}
+       
     };
 
     return (
