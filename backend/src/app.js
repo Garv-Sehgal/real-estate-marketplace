@@ -6,6 +6,7 @@ const cors = require('cors');
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./modules/auth');
 const adminRoutes = require('./modules/admin/admin.routes');
+const propertyRoutes = require('./modules/property');
 const errorHandler = require('./middlewares/error.middleware');
 const connectDB = require('./config/db');
 
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/property', propertyRoutes);
 
 /* ---------------- 404 Handler ---------------- */
 app.use((req, res) => {
