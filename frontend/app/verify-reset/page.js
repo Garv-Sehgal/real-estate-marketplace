@@ -38,9 +38,21 @@ export default function VerifyResetPage() {
         }
     };
 
+    const handlePaste = (e) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        if (pastedData.length === 6) {
+            setOtp(pastedData.split(''));
+            inputRefs.current[5]?.focus();
+        }
+    };
+
     const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputRefs.current[index - 1].focus();
+        }
+        if (e.key === 'Enter' && otp.every(d => d)) {
+            handleVerify();
         }
     };
 
@@ -125,6 +137,7 @@ const handleResend = async () => {
                                     value={digit}
                                     onChange={(e) => handleChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
+                                    onPaste={index === 0 ? handlePaste : undefined}
                                     className="w-full h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                                 />
                             ))}

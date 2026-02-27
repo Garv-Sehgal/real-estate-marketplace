@@ -56,7 +56,7 @@ const LocationStep = ({ formData, handleInputChange, toggleFacility, isActive })
 
     return (
         <StepWrapper isActive={isActive}>
-            <div className="space-y-8">
+            <div className="space-y-6">
 
                 {/* SECTION 1: PROPERTY ADDRESS */}
                 <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
@@ -65,9 +65,9 @@ const LocationStep = ({ formData, handleInputChange, toggleFacility, isActive })
                         Property Address
                     </h3>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* Row 1: Country & State */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <SelectInput
                                 label="Country"
                                 name="country"
@@ -90,7 +90,7 @@ const LocationStep = ({ formData, handleInputChange, toggleFacility, isActive })
                         </div>
 
                         {/* Row 2: City & Pincode */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <SelectInput
                                 label="City"
                                 name="city"
@@ -112,7 +112,7 @@ const LocationStep = ({ formData, handleInputChange, toggleFacility, isActive })
                         </div>
 
                         {/* Row 3: Locality & Sub-locality */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <TextInput
                                 label="Locality / Area"
                                 name="locality"
@@ -155,28 +155,6 @@ const LocationStep = ({ formData, handleInputChange, toggleFacility, isActive })
                     </div>
                 </div>
 
-                {/* SECTION 2: EXACT LOCATION (Secondary) */}
-                <div className="border-t border-slate-200 pt-6">
-                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
-                        Exact Location <span className="text-slate-400 font-normal normal-case ml-1">(Optional – Auto-filled via map if enabled)</span>
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-80 hover:opacity-100 transition-opacity">
-                        <TextInput
-                            label="Latitude"
-                            name="latitude"
-                            value={formData.latitude}
-                            onChange={handleInputChange}
-                            placeholder="e.g. 12.9716"
-                        />
-                        <TextInput
-                            label="Longitude"
-                            name="longitude"
-                            value={formData.longitude}
-                            onChange={handleInputChange}
-                            placeholder="e.g. 77.5946"
-                        />
-                    </div>
-                </div>
 
                 {/* SECTION 3: NEARBY FACILITIES (Chips) */}
                 <div className="border-t border-slate-200 pt-6">

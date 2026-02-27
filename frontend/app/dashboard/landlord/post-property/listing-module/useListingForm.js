@@ -42,17 +42,21 @@ export function useListingForm() {
 
     // Auto-calculate Price per Sq.Ft
     useEffect(() => {
-        if (formData.expectedPrice && formData.superArea) {
+        const areaToUse = formData.superArea || formData.carpetArea;
+        if (formData.expectedPrice && areaToUse) {
             const price = parseFloat(formData.expectedPrice.replace(/,/g, ''));
-            const area = parseFloat(formData.superArea);
+            const area = parseFloat(areaToUse);
             if (!isNaN(price) && !isNaN(area) && area > 0) {
                 setFormData(prev => ({
                     ...prev,
                     pricePerSqft: Math.round(price / area).toString()
                 }));
             }
+        } else {
+            // Clear if neither is present
+            setFormData(prev => ({ ...prev, pricePerSqft: '' }));
         }
-    }, [formData.expectedPrice, formData.superArea]);
+    }, [formData.expectedPrice, formData.superArea, formData.carpetArea]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -64,54 +68,7 @@ export function useListingForm() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const toggleAmenity = (id) => {
-        setFormData(prev => {
-            const current = prev.amenities;
-            if (current.includes(id)) {
-                return { ...prev, amenities: current.filter(item => item !== id) };
-            } else {
-                return { ...prev, amenities: [...current, id] };
-            }
-        });
-    };
 
-    const toggleFacility = (facility) => {
-        setFormData(prev => {
-            const current = prev.nearbyFacilities;
-            if (current.includes(facility)) {
-                return { ...prev, nearbyFacilities: current.filter(item => item !== facility) };
-            } else {
-                return { ...prev, nearbyFacilities: [...current, facility] };
-            }
-        });
-    };
-
-    const handleImageUpload = async (e) => {
-        const files = Array.from(e.target.files);
-
-        // Optimistic UI update could be added here
-
-        const processedImages = await Promise.all(files.map(async (file) => {
-            try {
-                const compressed = await compressImage(file);
-                return {
-                    id: Math.random().toString(36).substr(2, 9),
-                    file: compressed, // Store compressed file
-                    preview: URL.createObjectURL(compressed)
-                };
-            } catch (err) {
-                console.error('Compression failed', err);
-                return null;
-            }
-        }));
-
-        const validImages = processedImages.filter(Boolean);
-        setFormData(prev => ({ ...prev, images: [...prev.images, ...validImages] }));
-    };
-
-    const removeImage = (id) => {
-        setFormData(prev => ({ ...prev, images: prev.images.filter(img => img.id !== id) }));
-    };
 
     const handleFileUpload = async (e, fieldName) => {
         const file = e.target.files[0];
@@ -144,7 +101,7 @@ export function useListingForm() {
     };
 
     const nextStep = () => {
-        if (isStepValid() && currentStep < STEPS.length) {
+        if (isStepValid() && currentStep < 5) {
             setCurrentStep(prev => prev + 1);
         }
     };
@@ -164,33 +121,195 @@ export function useListingForm() {
         const { listingType } = formData;
 
         // 1. Basic Info (Common)
-        if (currentStep === 1) return formData.title && formData.propertyType;
+        if (currentStep === 1) {
+            const hasTitle = !!formData.title?.trim();
+            const hasListingType = !!formData.listingType;
+            const hasCoverImage = !!formData.coverImage;
+
+            // Property Type or Gender Allowed depending on listing type
+            const hasTypeInfo = listingType === 'PG'
+                ? !!formData.genderAllowed
+                : !!formData.propertyType;
+
+            let isCommercialOfficeValid = true;
+            if (formData.category === 'Commercial' && formData.propertyType === 'Office') {
+                const hasCarpet = formData.carpetArea !== '' && formData.carpetArea !== null && formData.carpetArea !== undefined;
+                const hasFurnish = !!formData.furnishingStatus;
+                const hasPower = !!formData.powerBackup;
+
+                isCommercialOfficeValid = hasCarpet && hasFurnish && hasPower;
+
+                console.log("Office Validation Breakdown:", {
+                    hasCarpet, hasFurnish, hasPower,
+                    carpetAreaValue: formData.carpetArea,
+                    furnishValue: formData.furnishingStatus,
+                    powerValue: formData.powerBackup
+                });
+            }
+
+            let isCommercialShopValid = true;
+            if (formData.category === 'Commercial' && formData.propertyType === 'Shop') {
+                const hasDesc = !!formData.description && formData.description.trim() !== '';
+                const hasCarpet = formData.carpetArea !== '' && formData.carpetArea !== null && formData.carpetArea !== undefined;
+                const hasFloor = formData.floorNumber !== '' && formData.floorNumber !== null && formData.floorNumber !== undefined;
+                const hasTotalFloors = formData.totalFloors !== '' && formData.totalFloors !== null && formData.totalFloors !== undefined;
+                const hasFurnish = !!formData.furnishingStatus;
+                const hasLocation = !!formData.locatedIn;
+                const hasWidth = formData.entranceWidth !== '' && formData.entranceWidth !== null && formData.entranceWidth !== undefined;
+                const hasWashrooms = formData.washroomsCount !== '' && formData.washroomsCount !== null && formData.washroomsCount !== undefined;
+                const hasParking = !!formData.parkingAvailability;
+
+                // If parking is yes, parking Count is required
+                const isParkingValid = formData.parkingAvailability === 'Yes' ? (formData.parkingCount !== '' && formData.parkingCount !== null && formData.parkingCount !== undefined) : true;
+
+                isCommercialShopValid = hasDesc && hasCarpet && hasFloor && hasTotalFloors && hasFurnish && hasLocation && hasWidth && hasWashrooms && hasParking && isParkingValid;
+            }
+
+            let isCommercialShowroomValid = true;
+            if (formData.category === 'Commercial' && formData.propertyType === 'Showroom') {
+                const hasDesc = !!formData.description && formData.description.trim() !== '';
+                const hasCarpet = formData.carpetArea !== '' && formData.carpetArea !== null && formData.carpetArea !== undefined && parseFloat(formData.carpetArea) > 0;
+                const hasFurnish = !!formData.furnishingStatus;
+                const hasLocation = !!formData.locatedIn;
+
+                // Floor rules
+                let isFloorValid = true;
+                if (formData.locatedIn !== 'Standalone') {
+                    const hasFloor = formData.floorNumber !== '' && formData.floorNumber !== null && formData.floorNumber !== undefined;
+                    const hasTotalFloors = formData.totalFloors !== '' && formData.totalFloors !== null && formData.totalFloors !== undefined;
+                    isFloorValid = hasFloor && hasTotalFloors;
+                }
+
+                const hasWidth = formData.entranceWidth !== '' && formData.entranceWidth !== null && formData.entranceWidth !== undefined && parseFloat(formData.entranceWidth) > 0;
+                const hasCeiling = formData.ceilingHeight !== '' && formData.ceilingHeight !== null && formData.ceilingHeight !== undefined && parseFloat(formData.ceilingHeight) >= 8;
+                const hasWashrooms = formData.washroomsCount !== '' && formData.washroomsCount !== null && formData.washroomsCount !== undefined && parseInt(formData.washroomsCount) >= 0;
+                const hasParking = !!formData.parkingAvailability;
+
+                // If parking is yes, parking Count is required
+                const isParkingValid = formData.parkingAvailability === 'Yes' ? (formData.parkingCount !== '' && formData.parkingCount !== null && formData.parkingCount !== undefined) : true;
+                const hasAge = !!formData.propertyAge;
+                const hasMedia = formData.basicInfoMedia && formData.basicInfoMedia.length > 0;
+
+                isCommercialShowroomValid = hasDesc && hasMedia && hasCarpet && hasFurnish && hasLocation && isFloorValid && hasWidth && hasCeiling && hasWashrooms && hasParking && isParkingValid && hasAge;
+
+                console.log("Showroom Validation Breakdown:", {
+                    hasDesc, hasMedia, hasCarpet, hasFurnish, hasLocation, isFloorValid, hasWidth, hasCeiling, hasWashrooms, hasParking, isParkingValid, hasAge
+                });
+            }
+
+            console.log("Global Step 1 Breakdown:", {
+                hasTitle, hasListingType, hasCoverImage, hasTypeInfo, isCommercialOfficeValid, isCommercialShopValid, isCommercialShowroomValid
+            });
+
+            return hasTitle && hasListingType && hasCoverImage && hasTypeInfo && isCommercialOfficeValid && isCommercialShopValid && isCommercialShowroomValid;
+        }
 
         // 2. Location (Common)
-        if (currentStep === 2) return formData.city && formData.address;
+        if (currentStep === 2) {
+            return !!formData.country &&
+                !!formData.state &&
+                !!formData.city &&
+                !!formData.pincode &&
+                !!formData.address?.trim();
+        }
 
-        // Dynamic Validation based on Flow
+        // 3. Dynamic Validation based on Flow
         if (listingType === 'Sell') {
-            if (currentStep === 3) return !!formData.expectedPrice; // Pricing
-            if (currentStep === 4) return true; // Sell Details
-            if (currentStep === 5) return true; // Amenities
-            if (currentStep === 6) return true; // Media
-            if (currentStep === 7) return formData.ownerName && formData.ownerPhone; // Owner
+            if (currentStep === 3) {
+                // Base requirements for Sell Details
+                if (formData.category === 'Commercial') {
+                    const isShowroom = formData.propertyType === 'Showroom';
+                    const hasLegalBasic = !!formData.propertyOwnership &&
+                        !!formData.possessionDate &&
+                        (isShowroom ? true : !!formData.propertyAge) && // Showroom age is in Step 1
+                        !!formData.titleClear &&
+                        !!formData.activeLoan;
+                    const hasFinancialBasic = !!formData.expectedPrice &&
+                        !!formData.priceNegotiable &&
+                        !!formData.monthlyMaintenanceCharges &&
+                        !!formData.brokerageApplicable;
+
+                    const isLoanValid = formData.activeLoan === 'Yes' ? !!formData.outstandingLoanAmount : true;
+                    const isBrokerageValid = formData.brokerageApplicable === 'Yes' ? !!formData.brokerageAmount : true;
+
+                    const hasOwnership = !!formData.propertyOwnership;
+                    const hasPossession = !!formData.possessionDate;
+                    const hasAge = isShowroom ? true : !!formData.propertyAge;
+                    const hasTitle = !!formData.titleClear;
+                    const hasActiveLoan = !!formData.activeLoan;
+                    const hasExpectedPrice = !!formData.expectedPrice;
+                    const hasPriceNeg = !!formData.priceNegotiable;
+                    const hasMaint = !!formData.monthlyMaintenanceCharges;
+                    const hasBroker = !!formData.brokerageApplicable;
+
+                    console.log("Commercial Sell Step 3 Validation:", {
+                        hasLegalBasic,
+                        hasFinancialBasic,
+                        isLoanValid,
+                        isBrokerageValid,
+                        hasOwnership, hasPossession, hasAge, hasTitle, hasActiveLoan,
+                        hasExpectedPrice, hasPriceNeg, hasMaint, hasBroker,
+                        loanAmountValue: formData.outstandingLoanAmount,
+                        brokerAmountValue: formData.brokerageAmount
+                    });
+
+                    return hasLegalBasic && hasFinancialBasic && isLoanValid && isBrokerageValid;
+                } else {
+                    return !!formData.propertyOwnership &&
+                        !!formData.possessionDate &&
+                        !!formData.expectedPrice &&
+                        !!formData.bookingAmount; // Sell Details requirements for Residential
+                }
+            }
+            if (currentStep === 4) return formData.govtId && formData.ownershipProof && formData.geoTagConfirmed; // Verification
+            if (currentStep === 5) return true; // Review
         }
         else if (listingType === 'Rent') {
-            if (currentStep === 3) return !!formData.monthlyRent; // Rent Details
-            if (currentStep === 4) return true; // Amenities
-            if (currentStep === 5) return true; // Media
-            if (currentStep === 6) return formData.ownerName && formData.ownerPhone; // Owner
+            if (currentStep === 3) {
+                if (formData.category === 'Commercial') {
+                    const hasRentBasic = !!formData.monthlyRent &&
+                        !!formData.securityDeposit &&
+                        !!formData.lockInPeriod;
+
+                    const hasAvailBasic = !!formData.availableFrom;
+
+                    const isBrokerageValid = formData.brokerageApplicable === 'Yes' ? !!formData.brokerageAmount : true;
+
+                    return hasRentBasic && hasAvailBasic && isBrokerageValid;
+                } else {
+                    return !!formData.monthlyRent &&
+                        !!formData.maintenanceIncluded &&
+                        !!formData.electricityCharges &&
+                        !!formData.waterCharges &&
+                        (formData.preferredTenant && formData.preferredTenant.length > 0) &&
+                        !!formData.occupancyStatus &&
+                        !!formData.availableFrom; // Rent Details requirements for residential
+                }
+            }
+            if (currentStep === 4) return formData.govtId && formData.ownershipProof && formData.geoTagConfirmed; // Verification
+            if (currentStep === 5) return true; // Review
         }
         else if (listingType === 'PG') {
-            if (currentStep === 3) return !!formData.rentPerBed; // PG Details
-            if (currentStep === 4) return true; // Amenities
-            if (currentStep === 5) return true; // Media
-            if (currentStep === 6) return formData.ownerName && formData.ownerPhone; // Owner
+            if (currentStep === 3) {
+                return !!formData.rentPerBed; // PG Details requirements
+            }
+            if (currentStep === 4) return formData.govtId && formData.ownershipProof && formData.geoTagConfirmed; // Verification
+            if (currentStep === 5) return true; // Review
         }
 
         return true;
+    };
+
+
+    const toggleFacility = (facility) => {
+        setFormData(prev => {
+            const facilities = prev.nearbyFacilities || [];
+            if (facilities.includes(facility)) {
+                return { ...prev, nearbyFacilities: facilities.filter(f => f !== facility) };
+            } else {
+                return { ...prev, nearbyFacilities: [...facilities, facility] };
+            }
+        });
     };
 
     const submitForm = async () => {
@@ -226,16 +345,13 @@ export function useListingForm() {
         setShowSuccessModal,
         handleInputChange,
         setFieldValue,
-        toggleAmenity,
-        toggleFacility,
-        handleImageUpload,
-        removeImage,
         handleFileUpload,
         removeFile,
         nextStep,
         prevStep,
         goToStep,
         isStepValid,
-        submitForm
+        submitForm,
+        toggleFacility
     };
 }

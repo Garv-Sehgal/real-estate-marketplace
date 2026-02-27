@@ -5,10 +5,9 @@ import { Users, Calendar, TrendingUp, ClipboardList, Phone, Mail, MoreVertical, 
 
 export default function AgentDashboard() {
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-800">
-
+        <div className="p-4 md:p-8 animate-in fade-in duration-500">
             {/* Header */}
-            <header className="px-8 py-5 border-b border-gray-200 bg-white flex justify-between items-center">
+            <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900">Agent Workspace</h1>
                     <p className="text-sm text-gray-500 mt-1">Good Morning, Alex. You have <span className="font-semibold text-blue-600">3 priority tasks</span> today.</p>
@@ -17,9 +16,9 @@ export default function AgentDashboard() {
                     <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 text-sm">View Schedule</button>
                     <button className="px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 text-sm shadow-lg shadow-gray-200">Log Activity</button>
                 </div>
-            </header>
+            </div>
 
-            <div className="flex-1 p-8 grid grid-cols-1 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
 
                 {/* Main Content: Pipeline & Properties */}
                 <div className="xl:col-span-3 space-y-8">

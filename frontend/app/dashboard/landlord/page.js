@@ -8,23 +8,21 @@ export default function LandlordDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
-            {/* Top Navigation Bar Placeholder (Assuming main layout handles this, but adding a localized header) */}
-            <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Landlord Dashboard</h1>
-                    <p className="text-slate-500 text-sm">Manage your listings and viewing requests.</p>
+        <div className="animate-in fade-in duration-500">
+            <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">Landlord Dashboard</h1>
+                        <p className="text-slate-500 text-sm">Manage your listings and viewing requests.</p>
+                    </div>
+                    <Link
+                        href="/dashboard/landlord/post-property"
+                        className="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-all shadow-sm"
+                    >
+                        <PlusCircle size={18} />
+                        List New Property
+                    </Link>
                 </div>
-                <Link
-                    href="/dashboard/landlord/post-property"
-                    className="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-all shadow-sm"
-                >
-                    <PlusCircle size={18} />
-                    List New Property
-                </Link>
-            </header>
-
-            <main className="p-8 max-w-7xl mx-auto space-y-8">
 
                 {/* Stats Overview */}
                 <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

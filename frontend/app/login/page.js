@@ -37,6 +37,12 @@ export default function LoginPage() {
         }));
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && formData.email && formData.password && !loading) {
+            handleSubmit(e);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -115,6 +121,7 @@ export default function LoginPage() {
                                         required
                                         value={formData.email}
                                         onChange={handleInputChange}
+                                        onKeyDown={handleKeyDown}
                                         className={`block w-full h-full px-4 border-none text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none text-base bg-transparent ${isPhone ? 'rounded-r-xl' : 'rounded-xl'}`}
                                         placeholder="Enter email or phone"
                                     />
@@ -135,6 +142,7 @@ export default function LoginPage() {
                                         onChange={handleInputChange}
                                         onFocus={() => setPasswordFocused(true)}
                                         onBlur={() => setPasswordFocused(false)}
+                                        onKeyDown={handleKeyDown}
                                         className="block w-full px-4 py-3 pr-12 bg-white border border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
                                         placeholder="Enter your password"
                                     />

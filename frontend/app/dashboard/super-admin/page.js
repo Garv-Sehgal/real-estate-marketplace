@@ -6,12 +6,14 @@ import {
     Globe, Settings, Lock, Activity, Database, Shield, DollarSign,
     TrendingUp, Users, AlertTriangle, Power, UserPlus, FileCheck,
     Building, Zap, Search, MoreVertical, CheckCircle, XCircle, AlertOctagon,
-    Flag, FileText
+    Flag, FileText, UserMinus
 } from 'lucide-react';
 import CreateAdminModal from '../../../components/admin-management/CreateAdminModal';
+import SuspendAdminModal from '../../../components/admin-management/SuspendAdminModal';
 
 export default function SuperAdminDashboard() {
     const [isCreateAdminOpen, setIsCreateAdminOpen] = useState(false);
+    const [isSuspendAdminOpen, setIsSuspendAdminOpen] = useState(false);
     const [revokeModal, setRevokeModal] = useState({ isOpen: false, adminName: '' });
 
     const handleRevokeClick = (name) => {
@@ -24,228 +26,170 @@ export default function SuperAdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-50 flex font-sans text-slate-900">
+        <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
 
-            {/* Sidebar */}
-            <aside className="w-20 lg:w-72 bg-slate-900 text-slate-400 flex flex-col transition-all duration-300 shadow-xl z-20">
-                <div className="h-24 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800 bg-slate-900/50 backdrop-blur-xl">
-                    <Link href="/" className="flex items-center gap-3 group">
-                        <div className="relative w-12 h-12 flex items-center justify-center bg-white rounded-xl shadow-lg shadow-white/5 overflow-hidden group-hover:bg-gray-100 transition-all">
-                            <img
-                                src="/images/Elite_Estates Logos.png"
-                                alt="SPRxElite Estates Logo"
-                                className="w-8 h-8 object-contain drop-shadow-lg"
-                            />
-                        </div>
-                        <div className="hidden lg:block">
-                            <h1 className="text-xl font-black tracking-tighter text-white leading-none">
-                                SPRx<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Elite</span>
-                            </h1>
-                            <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] uppercase mt-0.5">Estates</p>
-                        </div>
-                    </Link>
-                </div>
-
-                <nav className="flex-1 py-8 space-y-2 px-4">
-                    <MenuLink icon={<Activity />} label="Dashboard Overview" active />
-                    <MenuLink icon={<Shield />} label="Governance & Access" />
-                    <MenuLink icon={<DollarSign />} label="Financial Reports" />
-                    <MenuLink icon={<Flag />} label="Reports & Flags" />
-                    <MenuLink icon={<FileText />} label="Content & CMS" />
-                    <MenuLink icon={<Settings />} label="Platform Settings" />
-                    <MenuLink icon={<Database />} label="Data Management" />
-                </nav>
-
-                <div className="p-6 border-t border-slate-800">
-                    <button className="flex items-center gap-3 text-red-400 hover:text-red-300 hover:bg-red-950/20 w-full p-3 rounded-lg transition-all group">
-                        <Power size={20} className="group-hover:scale-110 transition-transform" />
-                        <span className="hidden lg:block font-medium">Emergency Stop</span>
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col h-screen overflow-hidden">
-
-                {/* Header */}
-                <header className="bg-white border-b border-neutral-200 h-20 flex items-center justify-between px-8 shadow-sm z-10">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Super Admin Console</h1>
-                        <p className="text-xs text-slate-500 mt-1">Real-time platform monitoring and governance</p>
-                    </div>
-                    <div className="flex items-center gap-6">
-                        <div className="relative hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Search admin logs..."
-                                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-64 transition-all"
-                            />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-blue-600/20">
-                                SA
-                            </div>
-                            <div className="hidden lg:block">
-                                <p className="text-sm font-bold text-slate-900 leading-tight">System Administrator</p>
-                                <p className="text-xs text-slate-500">super_admin@sprxelite.com</p>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                {/* Dashboard Content */}
-                <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 bg-slate-50/50">
-
-                    {/* Stat Cards */}
-                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <StatCard
-                            title="Total Revenue"
-                            value="₹ 1,42,40,000"
-                            change="+12.5%"
-                            icon={<DollarSign size={24} className="text-emerald-600" />}
-                            bg="bg-emerald-50"
-                            trend="up"
-                        />
-                        <StatCard
-                            title="Live Listings"
-                            value="1,240"
-                            change="+8.2%"
-                            icon={<Building size={24} className="text-blue-600" />}
-                            bg="bg-blue-50"
-                            trend="up"
-                        />
-                        <StatCard
-                            title="Admin Team"
-                            value="12"
-                            change="Active"
-                            icon={<Users size={24} className="text-violet-600" />}
-                            bg="bg-violet-50"
-                            trend="neutral"
-                        />
-                        <StatCard
-                            title="Verification Queue"
-                            value="45"
-                            change="Pending Requests"
-                            icon={<FileCheck size={24} className="text-amber-600" />}
-                            bg="bg-amber-50"
-                            trend="alert"
-                        />
-                    </section>
-
-                    {/* Governance Hub */}
-                    <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                    <Shield size={20} className="text-blue-600" />
-                                    Governance & Authority
-                                </h2>
-                                <p className="text-sm text-slate-500 mt-1">Manage platform administrators and access controls</p>
-                            </div>
-                            <button
-                                onClick={() => setIsCreateAdminOpen(true)}
-                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-600/30 transition-all font-medium text-sm group"
-                            >
-                                <UserPlus size={18} className="group-hover:scale-110 transition-transform" />
-                                Create New Admin
-                            </button>
-                        </div>
-
-                        {/* Enhanced Admin Table */}
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                        <th className="px-6 py-4">Name</th>
-                                        <th className="px-6 py-4 hidden md:table-cell">Email Address</th>
-                                        <th className="px-6 py-4">Role</th>
-                                        <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 text-sm">
-                                    <AdminRow
-                                        name="Sarah Connor"
-                                        email="sarah@sprxelite.com"
-                                        role="SUPER_ADMIN"
-                                        status="Active"
-                                        image="SC"
-                                        isCurrentUser={true}
-                                    />
-                                    <AdminRow
-                                        name="John Wick"
-                                        email="john@sprxelite.com"
-                                        role="MODERATOR"
-                                        status="Active"
-                                        image="JW"
-                                        onRevoke={() => handleRevokeClick("John Wick")}
-                                    />
-                                    <AdminRow
-                                        name="Bruce Wayne"
-                                        email="bruce@sprxelite.com"
-                                        role="FINANCE"
-                                        status="Suspended"
-                                        image="BW"
-                                        onRevoke={() => handleRevokeClick("Bruce Wayne")}
-                                    />
-                                    <AdminRow
-                                        name="Diana Prince"
-                                        email="diana@sprxelite.com"
-                                        role="SUPPORT"
-                                        status="Active"
-                                        image="DP"
-                                        onRevoke={() => handleRevokeClick("Diana Prince")}
-                                    />
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Table Footer */}
-                        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs text-slate-500 font-medium">
-                            <span>Showing 4 of 12 admins</span>
-                            <div className="flex gap-2">
-                                <button className="px-3 py-1 border border-slate-200 rounded hover:bg-white transition-colors">Previous</button>
-                                <button className="px-3 py-1 border border-slate-200 rounded hover:bg-white transition-colors">Next</button>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* System Config & Activity */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <Settings size={18} className="text-slate-400" /> System Configuration
-                            </h3>
-                            <div className="space-y-4">
-                                <ConfigRow label="Global Maintenance Mode" value="Disabled" />
-                                <ConfigRow label="New User Registration" value="Open" />
-                                <ConfigRow label="Payment Gateway" value="Stripe (Live)" status="success" />
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                            <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <Activity size={18} className="text-slate-400" /> Recent Activity
-                            </h3>
-                            <div className="space-y-4">
-                                <ActivityRow action="New listing approved" user="John Wick" time="2 mins ago" />
-                                <ActivityRow action="Suspicious login attempt blocked" user="System" time="15 mins ago" alert />
-                                <ActivityRow action="Monthly report generated" user="Automated" time="1 hour ago" />
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {/* Modals */}
-                <CreateAdminModal
-                    isOpen={isCreateAdminOpen}
-                    onClose={() => setIsCreateAdminOpen(false)}
+            {/* Stat Cards */}
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                    title="Total Revenue"
+                    value="₹ 1,42,40,000"
+                    change="+12.5%"
+                    icon={<DollarSign size={24} className="text-emerald-600" />}
+                    bg="bg-emerald-50"
+                    trend="up"
                 />
+                <StatCard
+                    title="Live Listings"
+                    value="1,240"
+                    change="+8.2%"
+                    icon={<Building size={24} className="text-blue-600" />}
+                    bg="bg-blue-50"
+                    trend="up"
+                />
+                <StatCard
+                    title="Admin Team"
+                    value="12"
+                    change="Active"
+                    icon={<Users size={24} className="text-violet-600" />}
+                    bg="bg-violet-50"
+                    trend="neutral"
+                />
+                <StatCard
+                    title="Verification Queue"
+                    value="45"
+                    change="Pending Requests"
+                    icon={<FileCheck size={24} className="text-amber-600" />}
+                    bg="bg-amber-50"
+                    trend="alert"
+                />
+            </section>
 
-                {/* Revoke Confirmation Modal */}
-                {revokeModal.isOpen && (
+            {/* Governance Hub */}
+            <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <Shield size={20} className="text-blue-600" />
+                            Governance & Authority
+                        </h2>
+                        <p className="text-sm text-slate-500 mt-1">Manage platform administrators and access controls</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setIsSuspendAdminOpen(true)}
+                            className="flex items-center gap-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 hover:border-red-300 px-5 py-2.5 rounded-lg transition-all font-medium text-sm group"
+                        >
+                            <UserMinus size={18} className="group-hover:scale-110 transition-transform" />
+                            Suspend Admin
+                        </button>
+                        <button
+                            onClick={() => setIsCreateAdminOpen(true)}
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-lg shadow-blue-600/30 transition-all font-medium text-sm group"
+                        >
+                            <UserPlus size={18} className="group-hover:scale-110 transition-transform" />
+                            Create New Admin
+                        </button>
+                    </div>
+                </div>
+
+                {/* Enhanced Admin Table */}
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                <th className="px-6 py-4">Name</th>
+                                <th className="px-6 py-4 hidden md:table-cell">Email Address</th>
+                                <th className="px-6 py-4">Role</th>
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-sm">
+                            <AdminRow
+                                name="Sarah Connor"
+                                email="sarah@sprxelite.com"
+                                role="SUPER_ADMIN"
+                                status="Active"
+                                image="SC"
+                                isCurrentUser={true}
+                            />
+                            <AdminRow
+                                name="John Wick"
+                                email="john@sprxelite.com"
+                                role="MODERATOR"
+                                status="Active"
+                                image="JW"
+                                onRevoke={() => handleRevokeClick("John Wick")}
+                            />
+                            <AdminRow
+                                name="Bruce Wayne"
+                                email="bruce@sprxelite.com"
+                                role="FINANCE"
+                                status="Suspended"
+                                image="BW"
+                                onRevoke={() => handleRevokeClick("Bruce Wayne")}
+                            />
+                            <AdminRow
+                                name="Diana Prince"
+                                email="diana@sprxelite.com"
+                                role="SUPPORT"
+                                status="Active"
+                                image="DP"
+                                onRevoke={() => handleRevokeClick("Diana Prince")}
+                            />
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Table Footer */}
+                <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs text-slate-500 font-medium">
+                    <span>Showing 4 of 12 admins</span>
+                    <div className="flex gap-2">
+                        <button className="px-3 py-1 border border-slate-200 rounded hover:bg-white transition-colors">Previous</button>
+                        <button className="px-3 py-1 border border-slate-200 rounded hover:bg-white transition-colors">Next</button>
+                    </div>
+                </div>
+            </section>
+
+            {/* System Config & Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Settings size={18} className="text-slate-400" /> System Configuration
+                    </h3>
+                    <div className="space-y-4">
+                        <ConfigRow label="Global Maintenance Mode" value="Disabled" />
+                        <ConfigRow label="New User Registration" value="Open" />
+                        <ConfigRow label="Payment Gateway" value="Stripe (Live)" status="success" />
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Activity size={18} className="text-slate-400" /> Recent Activity
+                    </h3>
+                    <div className="space-y-4">
+                        <ActivityRow action="New listing approved" user="John Wick" time="2 mins ago" />
+                        <ActivityRow action="Suspicious login attempt blocked" user="System" time="15 mins ago" alert />
+                        <ActivityRow action="Monthly report generated" user="Automated" time="1 hour ago" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Modals */}
+            <CreateAdminModal
+                isOpen={isCreateAdminOpen}
+                onClose={() => setIsCreateAdminOpen(false)}
+            />
+
+            <SuspendAdminModal
+                isOpen={isSuspendAdminOpen}
+                onClose={() => setIsSuspendAdminOpen(false)}
+            />
+
+            {/* Revoke Confirmation Modal */}
+            {
+                revokeModal.isOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center">
                             <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -271,10 +215,9 @@ export default function SuperAdminDashboard() {
                             </div>
                         </div>
                     </div>
-                )}
-
-            </main>
-        </div>
+                )
+            }
+        </div >
     );
 }
 
