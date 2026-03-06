@@ -3,17 +3,62 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, AlertCircle, Users, BarChart3, Search, Settings, Filter, Check, X, Bell, LayoutDashboard } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/api";
 
 export default function AdminDashboard() {
+
+    const [pendingProperties, setPendingProperties] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [rejectModal, setRejectModal] = useState({
+    open: false,
+    propertyId: null
+});
+
+const [rejectMessage, setRejectMessage] = useState("");
+const [rejectLoading, setRejectLoading] = useState(false);
+    useEffect(() => {
+        const fetchPending = async () => {
+            try {
+                const res = await apiRequest("/admin/properties/pending");
+                console.log("Pending properties:", res);
+                setPendingProperties(res.data || []);
+            } catch (err) {
+                console.error("Failed to fetch pending properties", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPending();
+    }, []);
+
+    const handleApprove = async (id) => {
+    try {
+        await apiRequest(`/admin/properties/${id}/approve`, {
+            method: "PATCH"
+        });
+
+        setPendingProperties(prev => prev.filter(p => p.id !== id));
+
+    } catch (err) {
+        console.error("Approve failed", err);
+        alert("Failed to approve property");
+    }
+};
+
+const handleReject = (id) => {
+    setRejectModal({ open: true, propertyId: id });
+};
     return (
-        <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
+        <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500 w-full max-w-none">
 
             {/* 1. Control Tiles */}
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <ControlTile
                     label="Pending Approvals"
-                    value="12"
-                    trend="+4 today"
+                    value={loading ? "..." : pendingProperties.length}
+                    trend="+ Live"
                     trendColor="text-indigo-600"
                     icon={<ShieldCheck size={24} className="text-indigo-600" />}
                     iconBg="bg-indigo-100"
@@ -44,10 +89,10 @@ export default function AdminDashboard() {
                 />
             </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="flex flex-col gap-8">
 
-                {/* 2. Moderation Queue (Left 2/3) */}
-                <div className="lg:col-span-2 flex flex-col space-y-6">
+                {/* Moderation Queue */}
+                <div className="flex flex-col space-y-6 w-full">
                     <Card className="p-0 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow duration-200 ease-in-out">
                         <div className="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-white">
                             <div>
@@ -61,8 +106,8 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto flex-1">
-                            <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap">
+                        <div className="w-full flex-1">
+                            <table className="w-full text-left text-sm text-slate-600">
                                 <thead className="bg-slate-50/50 text-slate-500 font-medium border-b border-slate-200">
                                     <tr>
                                         <th className="px-6 py-4">Property Details</th>
@@ -71,81 +116,116 @@ export default function AdminDashboard() {
                                         <th className="px-6 py-4 text-right">Actions</th>
                                     </tr>
                                 </thead>
+
                                 <tbody className="divide-y divide-slate-100">
-                                    <ApprovalRow
-                                        title="Luxury Penthouse in Koramangala"
-                                        address="12 Main Rd, Bangalore"
-                                        price="₹4.5 Cr"
-                                        user="John Agent"
-                                        role="Agent"
-                                        date="2h ago"
-                                    />
-                                    <ApprovalRow
-                                        title="Cozy 2BHK Apartment"
-                                        address="Whitefield, Bangalore"
-                                        price="₹45,000/mo"
-                                        user="Sarah Owner"
-                                        role="Landlord"
-                                        date="5h ago"
-                                    />
-                                    <ApprovalRow
-                                        title="Commercial Office Space"
-                                        address="Indiranagar, Bangalore"
-                                        price="₹1.2 L/mo"
-                                        user="Tech Parks Inc"
-                                        role="Landlord"
-                                        date="Yesterday"
-                                    />
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-6 text-center text-slate-500">
+                                                Loading pending listings...
+                                            </td>
+                                        </tr>
+                                    ) : pendingProperties.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-6 text-center text-slate-500">
+                                                No pending properties
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                    pendingProperties.map((property) => (
+                                        <ApprovalRow
+                                            key={property.id}
+                                            propertyId={property.id}
+                                            title={property.title}
+                                            address={property.address || property.city || "N/A"}
+                                            price={
+                                                property.expectedPrice
+                                                    ? `₹${property.expectedPrice}`
+                                                    : property.monthlyRent
+                                                        ? `₹${property.monthlyRent}/mo`
+                                                        : "N/A"
+                                            }
+                                            user={property.ownerId || "Owner"}
+                                            role="Landlord"
+                                            date={new Date(property.createdAt).toLocaleDateString()}
+                                            onApprove={handleApprove}
+                                            onReject={handleReject}
+                                        />
+                                    ))     
+                                )}
                                 </tbody>
                             </table>
                         </div>
+
                         <div className="p-4 border-t border-slate-100 bg-slate-50/50 text-center mt-auto">
-                            <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors duration-200 ease-in-out">View all pending items</button>
+                            <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors duration-200 ease-in-out">
+                                View all pending items
+                            </button>
                         </div>
                     </Card>
-                </div>
-
-                {/* Right Column: User Management & Platform Health */}
-                <div className="space-y-8 flex flex-col">
-
-                    {/* 3. User Management */}
-                    <Card className="p-0 overflow-hidden hover:shadow-md transition-shadow duration-200 ease-in-out">
-                        <div className="px-6 py-5 border-b border-slate-200">
-                            <h2 className="text-base font-bold text-slate-900 tracking-tight">Recent Signups</h2>
-                        </div>
-                        <div className="divide-y divide-slate-100">
-                            <UserRow name="Michael Chen" email="michael@gm..." role="Buyer" />
-                            <UserRow name="Priya Patel" email="priya.p@est..." role="Agent" />
-                            <UserRow name="Robert Fox" email="rob@invest..." role="Landlord" />
-                            <UserRow name="Alice Smith" email="alice@outl..." role="Buyer" />
-                        </div>
-                        <div className="p-4 text-center border-t border-slate-100 bg-slate-50/50">
-                            <button className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200 ease-in-out">Manage Users</button>
-                        </div>
-                    </Card>
-
-                    {/* 4. Platform Health */}
-                    <Card className="p-0 overflow-hidden hover:shadow-md transition-shadow duration-200 ease-in-out">
-                        <div className="px-6 py-5 border-b border-slate-200">
-                            <h2 className="text-base font-bold text-slate-900 tracking-tight">System Status</h2>
-                        </div>
-                        <div className="p-6 space-y-5">
-                            <SystemAlert label="Server Load" status="Normal" color="text-emerald-600" />
-                            <SystemAlert label="Database Backup" status="2h ago" color="text-slate-500" />
-                            <SystemAlert label="API Latency" status="45ms" color="text-emerald-600" />
-
-                            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-                                <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
-                                <p className="text-sm text-slate-700 leading-snug">
-                                    <span className="font-semibold text-amber-700 block mb-0.5">Warning</span>
-                                    High volume of image uploads detected. Review storage limits.
-                                </p>
-                            </div>
-                        </div>
-                    </Card>
-
                 </div>
             </div>
+        {rejectModal.open && (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 animate-in fade-in zoom-in-95">
+            <h2 className="text-lg font-semibold text-slate-900">
+                Reject Property
+            </h2>
+
+            <p className="text-sm text-slate-500">
+                Provide a reason for rejection. This will be shown to the owner.
+            </p>
+
+            <textarea
+                value={rejectMessage}
+                onChange={(e) => setRejectMessage(e.target.value)}
+                placeholder="Enter rejection reason..."
+                className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                rows={4}
+            />
+
+            <div className="flex justify-end gap-2 pt-2">
+                <button
+                    onClick={() => {
+                        setRejectModal({ open: false, propertyId: null });
+                        setRejectMessage("");
+                    }}
+                    className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-100">
+                    Cancel
+                </button>
+
+                <button
+                    onClick={async () => {
+                        if (!rejectMessage.trim()) return alert("Message required");
+
+                        try {
+                            setRejectLoading(true);
+
+                            await apiRequest(`/admin/properties/${rejectModal.propertyId}/reject`, {
+                                method: "PATCH",
+                                body: { message: rejectMessage }
+                            });
+
+                            setPendingProperties(prev =>
+                                prev.filter(p => p.id !== rejectModal.propertyId)
+                            );
+
+                            setRejectModal({ open: false, propertyId: null });
+                            setRejectMessage("");
+
+                        } catch (err) {
+                            console.error(err);
+                            alert("Failed to reject property");
+                        } finally {
+                            setRejectLoading(false);
+                        }
+                    }}
+                    className="px-4 py-2 text-sm rounded-lg bg-rose-500 text-white hover:bg-rose-600">
+                    {rejectLoading ? "Rejecting..." : "Confirm Reject"}
+                </button>
+            </div>
+        </div>
+    </div>
+)}    
         </div>
     );
 }
@@ -193,7 +273,7 @@ function ControlTile({ label, value, trend, trendColor, icon, iconBg }) {
     )
 }
 
-function ApprovalRow({ title, address, price, user, role, date }) {
+function ApprovalRow({ title, address, price, user, role, date, propertyId, onApprove, onReject }) {
     return (
         <tr className="hover:bg-slate-50 group transition-colors duration-200 ease-in-out">
             <td className="px-6 py-4">
@@ -210,13 +290,17 @@ function ApprovalRow({ title, address, price, user, role, date }) {
             <td className="px-6 py-4 text-sm text-slate-500">{date}</td>
             <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-2">
-                    <Link href="/dashboard/admin/properties/123" className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-100 transition-colors duration-200 shadow-sm">
+                    <Link href={`/dashboard/admin/properties/${propertyId}`} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-100 transition-colors duration-200 shadow-sm">
                         View
                     </Link>
-                    <button className="flex items-center justify-center px-3 py-1.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors duration-200 shadow-sm gap-1.5 text-sm font-medium">
+                    <button
+                        onClick={() => onApprove(propertyId)}
+                        className="flex items-center justify-center px-3 py-1.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors duration-200 shadow-sm gap-1.5 text-sm font-medium">
                         <Check size={16} /> Approve
                     </button>
-                    <button className="flex items-center justify-center px-3 py-1.5 rounded-lg bg-rose-500 text-white hover:bg-rose-600 transition-colors duration-200 shadow-sm gap-1.5 text-sm font-medium">
+                    <button
+                        onClick={() => onReject(propertyId)}
+                        className="flex items-center justify-center px-3 py-1.5 rounded-lg bg-rose-500 text-white hover:bg-rose-600 transition-colors duration-200 shadow-sm gap-1.5 text-sm font-medium">
                         <X size={16} /> Reject
                     </button>
                 </div>

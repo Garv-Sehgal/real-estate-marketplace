@@ -3,6 +3,7 @@ import { INITIAL_STATE } from './constants';
 import { STEPS } from './config';
 import { saveDraft, getDraft, clearDraft } from './utils/draftStorage';
 import { compressImage } from './utils/imageCompression';
+import { apiRequest } from '@/lib/api';
 
 export function useListingForm() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -312,29 +313,67 @@ export function useListingForm() {
         });
     };
 
-    const submitForm = async () => {
+const submitForm = async () => {
+    try {
         setIsSubmitting(true);
 
-        // Simulate API call
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // Finalize data
-                const finalData = {
-                    ...formData,
-                    listingStatus: 'pending', // Pending Admin Review
-                    updatedAt: new Date().toISOString()
-                };
+        // 🔁 Transform frontend formData → backend schema
+        const payload = {
+            title: formData.title,
+            description: formData.description || "",
 
-                console.log('Final Submission Data:', finalData);
+            category: formData.category?.toLowerCase(),
+            listingType: formData.listingType?.toLowerCase(),
 
-                // UX Cleanup
-                clearDraft(); // Remove draft on success
-                setIsSubmitting(false);
-                setShowSuccessModal(true);
-                resolve(true);
-            }, 2000);
+            city: formData.city,
+            address: formData.address,
+            latitude: formData.latitude || null,
+            longitude: formData.longitude || null,
+
+            pricing: {
+                expectedPrice: Number(String(formData.expectedPrice || "").replace(/,/g, "")),
+                monthlyRent: formData.monthlyRent ? Number(formData.monthlyRent) : undefined,
+                securityDeposit: formData.securityDeposit ? Number(formData.securityDeposit) : undefined,
+            },
+
+            details: {
+                propertyType: formData.propertyType,
+                bedrooms: parseInt(formData.bhkConfiguration) || undefined,
+                bathrooms: parseInt(formData.bathrooms) || undefined,
+                balconies: parseInt(formData.balconies) || undefined,
+                floor: parseInt(formData.floorNumber) || undefined,
+                totalFloors: parseInt(formData.totalFloors) || undefined,
+                furnishing: formData.furnishingStatus,
+                facing: formData.facing,
+                superArea: formData.superArea ? Number(formData.superArea) : undefined,
+                carpetArea: formData.carpetArea ? Number(formData.carpetArea) : undefined,
+            },
+
+            amenities: formData.amenities || [],
+            images: [], // image upload later (phase 2)
+        };
+
+        console.log("FINAL PAYLOAD →", payload);
+
+        const response = await apiRequest('/property', {
+            method: 'POST',
+            body: JSON.stringify(payload),
         });
-    };
+
+        console.log("Backend response:", response);
+
+        clearDraft();
+        setShowSuccessModal(true);
+
+        return true;
+    } catch (error) {
+        console.error("Submission failed:", error);
+        alert(error.message || "Failed to submit property");
+        return false;
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
     return {
         currentStep,

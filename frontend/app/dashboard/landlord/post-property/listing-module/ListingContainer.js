@@ -87,9 +87,15 @@ const ListingContainer = () => {
                                 <VerificationStep isActive={true} formData={formData} handleFileUpload={handleFileUpload} removeFile={removeFile} setFieldValue={setFieldValue} />
                             )}
                             {activeStepObj?.key === 'review' && (
-                                <ReviewStep isActive={true} formData={formData} goToStep={goToStep} />
-                            )}
-                        </div>
+                                <ReviewStep
+                                    isActive={true}
+                                    formData={formData}
+                                    goToStep={goToStep}
+                                    submitForm={submitForm}
+                                    isSubmitting={isSubmitting}
+                                />
+                            )}          
+              </div>
                     </div>
 
                     {/* INLINE BOTTOM NAVIGATION */}

@@ -6,16 +6,33 @@ export async function apiRequest(endpoint, options = {}) {
             ? localStorage.getItem("accessToken")
             : null;
 
+    let body = options.body;
+    let headers = options.headers || {};
+
+    // ✅ Only stringify plain objects
+    if (body && typeof body === "object" && !(body instanceof FormData)) {
+        body = JSON.stringify(body);
+        headers["Content-Type"] = "application/json";
+    }
+
     const res = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        body,
         headers: {
-            "Content-Type": "application/json",
             ...(token && { Authorization: `Bearer ${token}` }),
+            ...headers,
         },
         credentials: "include",
-        ...options,
     });
 
-    const data = await res.json();
+    const text = await res.text();
+
+    let data;
+    try {
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        throw new Error(text || "Invalid server response");
+    }
 
     if (!res.ok) {
         throw new Error(data.message || "Something went wrong");

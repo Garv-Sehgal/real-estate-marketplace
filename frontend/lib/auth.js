@@ -6,7 +6,7 @@ import { apiRequest } from "./api";
 export async function loginUser(identifier, password) {
     const data = await apiRequest("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ identifier, password }),
+        body: { identifier, password },   // ❌ removed stringify
     });
 
     saveAuthSession(data.data);
@@ -18,7 +18,6 @@ export async function loginUser(identifier, password) {
 ========================= */
 export async function requestSignupOTP(payload) {
 
-    // send exactly what backend expects
     const body = {
         fullName: payload.fullName,
         phone: payload.phone,
@@ -29,7 +28,7 @@ export async function requestSignupOTP(payload) {
 
     const data = await apiRequest("/auth/signup/request-otp", {
         method: "POST",
-        body: JSON.stringify(body),
+        body: body,   // ❌ removed stringify
     });
 
     return data;
@@ -41,7 +40,7 @@ export async function requestSignupOTP(payload) {
 export async function verifySignupOTP(payload) {
     const data = await apiRequest("/auth/signup/verify-otp", {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: payload,   // ❌ removed stringify
     });
 
     saveAuthSession(data.data);
