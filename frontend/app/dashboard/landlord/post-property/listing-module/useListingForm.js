@@ -313,67 +313,83 @@ export function useListingForm() {
         });
     };
 
-const submitForm = async () => {
-    try {
-        setIsSubmitting(true);
+    const submitForm = async () => {
+        try {
+            setIsSubmitting(true);
 
-        // 🔁 Transform frontend formData → backend schema
-        const payload = {
-            title: formData.title,
-            description: formData.description || "",
+            // 1. Validate title presence
+            if (!formData.title?.trim()) {
+                throw new Error("Property title missing from payload");
+            }
 
-            category: formData.category?.toLowerCase(),
-            listingType: formData.listingType?.toLowerCase(),
+            // 2. Assemble FormData for flat parameters and file uploads
+            const formPayload = new FormData();
 
-            city: formData.city,
-            address: formData.address,
-            latitude: formData.latitude || null,
-            longitude: formData.longitude || null,
+            // Safely map all flat primitive fields
+            Object.keys(formData).forEach(key => {
+                const value = formData[key];
 
-            pricing: {
-                expectedPrice: Number(String(formData.expectedPrice || "").replace(/,/g, "")),
-                monthlyRent: formData.monthlyRent ? Number(formData.monthlyRent) : undefined,
-                securityDeposit: formData.securityDeposit ? Number(formData.securityDeposit) : undefined,
-            },
+                // Exclude complex file objects or internal statics
+                if (key === 'coverImage' || key === 'govtId' || key === 'ownershipProof' || key === 'basicInfoMedia') {
+                    return;
+                }
 
-            details: {
-                propertyType: formData.propertyType,
-                bedrooms: parseInt(formData.bhkConfiguration) || undefined,
-                bathrooms: parseInt(formData.bathrooms) || undefined,
-                balconies: parseInt(formData.balconies) || undefined,
-                floor: parseInt(formData.floorNumber) || undefined,
-                totalFloors: parseInt(formData.totalFloors) || undefined,
-                furnishing: formData.furnishingStatus,
-                facing: formData.facing,
-                superArea: formData.superArea ? Number(formData.superArea) : undefined,
-                carpetArea: formData.carpetArea ? Number(formData.carpetArea) : undefined,
-            },
+                if (key === 'bhkConfiguration') {
+                    if (value) formPayload.append('bhk', value);
+                } else if (key === 'nearbyFacilities' || key === 'amenities') {
+                    if (Array.isArray(value)) {
+                        formPayload.append(key, JSON.stringify(value));
+                    }
+                } else if (value !== null && value !== undefined && value !== '') {
+                    formPayload.append(key, String(value));
+                }
+            });
 
-            amenities: formData.amenities || [],
-            images: [], // image upload later (phase 2)
-        };
+            // Append Files
+            if (formData.coverImage?.file) {
+                formPayload.append("coverImage", formData.coverImage.file);
+            }
 
-        console.log("FINAL PAYLOAD →", payload);
+            if (formData.govtId?.file) {
+                formPayload.append("govtId", formData.govtId.file);
+            }
 
-        const response = await apiRequest('/property', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-        });
+            if (formData.ownershipProof?.file) {
+                formPayload.append("ownershipProof", formData.ownershipProof.file);
+            }
 
-        console.log("Backend response:", response);
+            if (formData.basicInfoMedia && formData.basicInfoMedia.length > 0) {
+                formData.basicInfoMedia.forEach((mediaItem) => {
+                    if (mediaItem.file) {
+                        formPayload.append("images", mediaItem.file);
+                    }
+                });
+            }
 
-        clearDraft();
-        setShowSuccessModal(true);
+            console.log("FINAL FLAT PAYLOAD →", Object.fromEntries(formPayload.entries()));
 
-        return true;
-    } catch (error) {
-        console.error("Submission failed:", error);
-        alert(error.message || "Failed to submit property");
-        return false;
-    } finally {
-        setIsSubmitting(false);
-    }
-};
+            // 4. Send Request (FormData doesn't need Content-Type header manually set, browser does it)
+            const response = await apiRequest('/property', {
+                method: 'POST',
+                body: formPayload,
+                // Do NOT stringify FormData. Delete headers allowing browser boundary injection.
+                headers: {}
+            });
+
+            console.log("Backend response:", response);
+
+            clearDraft();
+            setShowSuccessModal(true);
+
+            return true;
+        } catch (error) {
+            console.error("Submission failed:", error);
+            alert(error.message || "Failed to submit property");
+            return false;
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return {
         currentStep,

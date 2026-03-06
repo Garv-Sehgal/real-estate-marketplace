@@ -1,8 +1,176 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { apiRequest } from '@/lib/api';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
+function getImageUrl(property) {
+    const raw = property.coverImage || (property.images && property.images[0]);
+    if (!raw) return null;
+    // Already an absolute URL
+    if (raw.startsWith('http')) return raw;
+    // Relative path – prefix with backend base
+    const base = API_BASE.replace('/api/v1', '');
+    return `${base}${raw}`;
+}
+
+function formatPrice(property) {
+    const p = property.pricing || {};
+    const amount = p.expectedPrice || p.monthlyRent || p.rentPerBed;
+    if (!amount) return 'Price on request';
+    const suffix = p.monthlyRent ? '/mo' : p.rentPerBed ? '/bed' : '';
+    if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr${suffix}`;
+    if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L${suffix}`;
+    return `₹${amount.toLocaleString('en-IN')}${suffix}`;
+}
+
+function FeaturedListings() {
+    const router = useRouter();
+    const [properties, setProperties] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchListings() {
+            try {
+                const res = await apiRequest('/property');
+                setProperties(res.data || []);
+            } catch (err) {
+                console.error('Failed to fetch featured listings:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchListings();
+    }, []);
+
+    const listingTypeBadge = (type) => {
+        if (!type) return null;
+        const t = type.toLowerCase();
+        if (t === 'sell') return { label: 'Sale', color: 'bg-blue-600' };
+        if (t === 'rent') return { label: 'Rent', color: 'bg-emerald-500' };
+        if (t === 'pg') return { label: 'PG', color: 'bg-purple-600' };
+        return { label: type, color: 'bg-slate-600' };
+    };
+
+    return (
+        <section className="bg-gray-50 py-16">
+            <div className="w-full px-6 md:px-12 lg:px-16">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                    <div>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Featured Listings</h2>
+                        <p className="text-gray-600 mt-2">Explore approved properties from our verified owners</p>
+                    </div>
+                    <Link href="/properties" className="text-blue-600 font-bold flex items-center gap-1 hover:underline">
+                        View All <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    </Link>
+                </div>
+
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="bg-white rounded-[2rem] overflow-hidden border border-gray-200 animate-pulse">
+                                <div className="h-56 bg-gray-200" />
+                                <div className="p-6 space-y-4">
+                                    <div className="h-5 bg-gray-200 rounded w-3/4" />
+                                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                                    <div className="h-4 bg-gray-200 rounded w-full" />
+                                    <div className="h-10 bg-gray-200 rounded-2xl" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : properties.length === 0 ? (
+                    <div className="text-center py-20 text-gray-500">
+                        <span className="material-symbols-outlined text-6xl mb-4 block text-gray-300">home</span>
+                        <p className="text-xl font-semibold">No listings available yet</p>
+                        <p className="text-sm mt-2">Check back soon for approved properties.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {properties.map((property) => {
+                            const imgUrl = getImageUrl(property);
+                            const price = formatPrice(property);
+                            const badge = listingTypeBadge(property.listingType);
+                            const city = property.location?.city || property.location?.locality || 'India';
+                            const address = [property.location?.locality, city].filter(Boolean).join(', ');
+                            const bhk = property.details?.bhk || (property.details?.bedrooms ? `${property.details.bedrooms} BHK` : null);
+                            const area = property.details?.superArea || property.details?.carpetArea;
+                            const baths = property.details?.bathrooms;
+
+                            return (
+                                <div
+                                    key={property.id}
+                                    onClick={() => router.push(`/properties/${property.id}`)}
+                                    className="bg-white rounded-[2rem] overflow-hidden border border-gray-200 group hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                                >
+                                    <div className="relative h-56 overflow-hidden bg-gray-100">
+                                        {imgUrl ? (
+                                            <img
+                                                src={imgUrl}
+                                                alt={property.title}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                                                <span className="material-symbols-outlined text-5xl">image</span>
+                                                <span className="text-xs mt-2">No image</span>
+                                            </div>
+                                        )}
+                                        {badge && (
+                                            <div className="absolute top-4 left-4">
+                                                <span className={`${badge.color} text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider`}>
+                                                    {badge.label}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-6">
+                                        <div className="flex justify-between items-start mb-2 gap-2">
+                                            <h3 className="font-bold text-gray-900 text-base leading-tight truncate flex-1">{property.title}</h3>
+                                            <span className="text-blue-600 font-black text-sm whitespace-nowrap">{price}</span>
+                                        </div>
+                                        <p className="text-gray-500 text-xs flex items-center gap-1 mb-4 truncate">
+                                            <span className="material-symbols-outlined text-sm">location_on</span>
+                                            {address || 'Location not specified'}
+                                        </p>
+                                        <div className="flex items-center gap-3 py-4 border-y border-gray-100 mb-4 text-xs">
+                                            {bhk && (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-gray-400 text-base">bed</span>
+                                                    <span className="font-bold">{bhk}</span>
+                                                </div>
+                                            )}
+                                            {baths && (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-gray-400 text-base">bathtub</span>
+                                                    <span className="font-bold">{baths} Bath{baths > 1 ? 's' : ''}</span>
+                                                </div>
+                                            )}
+                                            {area && (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-gray-400 text-base">square_foot</span>
+                                                    <span className="font-bold">{area} sqft</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button className="w-full py-3 bg-slate-900 text-white text-sm font-bold rounded-2xl hover:bg-blue-600 transition-all transform hover:scale-[1.02]">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+}
 
 const HomeExtensions = () => {
     const router = useRouter();
@@ -50,182 +218,8 @@ const HomeExtensions = () => {
             </section>
 
             {/* Featured Listings */}
-            <section className="bg-gray-50 py-16">
-                <div className="w-full px-6 md:px-12 lg:px-16">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-                        <div>
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Featured Listings</h2>
-                            <p className="text-gray-600 mt-2">Handpicked premium properties for you</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button className="w-10 h-10 flex items-center justify-center border border-gray-200 rounded-full hover:bg-white transition-colors">
-                                <span className="material-symbols-outlined">chevron_left</span>
-                            </button>
-                            <button className="w-10 h-10 flex items-center justify-center border border-gray-200 rounded-full hover:bg-white transition-colors">
-                                <span className="material-symbols-outlined">chevron_right</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {/* Listing 1 */}
-                        <div className="bg-white rounded-[2rem] overflow-hidden border border-gray-200 group hover:shadow-2xl transition-all duration-500">
-                            <div className="relative h-72 overflow-hidden">
-                                <img alt="Modern Penthouse" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=2340&q=80" />
-                                <div className="absolute top-6 left-6 flex gap-2">
-                                    <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Premium</span>
-                                </div>
-                                <button className="absolute top-6 right-6 w-10 h-10 bg-white/30 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">favorite</span>
-                                </button>
-                            </div>
-                            <div className="p-8">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">Skyline Penthouse</h3>
-                                    <span className="text-blue-600 font-black text-2xl">$2.4M</span>
-                                </div>
-                                <p className="text-gray-600 text-sm flex items-center gap-1 mb-8">
-                                    <span className="material-symbols-outlined text-base">location_on</span>
-                                    Downtown District, San Francisco
-                                </p>
-                                <div className="flex items-center justify-between py-6 border-y border-gray-200 mb-8">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bed</span>
-                                        <span className="text-sm font-bold">4 Beds</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bathtub</span>
-                                        <span className="text-sm font-bold">3 Baths</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">square_foot</span>
-                                        <span className="text-sm font-bold">3.2k sqft</span>
-                                    </div>
-                                </div>
-                                <button className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 transition-all transform hover:scale-[1.02]">
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                        {/* Listing 2 */}
-                        <div className="bg-white rounded-[2rem] overflow-hidden border border-gray-200 group hover:shadow-2xl transition-all duration-500">
-                            <div className="relative h-72 overflow-hidden">
-                                <img alt="Modern Villa" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" />
-                                <div className="absolute top-6 left-6">
-                                    <span className="bg-emerald-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Verified</span>
-                                </div>
-                                <button className="absolute top-6 right-6 w-10 h-10 bg-white/30 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">favorite</span>
-                                </button>
-                            </div>
-                            <div className="p-8">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">Garden Oasis</h3>
-                                    <span className="text-blue-600 font-black text-2xl">$1.8M</span>
-                                </div>
-                                <p className="text-gray-600 text-sm flex items-center gap-1 mb-8">
-                                    <span className="material-symbols-outlined text-base">location_on</span>
-                                    Malibu Heights, CA
-                                </p>
-                                <div className="flex items-center justify-between py-6 border-y border-gray-200 mb-8">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bed</span>
-                                        <span className="text-sm font-bold">5 Beds</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bathtub</span>
-                                        <span className="text-sm font-bold">4 Baths</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">square_foot</span>
-                                        <span className="text-sm font-bold">4.5k sqft</span>
-                                    </div>
-                                </div>
-                                <button className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 transition-all transform hover:scale-[1.02]">
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                        {/* Listing 3 */}
-                        <div className="bg-white rounded-[2rem] overflow-hidden border border-gray-200 group hover:shadow-2xl transition-all duration-500">
-                            <div className="relative h-72 overflow-hidden">
-                                <img alt="Modern Home" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2053&q=80" />
-                                <div className="absolute top-6 left-6">
-                                    <span className="bg-orange-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">New</span>
-                                </div>
-                                <button className="absolute top-6 right-6 w-10 h-10 bg-white/30 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">favorite</span>
-                                </button>
-                            </div>
-                            <div className="p-8">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">Minimalist Smart</h3>
-                                    <span className="text-blue-600 font-black text-2xl">$950k</span>
-                                </div>
-                                <p className="text-gray-600 text-sm flex items-center gap-1 mb-8">
-                                    <span className="material-symbols-outlined text-base">location_on</span>
-                                    Austin Tech Ridge, TX
-                                </p>
-                                <div className="flex items-center justify-between py-6 border-y border-gray-200 mb-8">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bed</span>
-                                        <span className="text-sm font-bold">3 Beds</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bathtub</span>
-                                        <span className="text-sm font-bold">2 Baths</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">square_foot</span>
-                                        <span className="text-sm font-bold">2.1k sqft</span>
-                                    </div>
-                                </div>
-                                <button className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 transition-all transform hover:scale-[1.02]">
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                        {/* Listing 4 - New */}
-                        <div className="bg-white rounded-[2rem] overflow-hidden border border-gray-200 group hover:shadow-2xl transition-all duration-500">
-                            <div className="relative h-72 overflow-hidden">
-                                <img alt="Luxury Loft" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" />
-                                <div className="absolute top-6 left-6">
-                                    <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Hot</span>
-                                </div>
-                                <button className="absolute top-6 right-6 w-10 h-10 bg-white/30 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-xl">favorite</span>
-                                </button>
-                            </div>
-                            <div className="p-8">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-900">Urban Loft</h3>
-                                    <span className="text-blue-600 font-black text-2xl">$1.2M</span>
-                                </div>
-                                <p className="text-gray-600 text-sm flex items-center gap-1 mb-8">
-                                    <span className="material-symbols-outlined text-base">location_on</span>
-                                    SoHo, New York, NY
-                                </p>
-                                <div className="flex items-center justify-between py-6 border-y border-gray-200 mb-8">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bed</span>
-                                        <span className="text-sm font-bold">2 Beds</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">bathtub</span>
-                                        <span className="text-sm font-bold">2 Baths</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gray-400">square_foot</span>
-                                        <span className="text-sm font-bold">1.8k sqft</span>
-                                    </div>
-                                </div>
-                                <button className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-blue-600 transition-all transform hover:scale-[1.02]">
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <FeaturedListings />
+
 
             {/* Map Preview Section */}
             <section className="py-24 w-full px-6 md:px-12 lg:px-16">

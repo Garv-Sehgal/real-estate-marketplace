@@ -1,117 +1,85 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import PropertyCard from '@/components/PropertyCard';
 import CompareBar from '@/components/CompareBar';
 import { X, Map as MapIcon, ChevronDown, Filter, List, ArrowRight, ArrowLeft, Loader } from 'lucide-react';
 
-// Mock Data
-const MOCK_PROPERTIES = [
-    {
-        id: 1,
-        title: "3 BHK Luxury Apartment",
-        location: "Indiranagar, Bangalore",
-        price: "₹ 1.25 Cr",
-        pricePerSqft: "₹ 6,750 per sqft",
-        bhk: "3 BHK",
-        area: "1850 sqft",
-        baths: "3 Baths",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 12,
-        isVerified: true,
-        tag: "Trending",
-        coordinates: { top: '30%', left: '40%' }
-    },
-    {
-        id: 2,
-        title: "4 BHK Premium Villa",
-        location: "Whitefield, Bangalore",
-        price: "₹ 3.50 Cr",
-        pricePerSqft: "₹ 9,200 per sqft",
-        bhk: "4 BHK",
-        area: "3200 sqft",
-        baths: "4 Baths",
-        status: "Under Construction",
-        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 18,
-        isVerified: true,
-        tag: "New Launch",
-        coordinates: { top: '50%', left: '60%' }
-    },
-    {
-        id: 3,
-        title: "2 BHK Cozy Flat",
-        location: "Koramangala, Bangalore",
-        price: "₹ 85 L",
-        pricePerSqft: "₹ 7,100 per sqft",
-        bhk: "2 BHK",
-        area: "1200 sqft",
-        baths: "2 Baths",
-        status: "Resale",
-        image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 8,
-        isVerified: false,
-        tag: "",
-        coordinates: { top: '20%', left: '70%' }
-    },
-    {
-        id: 4,
-        title: "3 BHK Garden Facing",
-        location: "Hebbal, Bangalore",
-        price: "₹ 1.10 Cr",
-        pricePerSqft: "₹ 6,400 per sqft",
-        bhk: "3 BHK",
-        area: "1650 sqft",
-        baths: "3 Baths",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1599809275372-b40c369dd6cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 15,
-        isVerified: true,
-        tag: "Featured",
-        coordinates: { top: '60%', left: '30%' }
-    },
-    {
-        id: 5,
-        title: "Ultra Modern Penthouse",
-        location: "MG Road, Bangalore",
-        price: "₹ 5.50 Cr",
-        pricePerSqft: "₹ 12,000 per sqft",
-        bhk: "4+ BHK",
-        area: "4500 sqft",
-        baths: "5 Baths",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1600607687644-c7171b42498f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 22,
-        isVerified: true,
-        tag: "Premium",
-        coordinates: { top: '40%', left: '20%' }
-    },
-    {
-        id: 6,
-        title: "Compact Studio",
-        location: "Electronic City, Bangalore",
-        price: "₹ 45 L",
-        pricePerSqft: "₹ 5,200 per sqft",
-        bhk: "1 BHK",
-        area: "850 sqft",
-        baths: "1 Bath",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1592595896551-12b371d546d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 6,
-        isVerified: false,
-        tag: "Best Value",
-        coordinates: { top: '70%', left: '80%' }
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const BACKEND_BASE = API_BASE.replace('/api/v1', '');
+
+function mapPropertyToCard(p) {
+    const raw = p.coverImage || (p.images && p.images[0]);
+    const imgUrl = raw ? (raw.startsWith('http') ? raw : `${BACKEND_BASE}${raw}`) : null;
+
+    const pricing = p.pricing || {};
+    const amount = pricing.expectedPrice || pricing.monthlyRent || pricing.rentPerBed;
+    let price = 'Price on request';
+    if (amount) {
+        const suffix = pricing.monthlyRent ? '/mo' : pricing.rentPerBed ? '/bed' : '';
+        if (amount >= 10000000) price = `₹ ${(amount / 10000000).toFixed(2)} Cr${suffix}`;
+        else if (amount >= 100000) price = `₹ ${(amount / 100000).toFixed(1)} L${suffix}`;
+        else price = `₹ ${amount.toLocaleString('en-IN')}${suffix}`;
     }
-];
+
+    const city = p.location?.city || p.location?.locality || '';
+    const locality = p.location?.locality || '';
+    const location = [locality, city].filter(Boolean).join(', ') || 'Location not specified';
+
+    const details = p.details || {};
+    const bhk = details.bhk || (details.bedrooms ? `${details.bedrooms} BHK` : null) || '—';
+    const area = details.superArea || details.carpetArea;
+    const baths = details.bathrooms;
+
+    const listingTag = { sell: 'For Sale', rent: 'For Rent', pg: 'PG' }[p.listingType?.toLowerCase()];
+
+    return {
+        id: p._id || p.id,
+        title: p.title || 'Untitled',
+        location,
+        price,
+        pricePerSqft: '',
+        bhk,
+        area: area ? `${area} sqft` : '—',
+        baths: baths ? `${baths} Bath${baths > 1 ? 's' : ''}` : '—',
+        status: details.availabilityStatus || details.availableFrom || listingTag || '—',
+        image: imgUrl,
+        photos: p.images?.length || 0,
+        isVerified: false,
+        tag: listingTag || '',
+    };
+}
+
+
 
 export default function PropertiesPage() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     const [sortBy, setSortBy] = useState('newest');
     const [viewMode, setViewMode] = useState('list'); // 'list' | 'map'
     const [activePropertyId, setActivePropertyId] = useState(null);
+
+    // Real properties state
+    const [properties, setProperties] = useState([]);
+    const [loadingProps, setLoadingProps] = useState(true);
+
+    useEffect(() => {
+        async function fetchProperties() {
+            try {
+                const res = await fetch(`${API_BASE}/property`);
+                const json = await res.json();
+                const mapped = (json.data || []).map(mapPropertyToCard);
+                setProperties(mapped);
+            } catch (err) {
+                console.error('Failed to fetch properties', err);
+            } finally {
+                setLoadingProps(false);
+            }
+        }
+        fetchProperties();
+    }, []);
 
     // Handle initial view mode from URL
     useEffect(() => {
@@ -164,11 +132,11 @@ export default function PropertiesPage() {
     };
 
     const handleMobileNext = () => {
-        setCurrentMobileIndex((prev) => (prev + 1) % MOCK_PROPERTIES.length);
+        setCurrentMobileIndex((prev) => (prev + 1) % properties.length);
     };
 
     const handleMobilePrev = () => {
-        setCurrentMobileIndex((prev) => (prev - 1 + MOCK_PROPERTIES.length) % MOCK_PROPERTIES.length);
+        setCurrentMobileIndex((prev) => (prev - 1 + properties.length) % properties.length);
     };
 
     const FilterSection = ({ title, children, isOpen = true }) => (
@@ -278,26 +246,26 @@ export default function PropertiesPage() {
                 </div>
 
                 {/* Price Markers */}
-                {MOCK_PROPERTIES.map((property) => (
+                {properties.map((property, idx) => (
                     <div
                         key={property.id}
-                        className={`absolute cursor-pointer transition-all duration-300 transform hover:scale-110 hover:z-10 ${activeMarker === property.id ? 'z-20 scale-110' : 'z-0'}`}
-                        style={{ top: property.coordinates.top, left: property.coordinates.left }}
+                        className={`absolute cursor-pointer transition-all duration-300 transform hover:scale-110 hover:z-10 ${activePropertyId === property.id ? 'z-20 scale-110' : 'z-0'}`}
+                        style={{ top: `${20 + (idx * 13) % 60}%`, left: `${15 + (idx * 17) % 70}%` }}
                         onMouseEnter={() => setActivePropertyId(property.id)}
                         onMouseLeave={() => setActivePropertyId(null)}
                         onClick={() => {
-                            if (window.innerWidth < 1024) setCurrentMobileIndex(MOCK_PROPERTIES.findIndex(p => p.id === property.id));
+                            if (window.innerWidth < 1024) setCurrentMobileIndex(properties.findIndex(p => p.id === property.id));
                         }}
                     >
                         <div className={`
                 px-3 py-1.5 rounded-full shadow-lg text-xs font-bold border flex items-center gap-1
-                ${activeMarker === property.id ? 'bg-[#4169E1] text-white border-[#4169E1]' : 'bg-white text-gray-900 border-gray-300 group-hover:border-[#4169E1]'}
+                ${activePropertyId === property.id ? 'bg-[#4169E1] text-white border-[#4169E1]' : 'bg-white text-gray-900 border-gray-300 group-hover:border-[#4169E1]'}
               `}>
                             {property.price}
-                            {activeMarker === property.id && <div className="w-2 h-2 bg-white rounded-full ml-1 animate-pulse"></div>}
+                            {activePropertyId === property.id && <div className="w-2 h-2 bg-white rounded-full ml-1 animate-pulse"></div>}
                         </div>
                         {/* Pointer Triangle */}
-                        <div className={`w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 mx-auto ${activeMarker === property.id ? 'border-t-[#4169E1]' : 'border-t-white'}`}></div>
+                        <div className={`w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 mx-auto ${activePropertyId === property.id ? 'border-t-[#4169E1]' : 'border-t-white'}`}></div>
                     </div>
                 ))}
 
@@ -393,7 +361,7 @@ export default function PropertiesPage() {
                     <main className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-6">
                             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-                                {MOCK_PROPERTIES.length} Premium Properties for Sale in Bangalore
+                                {loadingProps ? 'Loading properties…' : `${properties.length} ${properties.length === 1 ? 'Property' : 'Properties'} Available`}
                             </h1>
                             <div onClick={() => setViewMode('map')} className="hidden lg:flex items-center gap-2 cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm hover:shadow hover:border-[#4169E1] transition-all group">
                                 <MapIcon className="w-4 h-4 text-gray-500 group-hover:text-[#4169E1]" />
@@ -403,27 +371,55 @@ export default function PropertiesPage() {
 
                         <div onClick={() => setViewMode('map')} className="w-full h-32 bg-blue-50 border border-blue-100 rounded-lg mb-6 flex items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors">
                             <div className="flex items-center gap-2 text-[#4169E1] font-bold">
-                                <MapIcon className="w-5 h-5" /> View these {MOCK_PROPERTIES.length} properties on Map
+                                <MapIcon className="w-5 h-5" /> View {loadingProps ? '' : `${properties.length} `}properties on Map
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6">
-                            {MOCK_PROPERTIES.map((property) => (
-                                <PropertyCard
-                                    key={property.id}
-                                    property={property}
-                                    onCompare={(isChecked) => handleCompare(property, isChecked)}
-                                    isSelected={!!comparedProperties.find(p => p.id === property.id)}
-                                />
-                            ))}
-                        </div>
-                        <div className="mt-10 flex justify-center gap-2">
-                            <button className="px-4 py-2 bg-[#4169E1] text-white rounded font-bold text-sm shadow hover:bg-blue-700">1</button>
-                            <button className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded font-bold text-sm hover:bg-gray-50">2</button>
-                            <button className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded font-bold text-sm hover:bg-gray-50">3</button>
-                            <span className="px-2 py-2 text-gray-400">...</span>
-                            <button className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded font-bold text-sm hover:bg-gray-50">12</button>
-                        </div>
+                        {/* Loading skeleton */}
+                        {loadingProps && (
+                            <div className="grid grid-cols-1 gap-6">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col md:flex-row h-auto md:h-64 animate-pulse">
+                                        <div className="w-full md:w-2/5 h-56 md:h-full bg-gray-200" />
+                                        <div className="flex-1 p-5 space-y-4">
+                                            <div className="h-6 bg-gray-200 rounded w-3/4" />
+                                            <div className="h-4 bg-gray-200 rounded w-1/2" />
+                                            <div className="grid grid-cols-4 gap-4 my-4">
+                                                {[...Array(4)].map((_, j) => <div key={j} className="h-10 bg-gray-200 rounded" />)}
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <div className="h-10 bg-gray-200 rounded w-32" />
+                                                <div className="h-10 bg-gray-200 rounded w-32" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Empty state */}
+                        {!loadingProps && properties.length === 0 && (
+                            <div className="text-center py-24 text-gray-400">
+                                <span className="material-symbols-outlined text-7xl mb-4 block text-gray-200">home</span>
+                                <p className="text-xl font-bold text-gray-700">No approved properties yet</p>
+                                <p className="text-sm mt-2">Check back soon — new listings are reviewed regularly.</p>
+                            </div>
+                        )}
+
+                        {/* Real property cards */}
+                        {!loadingProps && properties.length > 0 && (
+                            <div className="grid grid-cols-1 gap-6">
+                                {properties.map((property) => (
+                                    <PropertyCard
+                                        key={property.id}
+                                        property={property}
+                                        onCompare={(isChecked) => handleCompare(property, isChecked)}
+                                        isSelected={!!comparedProperties.find(p => p.id === property.id)}
+                                        onClick={() => router.push(`/properties/${property.id}`)}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </main>
                 </div>
             ) : (
@@ -440,19 +436,20 @@ export default function PropertiesPage() {
                     {/* List Container */}
                     <div className="hidden lg:block w-1/2 overflow-y-auto h-full p-6 bg-gray-50 order-2">
                         <div className="mb-4 flex justify-between items-center">
-                            <span className="font-bold text-gray-900">{MOCK_PROPERTIES.length} Results</span>
+                            <span className="font-bold text-gray-900">{properties.length} Results</span>
                             <select className="text-sm border-gray-200 rounded bg-white p-1">
                                 <option>Newest</option>
                                 <option>Price: Low</option>
                             </select>
                         </div>
                         <div className="grid grid-cols-1 gap-6">
-                            {MOCK_PROPERTIES.map((property) => (
+                            {properties.map((property) => (
                                 <div key={property.id} id={`prop-card-${property.id}`} onMouseEnter={() => setActivePropertyId(property.id)} onMouseLeave={() => setActivePropertyId(null)}>
                                     <PropertyCard
                                         property={property}
                                         onCompare={(isChecked) => handleCompare(property, isChecked)}
                                         isSelected={!!comparedProperties.find(p => p.id === property.id)}
+                                        onClick={() => router.push(`/properties/${property.id}`)}
                                     />
                                 </div>
                             ))}
@@ -460,29 +457,34 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Mobile Floating Card View */}
-                    <div className="lg:hidden fixed bottom-6 left-4 right-4 z-50 order-3">
-                        <div className="bg-white rounded-xl shadow-2xl p-1 border border-gray-200 relative">
-                            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                {currentMobileIndex + 1} / {MOCK_PROPERTIES.length}
-                            </div>
-                            {/* Navigation Buttons for Swipe Simulation */}
-                            <button
-                                onClick={handleMobilePrev}
-                                className="absolute top-1/2 -left-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={handleMobileNext}
-                                className="absolute top-1/2 -right-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
-                            >
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
+                    {properties.length > 0 && (
+                        <div className="lg:hidden fixed bottom-6 left-4 right-4 z-50 order-3">
+                            <div className="bg-white rounded-xl shadow-2xl p-1 border border-gray-200 relative">
+                                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                    {currentMobileIndex + 1} / {properties.length}
+                                </div>
+                                {/* Navigation Buttons for Swipe Simulation */}
+                                <button
+                                    onClick={handleMobilePrev}
+                                    className="absolute top-1/2 -left-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={handleMobileNext}
+                                    className="absolute top-1/2 -right-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
+                                >
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
 
-                            {/* Compact Card View */}
-                            <PropertyCard property={MOCK_PROPERTIES[currentMobileIndex]} />
+                                {/* Compact Card View */}
+                                <PropertyCard
+                                    property={properties[currentMobileIndex]}
+                                    onClick={() => router.push(`/properties/${properties[currentMobileIndex]?.id}`)}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
 
@@ -526,7 +528,7 @@ export default function PropertiesPage() {
                                 onClick={() => setIsMobileFilterOpen(false)}
                                 className="w-full bg-[#4169E1] text-white font-bold py-3.5 rounded-lg shadow-lg"
                             >
-                                Show {MOCK_PROPERTIES.length} Properties
+                                Show {properties.length} Properties
                             </button>
                         </div>
                     </div>

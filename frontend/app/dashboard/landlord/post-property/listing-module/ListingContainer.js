@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import { ChevronLeft, Save, ShieldCheck, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useListingForm } from './useListingForm';
 import ListingStepper from './ListingStepper';
 import BasicInfoStep from './steps/BasicInfoStep';
@@ -13,6 +14,7 @@ import ReviewStep from './steps/ReviewStep'; // Review Step
 import { STEPS } from './config';
 
 const ListingContainer = () => {
+    const router = useRouter();
     const {
         currentStep,
         formData,
@@ -31,8 +33,24 @@ const ListingContainer = () => {
         removeFile,
         // Helpers
         toggleFacility
-
     } = useListingForm();
+
+    const handleReturnToDashboard = () => {
+        setShowSuccessModal(false);
+        try {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                if (user.role === 'super_admin') return router.push('/dashboard/super-admin');
+                if (user.role === 'admin') return router.push('/dashboard/admin');
+                if (user.role === 'agent') return router.push('/dashboard/agent');
+                if (user.role === 'landlord') return router.push('/dashboard/landlord');
+            }
+        } catch (e) {
+            console.error("Error parsing user context for routing:", e);
+        }
+        return router.push('/dashboard'); // Fallback for normal users/buyers
+    };
 
     // Filter visible steps based on listing type
     const visibleSteps = STEPS.filter(step => {
@@ -94,8 +112,8 @@ const ListingContainer = () => {
                                     submitForm={submitForm}
                                     isSubmitting={isSubmitting}
                                 />
-                            )}          
-              </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* INLINE BOTTOM NAVIGATION */}
@@ -164,7 +182,7 @@ const ListingContainer = () => {
                             Your listing has been submitted! Our team will verify your documents within 2-4 hours.
                         </p>
                         <button
-                            onClick={() => setShowSuccessModal(false)}
+                            onClick={handleReturnToDashboard}
                             className="w-full py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                         >
                             Return to Dashboard

@@ -1,6 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { apiRequest } from '../../../../../lib/api';
 import {
     ShieldCheck, AlertTriangle, FileText, MapPin, IndianRupee, Home, Users,
     CheckCircle2, XCircle, AlertCircle, Calendar, Download, Building, Compass,
@@ -9,86 +11,92 @@ import {
 } from 'lucide-react';
 
 // ---------------------------------------------------------
-// MOCK DATA
+// MAPPING FUNCTIONS
 // ---------------------------------------------------------
-const user = {
-    id: "USR-8891",
-    name: "John Fernandes",
-    role: "Agent",
-    email: "john.agent@example.com",
-    phone: "+91 9876543210",
-    mobileVerified: true,
-    emailVerified: false,
-    kycStatus: "verified",
-    accountCreatedAt: "2025-12-10T08:00:00Z",
-    totalListings: 4,
-    accountStatus: "active"
+const mapUser = (backendUser) => {
+    if (!backendUser) return {};
+    return {
+        id: backendUser._id || backendUser.id || "N/A",
+        name: backendUser.name || "N/A",
+        role: backendUser.role || "N/A",
+        email: backendUser.email || "N/A",
+        phone: backendUser.phone || "N/A",
+        mobileVerified: !!backendUser.mobileVerified,
+        emailVerified: !!backendUser.emailVerified,
+        kycStatus: backendUser.kycStatus || "unverified",
+        accountCreatedAt: backendUser.createdAt || backendUser.accountCreatedAt || new Date().toISOString(),
+        totalListings: backendUser.totalListings || 0,
+        accountStatus: backendUser.status || backendUser.accountStatus || "active"
+    };
 };
 
-const property = {
-    id: "PROP-10293",
-    title: "Luxury 3 BHK Penthouse in Koramangala",
-    category: "Residential",
-    propertyType: "Flat",
-    listingType: "Sell",
-    listingStatus: "pending",
-    bhk: "3 BHK",
-    carpetArea: "1800 sq.ft.",
-    superArea: "2200 sq.ft.",
-    floorNumber: "12",
-    totalFloors: "15",
-    propertyAge: "New Construction",
-    facing: "East",
-    furnishingStatus: "Semi-Furnished",
-    availabilityStatus: "Ready to Move",
-    amenities: ["Power Backup", "Security", "Lift", "Gym", "Swimming Pool", "Parking", "CCTV Surveillance"],
+const mapProperty = (backendProperty) => {
+    if (!backendProperty) return null;
+    return {
+        id: backendProperty._id || backendProperty.id || "N/A",
+        title: backendProperty.title || "N/A",
+        category: backendProperty.category || "N/A",
+        propertyType: backendProperty.details?.propertyType || backendProperty.propertyType || backendProperty.category || "N/A",
+        listingType: backendProperty.listingType || "N/A",
+        listingStatus: backendProperty.review?.status || backendProperty.status || backendProperty.listingStatus || "pending",
+        bhk: backendProperty.details?.bhk || (backendProperty.details?.bedrooms ? `${backendProperty.details.bedrooms} BHK` : (backendProperty.bhk || "N/A")),
+        carpetArea: backendProperty.details?.carpetArea ? `${backendProperty.details.carpetArea} sq.ft.` : (backendProperty.carpetArea ? `${backendProperty.carpetArea} sq.ft.` : "N/A"),
+        superArea: backendProperty.details?.superArea ? `${backendProperty.details.superArea} sq.ft.` : (backendProperty.superArea ? `${backendProperty.superArea} sq.ft.` : "N/A"),
+        floorNumber: backendProperty.details?.floorNumber !== undefined ? String(backendProperty.details.floorNumber) : (backendProperty.details?.floor !== undefined ? String(backendProperty.details.floor) : (backendProperty.floorNumber !== undefined ? String(backendProperty.floorNumber) : "N/A")),
+        totalFloors: backendProperty.details?.totalFloors !== undefined ? String(backendProperty.details.totalFloors) : (backendProperty.totalFloors !== undefined ? String(backendProperty.totalFloors) : "N/A"),
+        propertyAge: backendProperty.details?.propertyAge || backendProperty.propertyAge || "N/A",
+        facing: backendProperty.details?.facing || backendProperty.facing || "N/A",
+        furnishingStatus: backendProperty.details?.furnishingStatus || backendProperty.furnishingStatus || "N/A",
+        availabilityStatus: backendProperty.details?.availabilityStatus || backendProperty.availabilityStatus || backendProperty.availability || "N/A",
+        amenities: Array.isArray(backendProperty.amenities) ? backendProperty.amenities : [],
 
-    // Location Details
-    address: "Skyview Apartments, 100 Feet Road",
-    locality: "Koramangala",
-    subLocality: "Block 3",
-    city: "Bangalore",
-    state: "Karnataka",
-    country: "IN",
-    pincode: "560034",
-    landmark: "Near Oasis Mall",
-    latitude: "12.9352",
-    longitude: "77.6245",
-    nearbyFacilities: ["Metro Station", "Hospital", "Mall", "Bus Stop", "super-market", "Bank", "Atm"],
+        // Location Details
+        address: backendProperty.location?.address || backendProperty.address || "N/A",
+        locality: backendProperty.location?.locality || backendProperty.locality || "N/A",
+        subLocality: backendProperty.location?.subLocality || backendProperty.subLocality || "",
+        city: backendProperty.location?.city || backendProperty.city || "N/A",
+        state: backendProperty.location?.state || backendProperty.state || "N/A",
+        country: backendProperty.location?.country || backendProperty.country || "IN",
+        pincode: backendProperty.location?.pincode || backendProperty.pincode || "N/A",
+        landmark: backendProperty.location?.landmark || backendProperty.landmark || "N/A",
+        latitude: backendProperty.location?.coordinates?.[1] || backendProperty.latitude || "N/A",
+        longitude: backendProperty.location?.coordinates?.[0] || backendProperty.longitude || "N/A",
+        nearbyFacilities: Array.isArray(backendProperty.nearbyFacilities) ? backendProperty.nearbyFacilities : [],
 
-    // Pricing Details
-    expectedPrice: "₹ 4.5 Cr",
-    maintenanceAmount: "₹ 8,000",
-    maintenanceFrequency: "Monthly",
-    bookingAmount: "₹ 5,00,000",
-    propertyTax: "₹ 12,000/year",
+        // Pricing Details
+        expectedPrice: backendProperty.pricing?.monthlyRent ? `₹${backendProperty.pricing.monthlyRent}` : (backendProperty.pricing?.expectedPrice ? `₹${backendProperty.pricing.expectedPrice}` : (backendProperty.expectedPrice || backendProperty.price ? `₹${backendProperty.price || backendProperty.expectedPrice}` : "N/A")),
+        maintenanceAmount: backendProperty.pricing?.maintenanceAmount ? `₹${backendProperty.pricing.maintenanceAmount}` : (backendProperty.pricing?.maintenance ? `₹${backendProperty.pricing.maintenance}` : (backendProperty.maintenanceAmount ? `₹${backendProperty.maintenanceAmount}` : "N/A")),
+        maintenanceFrequency: backendProperty.pricing?.maintenanceFrequency || backendProperty.maintenanceFrequency || "N/A",
+        bookingAmount: backendProperty.pricing?.bookingAmount ? `₹${backendProperty.pricing.bookingAmount}` : (backendProperty.pricing?.securityDeposit ? `₹${backendProperty.pricing.securityDeposit}` : (backendProperty.bookingAmount ? `₹${backendProperty.bookingAmount}` : "N/A")),
+        propertyTax: backendProperty.pricing?.propertyTax ? `₹${backendProperty.pricing.propertyTax}/year` : (backendProperty.propertyTax ? `₹${backendProperty.propertyTax}/year` : "N/A"),
 
-    // Sell Specific (Conditional)
-    propertyOwnership: "First Owner",
-    possessionDate: "Immediate",
-    activeLoan: "No",
-    priceNegotiable: "Yes",
+        // Sell Specific (Conditional)
+        propertyOwnership: backendProperty.details?.propertyOwnership || backendProperty.propertyOwnership || backendProperty.ownership || "N/A",
+        possessionDate: backendProperty.details?.possessionDate || backendProperty.possessionDate || "N/A",
+        activeLoan: backendProperty.details?.activeLoan !== undefined ? (backendProperty.details.activeLoan ? "Yes" : "No") : (backendProperty.activeLoan ? "Yes" : "No"),
+        priceNegotiable: backendProperty.pricing?.priceNegotiable !== undefined ? (backendProperty.pricing.priceNegotiable ? "Yes" : "No") : (backendProperty.priceNegotiable ? "Yes" : "No"),
 
-    // Media
-    coverImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=2000",
-    basicInfoMedia: [
-        "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=800",
-        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800",
-        "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=800",
-        "https://images.unsplash.com/photo-1598928506311-c55dd1b31bb6?auto=format&fit=crop&q=80&w=800"
-    ],
+        // Media
+        // The backend `createProperty` controller now returns absolute URLs like `http://localhost:5000/uploads/properties/xyz.jpg`
+        coverImage: backendProperty.coverImage || (backendProperty.images && backendProperty.images.length > 0 ? backendProperty.images[0] : "/images/demo-property.jpg"),
+        basicInfoMedia: Array.isArray(backendProperty.images) && backendProperty.images.length > 0
+            ? backendProperty.images
+            : (Array.isArray(backendProperty.basicInfoMedia) ? backendProperty.basicInfoMedia : []),
 
-    // Verification & Trust
-    fraudRiskScore: 15, // Low
-    duplicateFlag: false,
-    listingScore: 85,
-    verificationStatus: "unverified",
-    geoTagConfirmed: true,
-    liveLocationVerified: false,
+        // Verification & Trust
+        fraudRiskScore: backendProperty.fraudRiskScore || 0,
+        duplicateFlag: !!backendProperty.duplicateFlag,
+        listingScore: backendProperty.listingScore || 0,
+        verificationStatus: backendProperty.verificationStatus || "unverified",
+        geoTagConfirmed: !!backendProperty.verification?.geoTagConfirmed || !!backendProperty.geoTagConfirmed,
+        liveLocationVerified: !!backendProperty.liveLocationVerified,
+        govtIdUpload: backendProperty.verification?.govtId || null,
+        ownershipProofUpload: backendProperty.verification?.ownershipProof || null,
 
-    // Meta / Admin
-    createdAt: "2026-02-23T10:00:00Z",
-    updatedAt: "2026-02-23T10:30:00Z"
+        // Meta / Admin
+        createdAt: backendProperty.createdAt || new Date().toISOString(),
+        updatedAt: backendProperty.updatedAt || new Date().toISOString()
+    };
 };
 
 const formatDate = (dateString) => {
@@ -103,6 +111,70 @@ const formatDate = (dateString) => {
 // MAIN PAGE COMPONENT
 // ---------------------------------------------------------
 export default function PropertyReviewPage() {
+    const params = useParams();
+    const [property, setProperty] = useState(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function fetchProperty() {
+            if (!params?.id) return;
+
+            try {
+                setLoading(true);
+                const data = await apiRequest(`/admin/properties/${params.id}`);
+                console.log("PROPERTY API RESPONSE:", data);
+                if (!isMounted) return;
+
+                const fetchedProperty = data.data || data; // handle generic responses
+                const fetchedUser = fetchedProperty.user || fetchedProperty.owner || data.user || {};
+
+                setProperty(mapProperty(fetchedProperty));
+                setUser(mapUser(fetchedUser));
+                setError(null);
+            } catch (err) {
+                if (isMounted) {
+                    setError(err.message || 'Failed to fetch property details');
+                    console.error("Error fetching property:", err);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        fetchProperty();
+
+        return () => { isMounted = false; };
+    }, [params?.id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center space-y-4">
+                <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-slate-500 font-medium">Loading property details...</p>
+            </div>
+        );
+    }
+
+    if (error || !property) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center">
+                    <XCircle size={32} />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-800">Property Not Found</h2>
+                <p className="text-slate-500 text-center max-w-md">
+                    {error || "The property you are looking for does not exist or has been removed."}
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans pb-28">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -482,18 +554,38 @@ function VerificationPanel({ user, property }) {
 
             <div className="pt-4 border-t border-slate-100 space-y-3">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Submitted Proofs</span>
-                <button className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors text-sm font-semibold text-slate-700">
-                    <div className="flex items-center gap-2">
-                        <FileText size={16} className="text-indigo-500" /> Govt ID Proof.pdf
+
+                {property.govtIdUpload ? (
+                    <a href={property.govtIdUpload} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors text-sm font-semibold text-slate-700">
+                        <div className="flex items-center gap-2">
+                            <FileText size={16} className="text-indigo-500" /> Govt ID Proof
+                        </div>
+                        <Download size={16} className="text-indigo-600 hover:text-indigo-800 transition-colors" />
+                    </a>
+                ) : (
+                    <div className="w-full flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-400 cursor-not-allowed">
+                        <div className="flex items-center gap-2">
+                            <FileText size={16} className="text-slate-300" /> Govt ID Proof
+                        </div>
+                        <span className="text-xs">Missing</span>
                     </div>
-                    <Download size={16} className="text-slate-400" />
-                </button>
-                <button className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors text-sm font-semibold text-slate-700">
-                    <div className="flex items-center gap-2">
-                        <FileText size={16} className="text-indigo-500" /> Ownership Docs.png
+                )}
+
+                {property.ownershipProofUpload ? (
+                    <a href={property.ownershipProofUpload} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors text-sm font-semibold text-slate-700">
+                        <div className="flex items-center gap-2">
+                            <FileText size={16} className="text-indigo-500" /> Ownership Docs
+                        </div>
+                        <Download size={16} className="text-indigo-600 hover:text-indigo-800 transition-colors" />
+                    </a>
+                ) : (
+                    <div className="w-full flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-400 cursor-not-allowed">
+                        <div className="flex items-center gap-2">
+                            <FileText size={16} className="text-slate-300" /> Ownership Docs
+                        </div>
+                        <span className="text-xs">Missing</span>
                     </div>
-                    <Download size={16} className="text-slate-400" />
-                </button>
+                )}
             </div>
         </Card>
     );

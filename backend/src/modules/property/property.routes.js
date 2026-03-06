@@ -10,7 +10,14 @@ router.get('/health', (req, res) => {
 });
 
 /* ---------------- CREATE ---------------- */
-router.post('/', authMiddleware, propertyController.createProperty);
+const upload = require('./property.upload');
+
+router.post('/', authMiddleware, upload.fields([
+    { name: 'coverImage', maxCount: 1 },
+    { name: 'govtId', maxCount: 1 },
+    { name: 'ownershipProof', maxCount: 1 },
+    { name: 'images', maxCount: 10 }
+]), propertyController.createProperty);
 
 /* ---------------- READ ---------------- */
 

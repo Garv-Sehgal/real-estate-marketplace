@@ -20,11 +20,18 @@ const mapPropertyToPublic = (property) => {
 
         amenities: property.amenities,
         images: property.images,
+        coverImage: property.coverImage,
 
-        // public owner info (later we will replace with profile lookup)
+        // public owner info
         listedBy: {
-            userId: property.ownerId
+            userId: property.ownerId,
+            name: property.ownerName || 'Property Owner',
+            phone: property.ownerPhone || null
         },
+
+        // flat fields for easy frontend access
+        ownerName: property.ownerName || 'Property Owner',
+        ownerPhone: property.ownerPhone || null,
 
         createdAt: property.createdAt
     };

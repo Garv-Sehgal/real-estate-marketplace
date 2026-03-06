@@ -1,4 +1,5 @@
-const { updatePropertyReviewStatus, getPropertyById, getPendingProperties } = require('../property/property.store');
+const { updatePropertyReviewStatus, getPropertyById, getPendingProperties, getPropertiesByOwner } = require('../property/property.store');
+const { findUserById } = require('../auth/auth.user.store');
 
 const ensureActionAllowed = (currentStatus, action) => {
 
@@ -78,7 +79,28 @@ const requestChanges = async (propertyId, adminId, message) => {
  * Get pending properties for moderation panel
  */
 const fetchPendingProperties = async () => {
-    return await getPendingProperties();
+    const properties = await getPendingProperties();
+
+    // Hydrate owner names
+    return await Promise.all(properties.map(async (prop) => {
+        const propObj = prop.toObject ? prop.toObject() : prop;
+        if (prop.ownerId) {
+            try {
+                const owner = await findUserById(prop.ownerId);
+                if (owner) {
+                    propObj.owner = {
+                        id: owner.id,
+                        name: owner.fullName,
+                        email: owner.email,
+                        role: owner.role
+                    };
+                }
+            } catch (e) {
+                console.error("Error fetching owner for property listing:", e);
+            }
+        }
+        return propObj;
+    }));
 };
 
 /**
@@ -87,7 +109,37 @@ const fetchPendingProperties = async () => {
 const getPropertyForAdmin = async (propertyId) => {
     const property = await getPropertyById(propertyId);
     if (!property) throw new Error('Property not found');
-    return property;
+
+    const propertyObj = property.toObject ? property.toObject() : property;
+
+    if (property.ownerId) {
+        const owner = await findUserById(property.ownerId);
+        if (owner) {
+            let totalListings = 0;
+            try {
+                const ownerProperties = await getPropertiesByOwner(property.ownerId);
+                totalListings = ownerProperties ? ownerProperties.length : 0;
+            } catch (e) {
+                console.error("Error fetching owner properties count:", e);
+            }
+
+            propertyObj.owner = {
+                id: owner.id,
+                name: owner.fullName,
+                email: owner.email,
+                phone: owner.phone,
+                role: owner.role,
+                mobileVerified: true,
+                emailVerified: true,
+                kycStatus: "verified",
+                totalListings: totalListings,
+                accountStatus: owner.status,
+                accountCreatedAt: owner.createdAt
+            };
+        }
+    }
+
+    return propertyObj;
 };
 
 module.exports = {

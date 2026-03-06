@@ -11,12 +11,12 @@ export default function AdminDashboard() {
     const [pendingProperties, setPendingProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [rejectModal, setRejectModal] = useState({
-    open: false,
-    propertyId: null
-});
+        open: false,
+        propertyId: null
+    });
 
-const [rejectMessage, setRejectMessage] = useState("");
-const [rejectLoading, setRejectLoading] = useState(false);
+    const [rejectMessage, setRejectMessage] = useState("");
+    const [rejectLoading, setRejectLoading] = useState(false);
     useEffect(() => {
         const fetchPending = async () => {
             try {
@@ -34,22 +34,22 @@ const [rejectLoading, setRejectLoading] = useState(false);
     }, []);
 
     const handleApprove = async (id) => {
-    try {
-        await apiRequest(`/admin/properties/${id}/approve`, {
-            method: "PATCH"
-        });
+        try {
+            await apiRequest(`/admin/properties/${id}/approve`, {
+                method: "PATCH"
+            });
 
-        setPendingProperties(prev => prev.filter(p => p.id !== id));
+            setPendingProperties(prev => prev.filter(p => p.id !== id));
 
-    } catch (err) {
-        console.error("Approve failed", err);
-        alert("Failed to approve property");
-    }
-};
+        } catch (err) {
+            console.error("Approve failed", err);
+            alert("Failed to approve property");
+        }
+    };
 
-const handleReject = (id) => {
-    setRejectModal({ open: true, propertyId: id });
-};
+    const handleReject = (id) => {
+        setRejectModal({ open: true, propertyId: id });
+    };
     return (
         <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500 w-full max-w-none">
 
@@ -131,27 +131,27 @@ const handleReject = (id) => {
                                             </td>
                                         </tr>
                                     ) : (
-                                    pendingProperties.map((property) => (
-                                        <ApprovalRow
-                                            key={property.id}
-                                            propertyId={property.id}
-                                            title={property.title}
-                                            address={property.address || property.city || "N/A"}
-                                            price={
-                                                property.expectedPrice
-                                                    ? `₹${property.expectedPrice}`
-                                                    : property.monthlyRent
-                                                        ? `₹${property.monthlyRent}/mo`
-                                                        : "N/A"
-                                            }
-                                            user={property.ownerId || "Owner"}
-                                            role="Landlord"
-                                            date={new Date(property.createdAt).toLocaleDateString()}
-                                            onApprove={handleApprove}
-                                            onReject={handleReject}
-                                        />
-                                    ))     
-                                )}
+                                        pendingProperties.map((property) => (
+                                            <ApprovalRow
+                                                key={property.id}
+                                                propertyId={property.id}
+                                                title={property.title}
+                                                address={property.address || property.city || "N/A"}
+                                                price={
+                                                    property.expectedPrice
+                                                        ? `₹${property.expectedPrice}`
+                                                        : property.monthlyRent
+                                                            ? `₹${property.monthlyRent}/mo`
+                                                            : "N/A"
+                                                }
+                                                user={property.owner?.name || property.ownerId || "Unknown"}
+                                                role={property.owner?.role || "Landlord"}
+                                                date={new Date(property.createdAt).toLocaleDateString()}
+                                                onApprove={handleApprove}
+                                                onReject={handleReject}
+                                            />
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -164,68 +164,68 @@ const handleReject = (id) => {
                     </Card>
                 </div>
             </div>
-        {rejectModal.open && (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 animate-in fade-in zoom-in-95">
-            <h2 className="text-lg font-semibold text-slate-900">
-                Reject Property
-            </h2>
+            {rejectModal.open && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 animate-in fade-in zoom-in-95">
+                        <h2 className="text-lg font-semibold text-slate-900">
+                            Reject Property
+                        </h2>
 
-            <p className="text-sm text-slate-500">
-                Provide a reason for rejection. This will be shown to the owner.
-            </p>
+                        <p className="text-sm text-slate-500">
+                            Provide a reason for rejection. This will be shown to the owner.
+                        </p>
 
-            <textarea
-                value={rejectMessage}
-                onChange={(e) => setRejectMessage(e.target.value)}
-                placeholder="Enter rejection reason..."
-                className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
-                rows={4}
-            />
+                        <textarea
+                            value={rejectMessage}
+                            onChange={(e) => setRejectMessage(e.target.value)}
+                            placeholder="Enter rejection reason..."
+                            className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                            rows={4}
+                        />
 
-            <div className="flex justify-end gap-2 pt-2">
-                <button
-                    onClick={() => {
-                        setRejectModal({ open: false, propertyId: null });
-                        setRejectMessage("");
-                    }}
-                    className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-100">
-                    Cancel
-                </button>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                onClick={() => {
+                                    setRejectModal({ open: false, propertyId: null });
+                                    setRejectMessage("");
+                                }}
+                                className="px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-100">
+                                Cancel
+                            </button>
 
-                <button
-                    onClick={async () => {
-                        if (!rejectMessage.trim()) return alert("Message required");
+                            <button
+                                onClick={async () => {
+                                    if (!rejectMessage.trim()) return alert("Message required");
 
-                        try {
-                            setRejectLoading(true);
+                                    try {
+                                        setRejectLoading(true);
 
-                            await apiRequest(`/admin/properties/${rejectModal.propertyId}/reject`, {
-                                method: "PATCH",
-                                body: { message: rejectMessage }
-                            });
+                                        await apiRequest(`/admin/properties/${rejectModal.propertyId}/reject`, {
+                                            method: "PATCH",
+                                            body: { message: rejectMessage }
+                                        });
 
-                            setPendingProperties(prev =>
-                                prev.filter(p => p.id !== rejectModal.propertyId)
-                            );
+                                        setPendingProperties(prev =>
+                                            prev.filter(p => p.id !== rejectModal.propertyId)
+                                        );
 
-                            setRejectModal({ open: false, propertyId: null });
-                            setRejectMessage("");
+                                        setRejectModal({ open: false, propertyId: null });
+                                        setRejectMessage("");
 
-                        } catch (err) {
-                            console.error(err);
-                            alert("Failed to reject property");
-                        } finally {
-                            setRejectLoading(false);
-                        }
-                    }}
-                    className="px-4 py-2 text-sm rounded-lg bg-rose-500 text-white hover:bg-rose-600">
-                    {rejectLoading ? "Rejecting..." : "Confirm Reject"}
-                </button>
-            </div>
-        </div>
-    </div>
-)}    
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert("Failed to reject property");
+                                    } finally {
+                                        setRejectLoading(false);
+                                    }
+                                }}
+                                className="px-4 py-2 text-sm rounded-lg bg-rose-500 text-white hover:bg-rose-600">
+                                {rejectLoading ? "Rejecting..." : "Confirm Reject"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

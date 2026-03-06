@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const User = require('../auth/auth.user.model');
 const {
     createProperty,
     getApprovedProperties,
@@ -11,7 +12,7 @@ const {
  */
 const createPropertyService = async (userId, data) => {
 
-    if (!data.title || !data.category || !data.listingType || !data.city || !data.address) {
+    if (!data.title || !data.category || !data.listingType || !data.location?.city || !data.location?.address) {
         throw new Error('Missing required fields');
     }
 
@@ -26,10 +27,17 @@ const createPropertyService = async (userId, data) => {
         description: data.description || '',
 
         location: {
-            city: data.city,
-            address: data.address,
-            latitude: data.latitude,
-            longitude: data.longitude
+            country: data.location.country,
+            state: data.location.state,
+            city: data.location.city,
+            pincode: data.location.pincode,
+            locality: data.location.locality,
+            subLocality: data.location.subLocality,
+            landmark: data.location.landmark,
+            address: data.location.address,
+            latitude: data.location.latitude,
+            longitude: data.location.longitude,
+            nearbyFacilities: data.location.nearbyFacilities || []
         },
 
         pricing: data.pricing || {},
@@ -37,6 +45,13 @@ const createPropertyService = async (userId, data) => {
 
         amenities: data.amenities || [],
         images: data.images || [],
+        coverImage: data.coverImage || null,
+
+        verification: {
+            govtId: data.govtId || null,
+            ownershipProof: data.ownershipProof || null,
+            geoTagConfirmed: data.geoTagConfirmed || false
+        },
 
         // NEW CORRECT REVIEW STRUCTURE
         review: {
@@ -68,7 +83,7 @@ const getMyProperties = async (userId) => {
 
 
 /**
- * Single property details
+ * Single property details (with owner name enrichment)
  */
 const getPropertyDetails = async (propertyId) => {
 
@@ -78,7 +93,13 @@ const getPropertyDetails = async (propertyId) => {
         throw new Error('Property not found');
     }
 
-    return property;
+    // Attach owner info for public display
+    const owner = await User.findOne({ id: property.ownerId });
+    const plainProperty = property.toObject ? property.toObject() : { ...property };
+    plainProperty.ownerName = owner ? owner.fullName : 'Property Owner';
+    plainProperty.ownerPhone = owner ? (owner.phone || null) : null;
+
+    return plainProperty;
 };
 
 

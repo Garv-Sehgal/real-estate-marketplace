@@ -18,16 +18,13 @@ export const saveDraft = (data, step) => {
 
         // Remove file objects to prevent storage overflow & serialization errors
         const textOnlyData = Object.keys(safeData).reduce((acc, key) => {
-            const val = safeData[key];
-            // Check if value is a File or contains Files (arrays of images)
-            if (val instanceof File || (val && val.file instanceof File)) {
-                return acc; // Skip file fields
+            // Explicitly filter out complex media state attributes which break upon Draft load restoring
+            if (['basicInfoMedia', 'govtId', 'ownershipProof', 'coverImage'].includes(key)) {
+                return acc;
             }
-            if (Array.isArray(val) && val.length > 0 && val[0].file instanceof File) {
-                return acc; // Skip image arrays
-            }
+
             // Retain other fields
-            acc[key] = val;
+            acc[key] = safeData[key];
             return acc;
         }, {});
 

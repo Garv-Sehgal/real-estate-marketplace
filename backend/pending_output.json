@@ -1,0 +1,52 @@
+[
+  {
+    "id": "e768d87f-0e5c-4504-a9e0-6e269a488a18",
+    "ownerId": "0f7b0222-1f49-4dc6-9a3f-02208e8681ea",
+    "owner": {
+      "id": "0f7b0222-1f49-4dc6-9a3f-02208e8681ea",
+      "name": "Test Landlord",
+      "email": "test@landlord.com",
+      "role": "landlord"
+    }
+  },
+  {
+    "id": "6f53c544-33c6-4478-bd74-0384e8b56b9d",
+    "ownerId": "ece6ae9d-9b46-4b99-a710-3d8cb9b0f8ba",
+    "owner": {
+      "id": "ece6ae9d-9b46-4b99-a710-3d8cb9b0f8ba",
+      "name": "Test Agent",
+      "email": "test@agent.com",
+      "role": "agent"
+    }
+  },
+  {
+    "id": "920f05ef-869a-4d7a-ad50-06e9ad6a875c",
+    "ownerId": "0f7b0222-1f49-4dc6-9a3f-02208e8681ea",
+    "owner": {
+      "id": "0f7b0222-1f49-4dc6-9a3f-02208e8681ea",
+      "name": "Test Landlord",
+      "email": "test@landlord.com",
+      "role": "landlord"
+    }
+  },
+  {
+    "id": "05db70bb-14bf-4d66-a9f5-61e3998f850c",
+    "ownerId": "0f7b0222-1f49-4dc6-9a3f-02208e8681ea",
+    "owner": {
+      "id": "0f7b0222-1f49-4dc6-9a3f-02208e8681ea",
+      "name": "Test Landlord",
+      "email": "test@landlord.com",
+      "role": "landlord"
+    }
+  },
+  {
+    "id": "6620fb17-49a3-4581-910c-079318601266",
+    "ownerId": "ece6ae9d-9b46-4b99-a710-3d8cb9b0f8ba",
+    "owner": {
+      "id": "ece6ae9d-9b46-4b99-a710-3d8cb9b0f8ba",
+      "name": "Test Agent",
+      "email": "test@agent.com",
+      "role": "agent"
+    }
+  }
+]

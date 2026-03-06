@@ -23,6 +23,7 @@ export async function apiRequest(endpoint, options = {}) {
             ...headers,
         },
         credentials: "include",
+        cache: "no-store",
     });
 
     const text = await res.text();
