@@ -4,7 +4,8 @@ const {
     createProperty,
     getApprovedProperties,
     getPropertiesByOwner,
-    getPropertyById
+    getPropertyById,
+    searchApprovedProperties
 } = require('./property.store');
 
 /**
@@ -103,9 +104,17 @@ const getPropertyDetails = async (propertyId) => {
 };
 
 
+/**
+ * Search properties (public)
+ */
+const searchProperties = async (filters) => {
+    return await searchApprovedProperties(filters);
+};
+
 module.exports = {
     createPropertyService,
     getMarketplaceProperties,
     getMyProperties,
-    getPropertyDetails
+    getPropertyDetails,
+    searchProperties
 };

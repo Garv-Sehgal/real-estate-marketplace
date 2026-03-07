@@ -298,7 +298,20 @@ function BasicInfoCard({ property }) {
 function LocationCard({ property }) {
     return (
         <Card>
-            <SectionHeading icon={<MapPin className="text-indigo-500" size={20} />} title="Location Details" />
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between">
+                <SectionHeading icon={<MapPin className="text-indigo-500" size={20} />} title="Location Details" />
+                <button
+                    onClick={() => {
+                        const fullAddress = `${property.address}, ${property.city}, ${property.state}, ${property.country || 'IN'}, ${property.pincode}`;
+                        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+                        window.open(mapUrl, "_blank");
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-sm rounded-lg border border-indigo-200 transition-colors mb-6 sm:mt-2"
+                >
+                    <MapPin size={16} />
+                    View on Map
+                </button>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4 mb-8">
                 <div className="col-span-2">
                     <InfoItem label="Full Address" value={property.address} />

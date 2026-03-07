@@ -34,9 +34,11 @@ function FeaturedListings() {
 
     useEffect(() => {
         async function fetchListings() {
+            setLoading(true);
             try {
                 const res = await apiRequest('/property');
-                setProperties(res.data || []);
+                const allProps = res.data || [];
+                setProperties(allProps.slice(0, 4));
             } catch (err) {
                 console.error('Failed to fetch featured listings:', err);
             } finally {
@@ -226,9 +228,9 @@ const HomeExtensions = () => {
                 <div className="flex flex-col md:flex-row gap-12 items-center">
                     <div className="flex-1 space-y-6">
                         <span className="inline-block py-1 px-4 bg-blue-100 text-blue-600 text-xs font-black uppercase tracking-wider rounded-full">Explore on Map</span>
-                        <h2 className="text-4xl font-extrabold text-gray-900">Search Properties by Location</h2>
+                        <h2 className="text-4xl font-extrabold text-gray-900">Direct Google Maps Integration</h2>
                         <p className="text-lg text-gray-600 leading-relaxed">
-                            Visualize property prices, schools, and transportation in your desired neighborhoods with our interactive map view.
+                            Direct Google Maps view is natively available for all properties. Visualize property prices, schools, and transportation in your desired neighborhoods with our interactive map link in property details.
                         </p>
                         <ul className="space-y-4">
                             <li className="flex items-center gap-3">
@@ -241,7 +243,7 @@ const HomeExtensions = () => {
                             </li>
                         </ul>
                         <button
-                            onClick={() => router.push('/properties?view=map')}
+                            onClick={() => router.push('/properties')}
                             className="mt-4 bg-slate-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-blue-600 transition-all flex items-center gap-2"
                         >
                             <span className="material-symbols-outlined">map</span>
@@ -249,16 +251,8 @@ const HomeExtensions = () => {
                         </button>
                     </div>
                     <div className="flex-1 w-full h-[400px] bg-slate-100 rounded-3xl overflow-hidden shadow-2xl relative group">
-                        <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?ixlib=rb-4.0.3&auto=format&fit=crop&w=2062&q=80" alt="Map Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                        <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                            <div
-                                onClick={() => router.push('/properties?view=map')}
-                                className="bg-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
-                            >
-                                <span className="material-symbols-outlined text-blue-600">near_me</span>
-                                <span className="font-bold text-gray-900">Search this area</span>
-                            </div>
-                        </div>
+                        <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80" alt="Map Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
                     </div>
                 </div>
             </section >

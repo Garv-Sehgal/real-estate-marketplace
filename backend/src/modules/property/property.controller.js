@@ -1,4 +1,4 @@
-const { createPropertyService, getMarketplaceProperties, getMyProperties, getPropertyDetails } = require('./property.service');
+const { createPropertyService, getMarketplaceProperties, getMyProperties, getPropertyDetails, searchProperties } = require('./property.service');
 const { mapPropertyToPublic } = require('./property.public.mapper');
 
 const parseNumber = (value) => {
@@ -225,9 +225,42 @@ const getPropertyByIdController = async (req, res, next) => {
     }
 };
 
+/**
+ * Search properties (PUBLIC VIEW)
+ */
+const getSearchProperties = async (req, res, next) => {
+    try {
+        const { city, type, listingType, minPrice, maxPrice, bhk } = req.query;
+
+        const filters = {
+            city,
+            propertyType: type,
+            listingType,
+            minPrice,
+            maxPrice,
+            bhk
+        };
+
+        const properties = await searchProperties(filters);
+
+        // Map all to public view to remove owner private info/internal verification details
+        const publicProperties = properties.map(mapPropertyToPublic);
+
+        res.status(200).json({
+            success: true,
+            count: publicProperties.length,
+            data: publicProperties
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createProperty,
     getMarketplace,
     getMyListings,
-    getPropertyByIdController
+    getPropertyByIdController,
+    getSearchProperties
 };

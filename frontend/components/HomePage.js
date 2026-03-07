@@ -1,11 +1,40 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from './Header';
 import HomeExtensions from './HomeExtensions';
 
 const HomePage = () => {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('buy');
+    const [location, setLocation] = useState('');
+    const [propertyType, setPropertyType] = useState('Type');
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+
+    const handleSearch = () => {
+        const queryParams = new URLSearchParams();
+        queryParams.append('listingType', activeTab === 'buy' ? 'sell' : activeTab);
+
+        if (location.trim()) {
+            queryParams.append('city', location.trim());
+        }
+
+        if (propertyType && propertyType !== 'Type' && propertyType !== 'Any') {
+            queryParams.append('type', propertyType);
+        }
+
+        if (minPrice && Number(minPrice) > 0) {
+            queryParams.append('minPrice', minPrice);
+        }
+        if (maxPrice && Number(maxPrice) > 0) {
+            queryParams.append('maxPrice', maxPrice);
+        }
+
+        // Redirect to properties view-all page with filters
+        router.push(`/properties?${queryParams.toString()}`);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-display">
@@ -64,7 +93,10 @@ const HomePage = () => {
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="Enter City, Locality, or Project"
+                                        placeholder="Enter City e.g. Amritsar, Delhi"
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                                         className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4169E1] focus:border-transparent transition-all"
                                     />
                                 </div>
@@ -75,11 +107,17 @@ const HomePage = () => {
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     Type
                                 </label>
-                                <select className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4169E1] bg-white text-gray-700">
-                                    <option>Flat</option>
-                                    <option>Villa</option>
-                                    <option>Plot</option>
-                                    <option>House</option>
+                                <select
+                                    value={propertyType}
+                                    onChange={(e) => setPropertyType(e.target.value)}
+                                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4169E1] bg-white text-gray-700"
+                                >
+                                    <option value="Type">Type</option>
+                                    <option value="Any">Any</option>
+                                    <option value="Flat">Flat</option>
+                                    <option value="Villa">Villa</option>
+                                    <option value="Plot">Plot</option>
+                                    <option value="House">House</option>
                                 </select>
                             </div>
 
@@ -88,18 +126,39 @@ const HomePage = () => {
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                                     Budget
                                 </label>
-                                <select className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4169E1] bg-white text-gray-700">
-                                    <option>Min - Max Price</option>
-                                    <option>₹ 20L - 50L</option>
-                                    <option>₹ 50L - 1Cr</option>
-                                    <option>₹ 1Cr - 2Cr</option>
-                                    <option>₹ 2Cr+</option>
-                                </select>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Min"
+                                        value={minPrice}
+                                        onChange={(e) => {
+                                            const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0).toString();
+                                            setMinPrice(val);
+                                        }}
+                                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4169E1] bg-white text-gray-700"
+                                    />
+                                    <span className="text-gray-400">-</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Max"
+                                        value={maxPrice}
+                                        onChange={(e) => {
+                                            const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0).toString();
+                                            setMaxPrice(val);
+                                        }}
+                                        className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4169E1] bg-white text-gray-700"
+                                    />
+                                </div>
                             </div>
 
                             {/* Search Button */}
                             <div className="w-full lg:w-auto">
-                                <button className="w-full lg:w-auto bg-[#4169E1] hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-md transition-colors shadow-lg flex items-center justify-center gap-2">
+                                <button
+                                    onClick={handleSearch}
+                                    className="w-full lg:w-auto bg-[#4169E1] hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-md transition-colors shadow-lg flex items-center justify-center gap-2"
+                                >
                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>

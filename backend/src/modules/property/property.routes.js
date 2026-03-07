@@ -24,6 +24,9 @@ router.post('/', authMiddleware, upload.fields([
 // Public marketplace listings
 router.get('/', propertyController.getMarketplace);
 
+// Search properties
+router.get('/search', propertyController.getSearchProperties);
+
 // Logged-in user's listings
 router.get('/me', authMiddleware, propertyController.getMyListings);
 
