@@ -8,6 +8,7 @@ const authRoutes = require('./modules/auth');
 const adminRoutes = require('./modules/admin/admin.routes');
 const propertyRoutes = require('./modules/property');
 const meetingRoutes = require('./modules/meetings/meeting.routes');
+const chatRoutes = require('./modules/chat/chat.routes');
 const errorHandler = require('./middlewares/error.middleware');
 const connectDB = require('./config/db');
 
@@ -36,6 +37,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/property', propertyRoutes);
 app.use('/api/v1/meetings', meetingRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 /* ---------------- 404 Handler ---------------- */
 app.use((req, res) => {

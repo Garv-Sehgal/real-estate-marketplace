@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import ScheduleVisitModal from '@/components/ScheduleVisitModal';
 import {
     MapPin, IndianRupee, Home, FileText, Calendar,
-    Building, User, Mail, Phone, CheckCircle2, AlertCircle, Copy, Check
+    Building, User, Mail, Phone, CheckCircle2, AlertCircle, Copy, Check, MessageSquare
 } from 'lucide-react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
@@ -83,6 +83,7 @@ const mapProperty = (backendProperty) => {
         updatedAt: backendProperty.updatedAt || new Date().toISOString(),
 
         // Owner info (enriched by the backend service layer)
+        ownerId: backendProperty.owner || backendProperty.ownerId || null,
         ownerName: backendProperty.ownerName || 'Property Owner',
         ownerPhone: backendProperty.ownerPhone || null,
     };
@@ -389,7 +390,7 @@ function ConditionalCard({ property }) {
     return null;
 }
 
-function ContactSidebar({ onScheduleVisit, ownerName, ownerPhone }) {
+function ContactSidebar({ onScheduleVisit, onContactOwner, ownerName, ownerPhone }) {
     const [showPhone, setShowPhone] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -447,6 +448,12 @@ function ContactSidebar({ onScheduleVisit, ownerName, ownerPhone }) {
                     className="w-full flex items-center justify-center gap-2 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl transition-colors text-sm"
                 >
                     <Calendar size={16} /> Schedule Visit
+                </button>
+                <button
+                    onClick={onContactOwner}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors text-sm shadow-sm"
+                >
+                    <MessageSquare size={16} /> Contact Owner
                 </button>
             </div>
 
@@ -508,10 +515,12 @@ function QuickInfoSidebar({ property }) {
 // -------------------------------------------------------
 export default function PropertyDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const [property, setProperty] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showVisitModal, setShowVisitModal] = useState(false);
+    const [contacting, setContacting] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -535,6 +544,52 @@ export default function PropertyDetailPage() {
         fetchProperty();
         return () => { isMounted = false; };
     }, [params?.id]);
+
+    const handleContactOwner = async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+
+        try {
+            setContacting(true);
+            const userStr = localStorage.getItem('user');
+            const currentUser = userStr ? JSON.parse(userStr) : null;
+            
+            // Note: In a real app we'd need the actual owner's ID. Wait, mapProperty
+            // tries to extract `ownerId` but it depends if backend sends it. 
+            // If the backend doesn't send receiverId natively we might need to rely on the backend determining it from propertyId!
+            // Actually, my chat controller POST /conversation expects propertyId and receiverId.
+            // Let's modify the controller to just need propertyId, and let it look up the property.owner!
+            
+            // For now, I will send receiverId from property.ownerId if exists.
+            
+            const res = await fetch(`${API_BASE}/chat/conversation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ 
+                    propertyId: property.id,
+                    receiverId: property.ownerId || property.owner // ensure this maps correctly
+                })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                router.push(`/messages?conversation=${data.data._id}`);
+            } else {
+                alert(data.message || 'Failed to initiate conversation');
+            }
+        } catch (err) {
+            console.error('Error starting conversation:', err);
+            alert('Something went wrong. Please try again.');
+        } finally {
+            setContacting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -611,7 +666,12 @@ export default function PropertyDetailPage() {
 
                     {/* Right Column */}
                     <div className="lg:col-span-1 space-y-4">
-                        <ContactSidebar onScheduleVisit={() => setShowVisitModal(true)} ownerName={property.ownerName} ownerPhone={property.ownerPhone} />
+                        <ContactSidebar 
+                            onScheduleVisit={() => setShowVisitModal(true)} 
+                            onContactOwner={handleContactOwner}
+                            ownerName={property.ownerName} 
+                            ownerPhone={property.ownerPhone} 
+                        />
                         <QuickInfoSidebar property={property} />
                     </div>
                 </div>

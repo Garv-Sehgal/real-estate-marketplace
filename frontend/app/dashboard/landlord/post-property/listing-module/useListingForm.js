@@ -346,21 +346,33 @@ export function useListingForm() {
             });
 
             // Append Files
-            if (formData.coverImage?.file) {
-                formPayload.append("coverImage", formData.coverImage.file);
+            // 1. Resolve cover image file
+            let coverFile = null;
+            if (typeof formData.coverImage === 'string') {
+                const coverItem = formData.basicInfoMedia?.find(m => m.id === formData.coverImage);
+                if (coverItem?.file && (coverItem.file instanceof File || coverItem.file instanceof Blob || coverItem.file.name)) {
+                    coverFile = coverItem.file;
+                }
+            } else if (formData.coverImage?.file) {
+                coverFile = formData.coverImage.file;
             }
 
-            if (formData.govtId?.file) {
+            if (coverFile) {
+                formPayload.append("coverImage", coverFile);
+            }
+
+            if (formData.govtId?.file && (formData.govtId.file instanceof File || formData.govtId.file instanceof Blob || formData.govtId.file.name)) {
                 formPayload.append("govtId", formData.govtId.file);
             }
 
-            if (formData.ownershipProof?.file) {
+            if (formData.ownershipProof?.file && (formData.ownershipProof.file instanceof File || formData.ownershipProof.file instanceof Blob || formData.ownershipProof.file.name)) {
                 formPayload.append("ownershipProof", formData.ownershipProof.file);
             }
 
             if (formData.basicInfoMedia && formData.basicInfoMedia.length > 0) {
                 formData.basicInfoMedia.forEach((mediaItem) => {
-                    if (mediaItem.file) {
+                    const isValidFile = mediaItem.file && (mediaItem.file instanceof File || mediaItem.file instanceof Blob || mediaItem.file.name);
+                    if (isValidFile && mediaItem.file !== coverFile) {
                         formPayload.append("images", mediaItem.file);
                     }
                 });
