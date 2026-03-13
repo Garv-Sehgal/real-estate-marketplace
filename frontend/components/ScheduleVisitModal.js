@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { X, Calendar, Clock, MessageSquare, CheckCircle, Loader } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
-export default function ScheduleVisitModal({ propertyId, propertyTitle, onClose }) {
-    const [preferredDate, setPreferredDate] = useState('');
-    const [preferredTime, setPreferredTime] = useState('');
-    const [message, setMessage] = useState('');
+export default function ScheduleVisitModal({ propertyId, propertyTitle, existingMeeting, onClose }) {
+    const [preferredDate, setPreferredDate] = useState(existingMeeting?.preferredDate || '');
+    const [preferredTime, setPreferredTime] = useState(existingMeeting?.preferredTime || '');
+    const [message, setMessage] = useState(existingMeeting?.message || '');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -21,10 +21,17 @@ export default function ScheduleVisitModal({ propertyId, propertyTitle, onClose 
         setLoading(true);
         setError('');
         try {
-            await apiRequest('/meetings', {
-                method: 'POST',
-                body: { propertyId, preferredDate, preferredTime, message }
-            });
+            if (existingMeeting && existingMeeting.metadata?.meetingId) {
+                await apiRequest(`/meetings/${existingMeeting.metadata.meetingId}/reschedule`, {
+                    method: 'POST',
+                    body: { preferredDate, preferredTime, message }
+                });
+            } else {
+                await apiRequest('/meetings', {
+                    method: 'POST',
+                    body: { propertyId, preferredDate, preferredTime, message }
+                });
+            }
             setSuccess(true);
         } catch (err) {
             setError(err.message || 'Failed to submit request. Please try again.');
@@ -42,7 +49,7 @@ export default function ScheduleVisitModal({ propertyId, propertyTitle, onClose 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-900">Schedule a Visit</h2>
+                        <h2 className="text-xl font-bold text-slate-900">{existingMeeting ? 'Reschedule Visit' : 'Schedule a Visit'}</h2>
                         <p className="text-sm text-slate-500 mt-0.5 truncate max-w-[260px]">{propertyTitle}</p>
                     </div>
                     <button
@@ -142,7 +149,7 @@ export default function ScheduleVisitModal({ propertyId, propertyTitle, onClose 
                             disabled={loading}
                             className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {loading ? <><Loader size={16} className="animate-spin" /> Sending...</> : 'Request Visit'}
+                            {loading ? <><Loader size={16} className="animate-spin" /> Sending...</> : (existingMeeting ? 'Send New Request' : 'Request Visit')}
                         </button>
                     </form>
                 )}

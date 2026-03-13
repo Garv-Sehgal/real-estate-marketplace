@@ -30,6 +30,15 @@ const messageSchema = new mongoose.Schema(
             ref: 'Message',
             required: false,
         },
+        type: {
+            type: String,
+            enum: ['text', 'meeting_request', 'meeting_confirmed'],
+            default: 'text'
+        },
+        metadata: {
+            type: mongoose.Schema.Types.Mixed,
+            default: null
+        }
     },
     { timestamps: true }
 );

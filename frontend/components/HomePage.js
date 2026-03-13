@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from './Header';
 import HomeExtensions from './HomeExtensions';
+import { io } from 'socket.io-client';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const SOCKET_URL = API_BASE.replace('/api/v1', '');
 
 const HomePage = () => {
     const router = useRouter();
@@ -12,6 +16,60 @@ const HomePage = () => {
     const [propertyType, setPropertyType] = useState('Type');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            try {
+                const token = localStorage.getItem('accessToken');
+                if (!token) return;
+                const res = await fetch(`${API_BASE}/chat/unread-count`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setUnreadCount(data.data.totalUnread || 0);
+                }
+            } catch (error) {
+                console.error('Failed to fetch unread count', error);
+            }
+        };
+
+        let cleanup = null;
+        const setupSocket = () => {
+            const token = localStorage.getItem('accessToken');
+            const userStr = localStorage.getItem('user');
+            if (!token || !userStr) return null;
+
+            fetchUnread();
+
+            try {
+                const user = JSON.parse(userStr);
+                const userId = user.id || user._id;
+
+                const socket = io(SOCKET_URL, { withCredentials: true });
+                socket.emit('setup_user', userId);
+
+                socket.on('update_unread_count', () => {
+                    fetchUnread();
+                });
+
+                return () => socket.close();
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
+        };
+
+        cleanup = setupSocket();
+        
+        const interval = setInterval(fetchUnread, 15000); // Polling as fallback
+
+        return () => {
+            if (cleanup) cleanup();
+            clearInterval(interval);
+        };
+    }, []);
 
     const handleSearch = () => {
         const queryParams = new URLSearchParams();
@@ -219,6 +277,11 @@ const HomePage = () => {
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
+                {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                )}
             </button>
         </div>
     );

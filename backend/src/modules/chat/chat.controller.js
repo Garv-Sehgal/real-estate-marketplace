@@ -140,3 +140,60 @@ exports.getUserConversations = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.markAsRead = async (req, res, next) => {
+    try {
+        const { conversationId } = req.params;
+        const senderStringId = req.user.userId;
+        const sender = await User.findOne({ id: senderStringId });
+
+        if (!sender) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const conversation = await Conversation.findById(conversationId);
+        if (!conversation) {
+            return res.status(404).json({ success: false, message: 'Conversation not found' });
+        }
+
+        if (!conversation.participants.includes(sender._id)) {
+            return res.status(403).json({ success: false, message: 'Not authorized for this conversation' });
+        }
+
+        conversation.unreadCounts.set(sender._id.toString(), 0);
+        await conversation.save();
+
+        res.status(200).json({
+            success: true,
+            data: conversation
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getUnreadCount = async (req, res, next) => {
+    try {
+        const senderStringId = req.user.userId;
+        const sender = await User.findOne({ id: senderStringId });
+
+        if (!sender) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const conversations = await Conversation.find({ participants: sender._id });
+        let totalUnread = 0;
+
+        for (const conv of conversations) {
+            const count = conv.unreadCounts?.get(sender._id.toString()) || 0;
+            totalUnread += count;
+        }
+
+        res.status(200).json({
+            success: true,
+            data: { totalUnread }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

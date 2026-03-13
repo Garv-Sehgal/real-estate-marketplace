@@ -18,6 +18,11 @@ const conversationSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        unreadCounts: {
+            type: Map,
+            of: Number,
+            default: {},
+        },
     },
     { timestamps: true }
 );

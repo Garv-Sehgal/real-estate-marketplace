@@ -22,3 +22,7 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
+
+#images files
+backend/uploads/
+backend/db_output.json

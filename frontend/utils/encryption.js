@@ -25,9 +25,13 @@ export const decryptMessage = (encryptedMessage, conversationId) => {
     try {
         const key = generateEncryptionKey(conversationId);
         const bytes = CryptoJS.AES.decrypt(encryptedMessage, key);
-        return bytes.toString(CryptoJS.enc.Utf8);
+        // sigBytes <= 0 means decryption produced nothing (bad key or not ciphertext)
+        if (!bytes || bytes.sigBytes <= 0) return encryptedMessage;
+        const result = bytes.toString(CryptoJS.enc.Utf8);
+        // Empty result means decryption silently failed
+        return result || encryptedMessage;
     } catch (error) {
-        console.error('Decryption error:', error);
-        return '[Encrypted Message]';
+        // Malformed UTF-8 or invalid ciphertext — return raw value instead of crashing
+        return encryptedMessage;
     }
 };

@@ -9,6 +9,10 @@ module.exports = (io) => {
     
     io.on('connection', (socket) => {
         console.log('Socket connected:', socket.id);
+        socket.on('setup_user', (userId) => {
+            console.log(`Socket ${socket.id} setup for user ${userId}`);
+            socket.join(userId);
+        });
 
         socket.on('join_conversation', (conversationId) => {
             console.log(`Socket ${socket.id} joining room ${conversationId}`);
@@ -32,19 +36,28 @@ module.exports = (io) => {
                     receiverId: receiver._id,
                     propertyId: property ? property._id : null,
                     encryptedMessage,
+                    type: data.type || 'text',
+                    metadata: data.metadata || null,
                     replyTo: replyTo || null
                 });
 
-                // 2. Update conversation lastMessage
-                await Conversation.findByIdAndUpdate(conversationId, {
-                    lastMessage: encryptedMessage,
-                    updatedAt: Date.now()
-                });
+                // 2. Update conversation lastMessage & unread count
+                const conversation = await Conversation.findById(conversationId);
+                if (conversation) {
+                    const currentUnread = conversation.unreadCounts?.get(receiver._id.toString()) || 0;
+                    conversation.unreadCounts.set(receiver._id.toString(), currentUnread + 1);
+                    conversation.lastMessage = encryptedMessage;
+                    conversation.updatedAt = Date.now();
+                    await conversation.save();
+                }
 
                 // 3. Broadcast to others in room
                 // io.to(room) sends to all sockets in the room
                 io.to(conversationId).emit('receive_message', message);
                 
+                // 4. Global notification for receiver
+                io.to(receiver._id.toString()).emit('update_unread_count');
+
             } catch (error) {
                 console.error('Socket message error:', error);
                 // Optionally emit error back to sender

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../../middlewares/auth.middleware');
-const { requestMeeting, getIncoming, getSent, updateStatus } = require('./meeting.controller');
+const { requestMeeting, getIncoming, getSent, updateStatus, reschedule } = require('./meeting.controller');
 
 // All routes require authentication
 router.use(authMiddleware);
@@ -17,5 +17,8 @@ router.get('/sent', getSent);
 
 // PATCH /api/v1/meetings/:id/status - Owner confirms or rejects
 router.patch('/:id/status', updateStatus);
+
+// POST /api/v1/meetings/:id/reschedule - Reschedule a meeting request
+router.post('/:id/reschedule', reschedule);
 
 module.exports = router;
