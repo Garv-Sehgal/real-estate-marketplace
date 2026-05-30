@@ -1,124 +1,157 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import PropertyCard from '@/components/PropertyCard';
 import CompareBar from '@/components/CompareBar';
-import { X, Map as MapIcon, ChevronDown, Filter, List, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, Map as MapIcon, ChevronDown, Filter, List, ArrowRight, ArrowLeft, Loader } from 'lucide-react';
 
-// Mock Data
-const MOCK_PROPERTIES = [
-    {
-        id: 1,
-        title: "3 BHK Luxury Apartment",
-        location: "Indiranagar, Bangalore",
-        price: "₹ 1.25 Cr",
-        pricePerSqft: "₹ 6,750 per sqft",
-        bhk: "3 BHK",
-        area: "1850 sqft",
-        baths: "3 Baths",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 12,
-        isVerified: true,
-        tag: "Trending",
-        coordinates: { top: '30%', left: '40%' }
-    },
-    {
-        id: 2,
-        title: "4 BHK Premium Villa",
-        location: "Whitefield, Bangalore",
-        price: "₹ 3.50 Cr",
-        pricePerSqft: "₹ 9,200 per sqft",
-        bhk: "4 BHK",
-        area: "3200 sqft",
-        baths: "4 Baths",
-        status: "Under Construction",
-        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 18,
-        isVerified: true,
-        tag: "New Launch",
-        coordinates: { top: '50%', left: '60%' }
-    },
-    {
-        id: 3,
-        title: "2 BHK Cozy Flat",
-        location: "Koramangala, Bangalore",
-        price: "₹ 85 L",
-        pricePerSqft: "₹ 7,100 per sqft",
-        bhk: "2 BHK",
-        area: "1200 sqft",
-        baths: "2 Baths",
-        status: "Resale",
-        image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 8,
-        isVerified: false,
-        tag: "",
-        coordinates: { top: '20%', left: '70%' }
-    },
-    {
-        id: 4,
-        title: "3 BHK Garden Facing",
-        location: "Hebbal, Bangalore",
-        price: "₹ 1.10 Cr",
-        pricePerSqft: "₹ 6,400 per sqft",
-        bhk: "3 BHK",
-        area: "1650 sqft",
-        baths: "3 Baths",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1599809275372-b40c369dd6cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 15,
-        isVerified: true,
-        tag: "Featured",
-        coordinates: { top: '60%', left: '30%' }
-    },
-    {
-        id: 5,
-        title: "Ultra Modern Penthouse",
-        location: "MG Road, Bangalore",
-        price: "₹ 5.50 Cr",
-        pricePerSqft: "₹ 12,000 per sqft",
-        bhk: "4+ BHK",
-        area: "4500 sqft",
-        baths: "5 Baths",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1600607687644-c7171b42498f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 22,
-        isVerified: true,
-        tag: "Premium",
-        coordinates: { top: '40%', left: '20%' }
-    },
-    {
-        id: 6,
-        title: "Compact Studio",
-        location: "Electronic City, Bangalore",
-        price: "₹ 45 L",
-        pricePerSqft: "₹ 5,200 per sqft",
-        bhk: "1 BHK",
-        area: "850 sqft",
-        baths: "1 Bath",
-        status: "Ready to Move",
-        image: "https://images.unsplash.com/photo-1592595896551-12b371d546d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        photos: 6,
-        isVerified: false,
-        tag: "Best Value",
-        coordinates: { top: '70%', left: '80%' }
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const BACKEND_BASE = API_BASE.replace('/api/v1', '');
+
+function mapPropertyToCard(p) {
+    const raw = p.coverImage || (p.images && p.images[0]);
+    const imgUrl = raw ? (raw.startsWith('http') ? raw : `${BACKEND_BASE}${raw}`) : null;
+
+    const pricing = p.pricing || {};
+    const amount = pricing.expectedPrice || pricing.monthlyRent || pricing.rentPerBed;
+    let price = 'Price on request';
+    if (amount) {
+        const suffix = pricing.monthlyRent ? '/mo' : pricing.rentPerBed ? '/bed' : '';
+        if (amount >= 10000000) price = `₹ ${(amount / 10000000).toFixed(2)} Cr${suffix}`;
+        else if (amount >= 100000) price = `₹ ${(amount / 100000).toFixed(1)} L${suffix}`;
+        else price = `₹ ${amount.toLocaleString('en-IN')}${suffix}`;
     }
-];
+
+    const city = p.location?.city || p.location?.locality || '';
+    const locality = p.location?.locality || '';
+    const location = [locality, city].filter(Boolean).join(', ') || 'Location not specified';
+
+    const details = p.details || {};
+    const bhk = details.bhk || (details.bedrooms ? `${details.bedrooms} BHK` : null) || '—';
+    const area = details.superArea || details.carpetArea;
+    const baths = details.bathrooms;
+
+    const listingTag = { sell: 'For Sale', rent: 'For Rent', pg: 'PG' }[p.listingType?.toLowerCase()];
+
+    return {
+        id: p._id || p.id,
+        title: p.title || 'Untitled',
+        location,
+        price,
+        rawPrice: amount,
+        pricePerSqft: '',
+        bhk,
+        area: area ? `${area} sqft` : '—',
+        baths: baths ? `${baths} Bath${baths > 1 ? 's' : ''}` : '—',
+        status: details.availabilityStatus || details.availableFrom || listingTag || '—',
+        image: imgUrl,
+        photos: p.images?.length || 0,
+        isVerified: false,
+        tag: listingTag || '',
+    };
+}
+
+
+
+const FilterSection = ({ title, children, isOpen = true }) => (
+    <div className="border-b border-gray-200 py-6 last:border-0">
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4 flex justify-between items-center cursor-pointer">
+            {title}
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+        </h3>
+        <div className="space-y-3">
+            {children}
+        </div>
+    </div>
+);
 
 export default function PropertiesPage() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     const [sortBy, setSortBy] = useState('newest');
     const [viewMode, setViewMode] = useState('list'); // 'list' | 'map'
     const [activePropertyId, setActivePropertyId] = useState(null);
 
+    // Real properties state
+    const [properties, setProperties] = useState([]);
+    const [loadingProps, setLoadingProps] = useState(true);
+
+    useEffect(() => {
+        async function fetchProperties() {
+            setLoadingProps(true);
+            try {
+                let url = `${API_BASE}/property`;
+
+                // If there are search parameters, we use the search endpoint
+                if (searchParams.toString()) {
+                    url = `${API_BASE}/property/search?${searchParams.toString()}`;
+                }
+
+                const res = await fetch(url);
+                const json = await res.json();
+                const mapped = (json.data || []).map(mapPropertyToCard);
+                setProperties(mapped);
+            } catch (err) {
+                console.error('Failed to fetch properties', err);
+            } finally {
+                setLoadingProps(false);
+            }
+        }
+        fetchProperties();
+    }, [searchParams]);
+
+    // Handle initial view mode from URL
+    useEffect(() => {
+        if (searchParams.get('view') === 'map') {
+            setViewMode('map');
+        }
+    }, [searchParams]);
+
     // Comparison State
     const [comparedProperties, setComparedProperties] = useState([]);
 
     // Filter State
-    const [priceRange, setPriceRange] = useState({ min: 0, max: 50000000 });
-    const [bhk, setBhk] = useState(['3 BHK']);
+    const [priceRange, setPriceRange] = useState({ min: 0, max: null });
+    const [bhk, setBhk] = useState([]);
     const [status, setStatus] = useState([]);
     const [amenities, setAmenities] = useState([]);
+    const [cityFilter, setCityFilter] = useState(searchParams.get('city') || '');
+
+    // Derived filtered properties
+    const filteredProperties = React.useMemo(() => {
+        return properties.filter(p => {
+            // Apply sorting & local filters here. 
+            // 1. BHK Filter
+            if (bhk.length > 0) {
+                const bCount = parseInt(p.bhk) || 0;
+                const matchesBhk = bhk.some(b => {
+                    if (b === '4+ BHK') return bCount >= 4;
+                    return p.bhk.includes(b.split(' ')[0]);
+                });
+                if (!matchesBhk) return false;
+            }
+
+            // 2. Status Filter
+            if (status.length > 0) {
+                if (!status.some(s => (p.status || '').toLowerCase() === s.toLowerCase())) return false;
+            }
+
+            // 3. Price Range Filter
+            if (p.rawPrice !== undefined && p.rawPrice !== null) {
+                if (priceRange.min && p.rawPrice < priceRange.min) return false;
+                if (priceRange.max && p.rawPrice > priceRange.max) return false;
+            }
+
+            return true;
+        }).sort((a, b) => {
+            if (sortBy === 'price_low') return (a.rawPrice || 0) - (b.rawPrice || 0);
+            if (sortBy === 'price_high') return (b.rawPrice || 0) - (a.rawPrice || 0);
+            // Default newest (assumed already sorted by backend)
+            return 0;
+        });
+    }, [properties, bhk, status, sortBy, priceRange]);
 
     // Mobile Scroll State for Map View
     const [currentMobileIndex, setCurrentMobileIndex] = useState(0);
@@ -155,35 +188,107 @@ export default function PropertiesPage() {
     };
 
     const handleMobileNext = () => {
-        setCurrentMobileIndex((prev) => (prev + 1) % MOCK_PROPERTIES.length);
+        setCurrentMobileIndex((prev) => (prev + 1) % filteredProperties.length);
     };
 
     const handleMobilePrev = () => {
-        setCurrentMobileIndex((prev) => (prev - 1 + MOCK_PROPERTIES.length) % MOCK_PROPERTIES.length);
+        setCurrentMobileIndex((prev) => (prev - 1 + filteredProperties.length) % filteredProperties.length);
     };
 
-    const FilterSection = ({ title, children, isOpen = true }) => (
-        <div className="border-b border-gray-200 py-6 last:border-0">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4 flex justify-between items-center cursor-pointer">
-                {title}
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-            </h3>
-            <div className="space-y-3">
-                {children}
-            </div>
-        </div>
-    );
-
-    const FilterContent = () => (
+    const renderFilterContent = () => (
         <div className="space-y-1">
+            {/* Location */}
+            <FilterSection title="Location">
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        placeholder="Enter City e.g. Ludhiana"
+                        value={cityFilter}
+                        onChange={(e) => setCityFilter(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const params = new URLSearchParams(searchParams.toString());
+                                if (cityFilter.trim()) params.set('city', cityFilter.trim());
+                                else params.delete('city');
+                                router.push(`/properties?${params.toString()}`);
+                            }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#4169E1] focus:border-transparent bg-white text-gray-900"
+                    />
+                    <button
+                        onClick={() => {
+                            const params = new URLSearchParams(searchParams.toString());
+                            if (cityFilter.trim()) params.set('city', cityFilter.trim());
+                            else params.delete('city');
+                            router.push(`/properties?${params.toString()}`);
+                        }}
+                        className="bg-[#4169E1] text-white px-3 border border-[#4169E1] rounded text-sm font-bold hover:bg-blue-700 transition"
+                    >
+                        Go
+                    </button>
+                </div>
+            </FilterSection>
+
+            {/* Listing Type / Category */}
+            <FilterSection title="Listing Type">
+                <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <button
+                        onClick={() => {
+                            const params = new URLSearchParams(searchParams.toString());
+                            if (searchParams.get('listingType') === 'sell') params.delete('listingType');
+                            else params.set('listingType', 'sell');
+                            router.push(`/properties?${params.toString()}`);
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm font-semibold transition-all ${searchParams.get('listingType') === 'sell' ? 'bg-white text-[#4169E1] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
+                        Buy
+                    </button>
+                    <button
+                        onClick={() => {
+                            const params = new URLSearchParams(searchParams.toString());
+                            if (searchParams.get('listingType') === 'rent') params.delete('listingType');
+                            else params.set('listingType', 'rent');
+                            router.push(`/properties?${params.toString()}`);
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm font-semibold transition-all ${searchParams.get('listingType') === 'rent' ? 'bg-white text-[#4169E1] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
+                        Rent
+                    </button>
+                    <button
+                        onClick={() => {
+                            const params = new URLSearchParams(searchParams.toString());
+                            if (searchParams.get('listingType') === 'commercial') params.delete('listingType');
+                            else params.set('listingType', 'commercial');
+                            router.push(`/properties?${params.toString()}`);
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm font-semibold transition-all ${searchParams.get('listingType') === 'commercial' ? 'bg-white text-[#4169E1] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
+                        Commercial
+                    </button>
+                </div>
+            </FilterSection>
+
             {/* Budget */}
             <FilterSection title="Budget">
                 <div className="flex gap-2 items-center mb-3">
-                    <input type="number" placeholder="Min" className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#4169E1] focus:border-transparent bg-white text-gray-900" />
+                    <input
+                        type="number"
+                        min="0"
+                        placeholder="Min"
+                        value={priceRange.min || ''}
+                        onChange={(e) => setPriceRange({ ...priceRange, min: Math.max(0, parseInt(e.target.value) || 0) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#4169E1] focus:border-transparent bg-white text-gray-900"
+                    />
                     <span className="text-gray-400">-</span>
-                    <input type="number" placeholder="Max" className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#4169E1] focus:border-transparent bg-white text-gray-900" />
+                    <input
+                        type="number"
+                        min="0"
+                        placeholder="Max"
+                        value={priceRange.max || ''}
+                        onChange={(e) => setPriceRange({ ...priceRange, max: Math.max(0, parseInt(e.target.value) || 0) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#4169E1] focus:border-transparent bg-white text-gray-900"
+                    />
                 </div>
-                <input type="range" className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#4169E1]" />
             </FilterSection>
 
             {/* BHK Type */}
@@ -221,12 +326,46 @@ export default function PropertiesPage() {
 
     const MapView = ({ className }) => {
         // Current property focusing logic for mobile or desktop hover
-        const activeMarker = activePropertyId || (viewMode === 'map' && window.innerWidth < 1024 ? MOCK_PROPERTIES[currentMobileIndex].id : null);
+        const activeMarker = activePropertyId || (viewMode === 'map' && window.innerWidth < 1024 && filteredProperties[currentMobileIndex] ? filteredProperties[currentMobileIndex].id : null);
+        const [isSearching, setIsSearching] = useState(false);
+
+        const handleSearchArea = () => {
+            setIsSearching(true);
+            console.log('Scanning coordinates...');
+            // Mock fetching properties with bounds
+            // const bounds = { north: ..., south: ..., east: ..., west: ... };
+            // fetchProperties(bounds);
+
+            setTimeout(() => {
+                setIsSearching(false);
+            }, 1000);
+        };
 
         return (
             <div className={`w-full h-full bg-gray-200 relative overflow-hidden group ${className}`}>
                 {/* Map Background Pattern */}
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#4169E1_1px,transparent_1px)] [background-size:20px_20px]"></div>
+
+                {/* Search This Area Floating Button */}
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30">
+                    <button
+                        onClick={handleSearchArea}
+                        disabled={isSearching}
+                        className="bg-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold text-gray-700 hover:scale-105 transition-transform disabled:opacity-70 disabled:scale-100"
+                    >
+                        {isSearching ? (
+                            <>
+                                <Loader className="w-4 h-4 animate-spin text-[#4169E1]" />
+                                Searching...
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined text-primary text-lg">near_me</span>
+                                Search this area
+                            </>
+                        )}
+                    </button>
+                </div>
 
                 {/* Center Label */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl flex flex-col items-center pointer-events-none select-none">
@@ -235,26 +374,26 @@ export default function PropertiesPage() {
                 </div>
 
                 {/* Price Markers */}
-                {MOCK_PROPERTIES.map((property) => (
+                {filteredProperties.map((property, idx) => (
                     <div
                         key={property.id}
-                        className={`absolute cursor-pointer transition-all duration-300 transform hover:scale-110 hover:z-10 ${activeMarker === property.id ? 'z-20 scale-110' : 'z-0'}`}
-                        style={{ top: property.coordinates.top, left: property.coordinates.left }}
+                        className={`absolute cursor-pointer transition-all duration-300 transform hover:scale-110 hover:z-10 ${activePropertyId === property.id ? 'z-20 scale-110' : 'z-0'}`}
+                        style={{ top: `${20 + (idx * 13) % 60}%`, left: `${15 + (idx * 17) % 70}%` }}
                         onMouseEnter={() => setActivePropertyId(property.id)}
                         onMouseLeave={() => setActivePropertyId(null)}
                         onClick={() => {
-                            if (window.innerWidth < 1024) setCurrentMobileIndex(MOCK_PROPERTIES.findIndex(p => p.id === property.id));
+                            if (window.innerWidth < 1024) setCurrentMobileIndex(filteredProperties.findIndex(p => p.id === property.id));
                         }}
                     >
                         <div className={`
                 px-3 py-1.5 rounded-full shadow-lg text-xs font-bold border flex items-center gap-1
-                ${activeMarker === property.id ? 'bg-[#4169E1] text-white border-[#4169E1]' : 'bg-white text-gray-900 border-gray-300 group-hover:border-[#4169E1]'}
+                ${activePropertyId === property.id ? 'bg-[#4169E1] text-white border-[#4169E1]' : 'bg-white text-gray-900 border-gray-300 group-hover:border-[#4169E1]'}
               `}>
                             {property.price}
-                            {activeMarker === property.id && <div className="w-2 h-2 bg-white rounded-full ml-1 animate-pulse"></div>}
+                            {activePropertyId === property.id && <div className="w-2 h-2 bg-white rounded-full ml-1 animate-pulse"></div>}
                         </div>
                         {/* Pointer Triangle */}
-                        <div className={`w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 mx-auto ${activeMarker === property.id ? 'border-t-[#4169E1]' : 'border-t-white'}`}></div>
+                        <div className={`w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 mx-auto ${activePropertyId === property.id ? 'border-t-[#4169E1]' : 'border-t-white'}`}></div>
                     </div>
                 ))}
 
@@ -276,27 +415,17 @@ export default function PropertiesPage() {
                     {/* Top Bar: Breadcrumbs & Meta */}
                     <div className={`py-3 flex flex-col md:flex-row md:items-center justify-between gap-2 ${viewMode === 'map' ? '' : 'border-b border-gray-100'}`}>
                         <div className="text-xs text-gray-500 flex items-center gap-1">
-                            <span className="hover:text-[#4169E1] cursor-pointer">Home</span>
+                            <span onClick={() => router.push('/')} className="hover:text-[#4169E1] cursor-pointer">Home</span>
                             <span>/</span>
-                            <span className="hover:text-[#4169E1] cursor-pointer">Properties in Bangalore</span>
-                            <span>/</span>
-                            <span className="text-gray-900 font-semibold">Luxury Flats</span>
-                        </div>
-
-                        {/* Map/List Toggle */}
-                        <div className="flex bg-gray-100 p-1 rounded-lg">
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${viewMode === 'list' ? 'bg-white text-[#4169E1] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                            >
-                                <List className="w-4 h-4" /> List
-                            </button>
-                            <button
-                                onClick={() => setViewMode('map')}
-                                className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${viewMode === 'map' ? 'bg-white text-[#4169E1] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                            >
-                                <MapIcon className="w-4 h-4" /> Map
-                            </button>
+                            <span className="hover:text-[#4169E1] cursor-pointer">
+                                Properties {searchParams.get('city') ? `in ${searchParams.get('city')}` : ''}
+                            </span>
+                            {searchParams.get('type') && (
+                                <>
+                                    <span>/</span>
+                                    <span className="text-gray-900 font-semibold">{searchParams.get('type')}</span>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -305,15 +434,21 @@ export default function PropertiesPage() {
                         <div className="py-3 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
                             <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
                                 <span className="text-sm font-bold text-gray-900 whitespace-nowrap">Filter By:</span>
-                                <div className="flex items-center gap-1 bg-blue-50 text-[#4169E1] px-2 py-1 rounded text-xs font-semibold border border-blue-100">
-                                    3 BHK <X className="w-3 h-3 cursor-pointer hover:text-blue-800" />
-                                </div>
-                                <div className="flex items-center gap-1 bg-blue-50 text-[#4169E1] px-2 py-1 rounded text-xs font-semibold border border-blue-100">
-                                    Ready to Move <X className="w-3 h-3 cursor-pointer hover:text-blue-800" />
-                                </div>
-                                <div className="flex items-center gap-1 bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-medium border border-gray-200 cursor-pointer hover:bg-gray-200">
-                                    Clear all
-                                </div>
+                                {bhk.map(item => (
+                                    <div key={item} className="flex items-center gap-1 bg-blue-50 text-[#4169E1] px-2 py-1 rounded text-xs font-semibold border border-blue-100">
+                                        {item} <X className="w-3 h-3 cursor-pointer hover:text-blue-800" onClick={() => setBhk(bhk.filter(b => b !== item))} />
+                                    </div>
+                                ))}
+                                {status.map(item => (
+                                    <div key={item} className="flex items-center gap-1 bg-blue-50 text-[#4169E1] px-2 py-1 rounded text-xs font-semibold border border-blue-100">
+                                        {item} <X className="w-3 h-3 cursor-pointer hover:text-blue-800" onClick={() => setStatus(status.filter(s => s !== item))} />
+                                    </div>
+                                ))}
+                                {(bhk.length > 0 || status.length > 0) && (
+                                    <div onClick={() => { setBhk([]); setStatus([]); }} className="flex items-center gap-1 bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-medium border border-gray-200 cursor-pointer hover:bg-gray-200">
+                                        Clear all
+                                    </div>
+                                )}
                             </div>
                             <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
                                 <span className="text-sm text-gray-500">Sort By:</span>
@@ -340,9 +475,9 @@ export default function PropertiesPage() {
                                 <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
                                     <Filter className="w-4 h-4" /> Filters
                                 </h2>
-                                <span className="text-xs text-[#4169E1] font-semibold cursor-pointer">Reset</span>
+                                <span onClick={() => { setBhk([]); setStatus([]); setPriceRange({ min: 0, max: null }); setCityFilter(''); router.push('/properties'); }} className="text-xs text-[#4169E1] font-semibold cursor-pointer hover:underline">Reset</span>
                             </div>
-                            <FilterContent />
+                            {renderFilterContent()}
                         </div>
                     </aside>
 
@@ -350,37 +485,58 @@ export default function PropertiesPage() {
                     <main className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-6">
                             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-                                {MOCK_PROPERTIES.length} Premium Properties for Sale in Bangalore
+                                {loadingProps ? 'Loading properties…' : `${filteredProperties.length} ${filteredProperties.length === 1 ? 'Property' : 'Properties'} Available`}
                             </h1>
-                            <div onClick={() => setViewMode('map')} className="hidden lg:flex items-center gap-2 cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm hover:shadow hover:border-[#4169E1] transition-all group">
-                                <MapIcon className="w-4 h-4 text-gray-500 group-hover:text-[#4169E1]" />
-                                <span className="text-sm font-semibold text-gray-700 group-hover:text-[#4169E1]">Map View</span>
-                            </div>
+
                         </div>
 
-                        <div onClick={() => setViewMode('map')} className="w-full h-32 bg-blue-50 border border-blue-100 rounded-lg mb-6 flex items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors">
-                            <div className="flex items-center gap-2 text-[#4169E1] font-bold">
-                                <MapIcon className="w-5 h-5" /> View these {MOCK_PROPERTIES.length} properties on Map
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 gap-6">
-                            {MOCK_PROPERTIES.map((property) => (
-                                <PropertyCard
-                                    key={property.id}
-                                    property={property}
-                                    onCompare={(isChecked) => handleCompare(property, isChecked)}
-                                    isSelected={!!comparedProperties.find(p => p.id === property.id)}
-                                />
-                            ))}
-                        </div>
-                        <div className="mt-10 flex justify-center gap-2">
-                            <button className="px-4 py-2 bg-[#4169E1] text-white rounded font-bold text-sm shadow hover:bg-blue-700">1</button>
-                            <button className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded font-bold text-sm hover:bg-gray-50">2</button>
-                            <button className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded font-bold text-sm hover:bg-gray-50">3</button>
-                            <span className="px-2 py-2 text-gray-400">...</span>
-                            <button className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded font-bold text-sm hover:bg-gray-50">12</button>
-                        </div>
+
+                        {/* Loading skeleton */}
+                        {loadingProps && (
+                            <div className="grid grid-cols-1 gap-6">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col md:flex-row h-auto md:h-64 animate-pulse">
+                                        <div className="w-full md:w-2/5 h-56 md:h-full bg-gray-200" />
+                                        <div className="flex-1 p-5 space-y-4">
+                                            <div className="h-6 bg-gray-200 rounded w-3/4" />
+                                            <div className="h-4 bg-gray-200 rounded w-1/2" />
+                                            <div className="grid grid-cols-4 gap-4 my-4">
+                                                {[...Array(4)].map((_, j) => <div key={j} className="h-10 bg-gray-200 rounded" />)}
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <div className="h-10 bg-gray-200 rounded w-32" />
+                                                <div className="h-10 bg-gray-200 rounded w-32" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Empty state */}
+                        {!loadingProps && filteredProperties.length === 0 && (
+                            <div className="text-center py-24 text-gray-400">
+                                <span className="material-symbols-outlined text-7xl mb-4 block text-gray-200">home</span>
+                                <p className="text-xl font-bold text-gray-700">No properties found</p>
+                                <p className="text-sm mt-2">Try adjusting your filters or search criteria.</p>
+                            </div>
+                        )}
+
+                        {/* Real property cards */}
+                        {!loadingProps && filteredProperties.length > 0 && (
+                            <div className="grid grid-cols-1 gap-6">
+                                {filteredProperties.map((property) => (
+                                    <PropertyCard
+                                        key={property.id}
+                                        property={property}
+                                        onCompare={(isChecked) => handleCompare(property, isChecked)}
+                                        isSelected={!!comparedProperties.find(p => p.id === property.id)}
+                                        onClick={() => router.push(`/properties/${property.id}`)}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </main>
                 </div>
             ) : (
@@ -397,19 +553,21 @@ export default function PropertiesPage() {
                     {/* List Container */}
                     <div className="hidden lg:block w-1/2 overflow-y-auto h-full p-6 bg-gray-50 order-2">
                         <div className="mb-4 flex justify-between items-center">
-                            <span className="font-bold text-gray-900">{MOCK_PROPERTIES.length} Results</span>
-                            <select className="text-sm border-gray-200 rounded bg-white p-1">
-                                <option>Newest</option>
-                                <option>Price: Low</option>
+                            <span className="font-bold text-gray-900">{filteredProperties.length} Results</span>
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="text-sm border-gray-200 rounded bg-white p-1">
+                                <option value="newest">Newest</option>
+                                <option value="price_low">Price: Low</option>
+                                <option value="price_high">Price: High</option>
                             </select>
                         </div>
                         <div className="grid grid-cols-1 gap-6">
-                            {MOCK_PROPERTIES.map((property) => (
+                            {filteredProperties.map((property) => (
                                 <div key={property.id} id={`prop-card-${property.id}`} onMouseEnter={() => setActivePropertyId(property.id)} onMouseLeave={() => setActivePropertyId(null)}>
                                     <PropertyCard
                                         property={property}
                                         onCompare={(isChecked) => handleCompare(property, isChecked)}
                                         isSelected={!!comparedProperties.find(p => p.id === property.id)}
+                                        onClick={() => router.push(`/properties/${property.id}`)}
                                     />
                                 </div>
                             ))}
@@ -417,40 +575,37 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Mobile Floating Card View */}
-                    <div className="lg:hidden fixed bottom-6 left-4 right-4 z-50 order-3">
-                        <div className="bg-white rounded-xl shadow-2xl p-1 border border-gray-200 relative">
-                            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                {currentMobileIndex + 1} / {MOCK_PROPERTIES.length}
+                    {filteredProperties.length > 0 && (
+                        <div className="lg:hidden fixed bottom-6 left-4 right-4 z-50 order-3">
+                            <div className="bg-white rounded-xl shadow-2xl p-1 border border-gray-200 relative">
+                                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                    {currentMobileIndex + 1} / {filteredProperties.length}
+                                </div>
+                                {/* Navigation Buttons for Swipe Simulation */}
+                                <button
+                                    onClick={handleMobilePrev}
+                                    className="absolute top-1/2 -left-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={handleMobileNext}
+                                    className="absolute top-1/2 -right-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
+                                >
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
+
+                                {/* Compact Card View */}
+                                <PropertyCard
+                                    property={filteredProperties[currentMobileIndex]}
+                                    onClick={() => router.push(`/properties/${filteredProperties[currentMobileIndex]?.id}`)}
+                                />
                             </div>
-                            {/* Navigation Buttons for Swipe Simulation */}
-                            <button
-                                onClick={handleMobilePrev}
-                                className="absolute top-1/2 -left-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={handleMobileNext}
-                                className="absolute top-1/2 -right-3 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 border border-gray-100 z-10"
-                            >
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
-
-                            {/* Compact Card View */}
-                            <PropertyCard property={MOCK_PROPERTIES[currentMobileIndex]} />
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
 
-            {/* Floating Map Button (Mobile Only - List Mode) */}
-            {viewMode === 'list' && (
-                <div className="fixed bottom-24 right-4 z-40 lg:hidden">
-                    <button onClick={() => setViewMode('map')} className="bg-white text-gray-900 p-3 rounded-full shadow-lg border-2 border-transparent focus:border-[#4169E1]">
-                        <MapIcon className="w-6 h-6" />
-                    </button>
-                </div>
-            )}
 
             {/* Mobile Filter Button (List Mode Only) */}
             {viewMode === 'list' && (
@@ -476,14 +631,14 @@ export default function PropertiesPage() {
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto">
-                            <FilterContent />
+                            {renderFilterContent()}
                         </div>
                         <div className="mt-4 pt-4 border-t sticky bottom-0 bg-white pb-4">
                             <button
                                 onClick={() => setIsMobileFilterOpen(false)}
                                 className="w-full bg-[#4169E1] text-white font-bold py-3.5 rounded-lg shadow-lg"
                             >
-                                Show {MOCK_PROPERTIES.length} Properties
+                                Show {properties.length} Properties
                             </button>
                         </div>
                     </div>

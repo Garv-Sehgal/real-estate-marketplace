@@ -80,7 +80,7 @@ const BOOKINGS = [
 
 const MESSAGES = [
     { id: 1, sender: "Sarah Smith", role: "Real Estate Agent", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80", time: "2m ago", preview: "Hi Alex, are you still interested in the Villa?", unread: true },
-    { id: 2, sender: "Elite Support", role: "Customer Service", avatar: "https://ui-avatars.com/api/?name=Elite+Support&background=0D8ABC&color=fff", time: "1d ago", preview: "Your verification request has been approved.", unread: false },
+    { id: 2, sender: "SPRxElite Support", role: "Customer Service", avatar: "https://ui-avatars.com/api/?name=SPRxElite+Support&background=0D8ABC&color=fff", time: "1d ago", preview: "Your verification request has been approved.", unread: false },
 ];
 
 // --- COMPONENTS ---
@@ -365,104 +365,10 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-slate-800 flex flex-col">
-
-            {/* --- DESKTOP TOP NAVIGATION BAR --- */}
-            <header className="hidden md:flex bg-white/90 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40 h-[72px] items-center px-6 lg:px-10 justify-between shadow-[0_2px_20px_-2px_rgba(0,0,0,0.02)] transition-all">
-
-                {/* Left: Brand */}
-                <div className="flex items-center gap-3 group cursor-pointer">
-                    <div className="w-9 h-9 bg-gradient-to-br from-[#4169E1] to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-200 group-hover:shadow-blue-300 transition-all duration-300 transform group-hover:scale-105">E</div>
-                    <span className="text-xl font-bold text-gray-900 tracking-tight group-hover:text-[#4169E1] transition-colors">Elite Estates</span>
-                </div>
-
-                <nav className="flex items-center gap-2 bg-white/50 p-1.5 rounded-full border border-gray-100 shadow-sm backdrop-blur-sm">
-                    {DESKTOP_NAV.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 relative
-                   ${activeTab === item.id
-                                    ? 'bg-gradient-to-r from-[#4169E1] to-blue-600 text-white shadow-lg shadow-blue-200 transform scale-105'
-                                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'}`}
-                        >
-                            {item.label}
-                        </button>
-                    ))}
-                </nav>
-
-                {/* Right: User Profile */}
-                <div className="flex items-center gap-5">
-                    {/* Quick Action Icons */}
-                    <div className="flex items-center gap-2 border-r border-gray-100 pr-5">
-                        <button className="p-2.5 text-gray-400 hover:text-[#4169E1] hover:bg-blue-50/50 rounded-full transition-all duration-300 relative group">
-                            <Search className="w-5 h-5" />
-                        </button>
-                        <button className="p-2.5 text-gray-400 hover:text-[#4169E1] hover:bg-blue-50/50 rounded-full transition-all duration-300 relative group">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white scale-0 group-hover:scale-100 transition-transform"></span>
-                        </button>
-                    </div>
-
-                    {/* Profile User */}
-                    <button
-                        onClick={() => setActiveTab('profile')}
-                        className="flex items-center gap-3 pl-1 pr-2 py-1 hover:bg-gray-50 rounded-full border border-transparent hover:border-gray-100 transition-all duration-200 group"
-                    >
-                        <div className="relative">
-                            <img src={USER_PROFILE.avatar} alt="User" className="w-10 h-10 rounded-full object-cover border-[3px] border-white shadow-sm group-hover:shadow-md transition-shadow" />
-                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                        </div>
-                        <div className="text-left hidden lg:block">
-                            <div className="text-sm font-bold text-gray-900 leading-none mb-0.5 group-hover:text-[#4169E1] transition-colors">{USER_PROFILE.name}</div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Premium</div>
-                        </div>
-                        <ChevronDown className="w-4 h-4 text-gray-300 group-hover:text-[#4169E1] transition-colors ml-1" />
-                    </button>
-                </div>
-            </header>
-
-
-            {/* --- CONTENT AREA (Centered on Desktop) --- */}
-            <main className="flex-1 w-full max-w-7xl mx-auto md:px-10 py-6 md:py-10">
-
-                {/* Mobile Header (Keep strict) */}
-                <header className="md:hidden sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-100 p-4 flex justify-between items-center mb-6">
-                    <div className="font-bold text-lg text-gray-900">Elite Estates</div>
-                    <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden">
-                        <img src={USER_PROFILE.avatar} alt="User" className="w-full h-full object-cover" />
-                    </div>
-                </header>
-
-                <div className="px-4 md:px-0 pb-28 md:pb-0">
-                    {renderContent()}
-                </div>
-
-            </main>
-
-
-            {/* --- MOBILE BOTTOM NAV (Keep as-is) --- */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
-                <div className="flex justify-around items-center px-2">
-                    {MOBILE_NAV.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={`flex-1 py-3 flex flex-col items-center gap-1 transition-all
-                    ${activeTab === item.id ? 'text-[#4169E1]' : 'text-gray-400 hover:text-gray-600'}`}
-                        >
-                            <div className="relative">
-                                <item.icon className={`w-6 h-6 ${activeTab === item.id ? 'fill-current opacity-20 stroke-[2.5px]' : ''}`} />
-                                {item.badge && (
-                                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-                                )}
-                            </div>
-                            <span className="text-[10px] font-bold tracking-wide">{item.label.split(' ')[0]}</span>
-                        </button>
-                    ))}
-                </div>
-            </nav>
-
-        </div>
+        <main className="flex-1 w-full max-w-7xl mx-auto py-6 md:py-10">
+            <div className="px-4 md:px-6">
+                {renderContent()}
+            </div>
+        </main>
     );
 }

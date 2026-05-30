@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import CountrySelector from '../../components/CountrySelector';
 import countryCodes from '../../utils/countryCodes';
+import { requestResetOTP } from "../../lib/passwordReset";
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
@@ -15,24 +16,32 @@ export default function ForgotPasswordPage() {
 
     const isPhone = /^[0-9+]/.test(identifier);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setIsSending(true);
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSending(true);
 
+    try {
         let finalIdentifier = identifier;
+
         if (isPhone) {
             const cleanNumber = identifier.replace(/\D/g, '');
             const cleanCountryCode = countryCode.replace('+', '');
             finalIdentifier = `+${cleanCountryCode}${cleanNumber}`;
         }
 
-        // Simulate API call
-        setTimeout(() => {
-            setIsSending(false);
-            console.log('Sending OTP to:', finalIdentifier);
-            router.push('/verify-reset');
-        }, 1500);
-    };
+        await requestResetOTP(finalIdentifier);
+
+        // store identifier for next step
+        localStorage.setItem("resetIdentifier", finalIdentifier);
+
+        router.push('/verify-reset');
+
+    } catch (error) {
+        alert(error.message || "Failed to send OTP");
+    } finally {
+        setIsSending(false);
+    }
+};
 
     return (
         <div className="min-h-screen flex bg-white">

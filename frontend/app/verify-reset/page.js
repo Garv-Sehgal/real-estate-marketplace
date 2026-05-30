@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { verifyResetOTP } from "../../lib/passwordReset";
+import { requestResetOTP } from "../../lib/passwordReset";
 
 export default function VerifyResetPage() {
     const router = useRouter();
@@ -10,6 +12,13 @@ export default function VerifyResetPage() {
     const [timer, setTimer] = useState(30);
     const [isVerifying, setIsVerifying] = useState(false);
     const inputRefs = useRef([]);
+
+    useEffect(() => {
+        const identifier = localStorage.getItem("resetIdentifier");
+        if (!identifier) {
+            router.replace("/forgot-password");
+        }
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -29,25 +38,56 @@ export default function VerifyResetPage() {
         }
     };
 
+    const handlePaste = (e) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        if (pastedData.length === 6) {
+            setOtp(pastedData.split(''));
+            inputRefs.current[5]?.focus();
+        }
+    };
+
     const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputRefs.current[index - 1].focus();
         }
+        if (e.key === 'Enter' && otp.every(d => d)) {
+            handleVerify();
+        }
     };
 
-    const handleVerify = () => {
-        setIsVerifying(true);
-        setTimeout(() => {
-            setIsVerifying(false);
-            console.log('Reset OTP Verified:', otp.join(''));
-            router.push('/reset-password');
-        }, 2000);
-    };
+const handleVerify = async () => {
+    setIsVerifying(true);
 
-    const handleResend = () => {
+    try {
+        const identifier = localStorage.getItem("resetIdentifier");
+        const code = otp.join('');
+
+        const res = await verifyResetOTP(identifier, code);
+
+        // store reset token for next page
+        localStorage.setItem("resetToken", res.resetToken);
+
+        router.push('/reset-password');
+
+    } catch (error) {
+        alert(error.message || "Invalid or expired OTP");
+    } finally {
+        setIsVerifying(false);
+    }
+};
+
+const handleResend = async () => {
+    const identifier = localStorage.getItem("resetIdentifier");
+    if (!identifier) return;
+
+    try {
+        await requestResetOTP(identifier);
         setTimer(30);
-    };
-
+    } catch (err) {
+        alert(err.message || "Failed to resend OTP");
+    }
+};
     return (
         <div className="min-h-screen flex bg-white">
             {/* Left Side - Hero Image */}
@@ -64,7 +104,7 @@ export default function VerifyResetPage() {
                         Secure Your Account
                     </h1>
                     <p className="text-lg text-gray-200 max-w-md font-light leading-relaxed">
-                        One Step Closer to Elite Estates. Verify your identity to reset your password.
+                        One Step Closer to SPRxElite Estates. Verify your identity to reset your password.
                     </p>
                 </div>
             </div>
@@ -97,6 +137,7 @@ export default function VerifyResetPage() {
                                     value={digit}
                                     onChange={(e) => handleChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
+                                    onPaste={index === 0 ? handlePaste : undefined}
                                     className="w-full h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                                 />
                             ))}

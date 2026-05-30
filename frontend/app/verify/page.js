@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { verifySignupOTP } from '../../lib/auth';
 
 export default function VerifyPage() {
     const router = useRouter(); // Initialize router
@@ -43,9 +44,21 @@ export default function VerifyPage() {
         if (value && index < 5) mobileInputRefs.current[index + 1].focus();
     };
 
+    const handleMobilePaste = (e) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        if (pastedData.length === 6) {
+            setMobileOtp(pastedData.split(''));
+            mobileInputRefs.current[5]?.focus();
+        }
+    };
+
     const handleMobileKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !mobileOtp[index] && index > 0) {
             mobileInputRefs.current[index - 1].focus();
+        }
+        if (e.key === 'Enter' && isFormValid) {
+            handleVerify();
         }
     };
 
@@ -58,22 +71,55 @@ export default function VerifyPage() {
         if (value && index < 5) emailInputRefs.current[index + 1].focus();
     };
 
+    const handleEmailPaste = (e) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        if (pastedData.length === 6) {
+            setEmailOtp(pastedData.split(''));
+            emailInputRefs.current[5]?.focus();
+        }
+    };
+
     const handleEmailKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !emailOtp[index] && index > 0) {
             emailInputRefs.current[index - 1].focus();
         }
+        if (e.key === 'Enter' && isFormValid) {
+            handleVerify();
+        }
     };
 
-    const handleVerify = () => {
+
+const handleVerify = async () => {
+    try {
         setIsVerifying(true);
-        // Simulate verification delay
-        setTimeout(() => {
-            setIsVerifying(false);
-            console.log('Mobile OTP:', mobileOtp.join(''));
-            console.log('Email OTP:', emailOtp.join(''));
-            router.push('/login');
-        }, 2000);
-    };
+
+        const stored = JSON.parse(sessionStorage.getItem('signupData'));
+
+        if (!stored?.signupId) {
+            alert("Signup session expired. Please register again.");
+            router.push('/register');
+            return;
+        }
+
+        await verifySignupOTP({
+            signupId: stored.signupId,
+            phoneOtp: mobileOtp.join(''),
+            emailOtp: emailOtp.join('')
+        });
+
+        sessionStorage.removeItem('signupData');
+
+        alert("Account created successfully!");
+        router.push('/login');
+
+    } catch (err) {
+        alert(err.message || "OTP verification failed");
+    } finally {
+        setIsVerifying(false);
+    }
+};
+
 
     const handleResendMobile = () => setMobileTimer(30);
     const handleResendEmail = () => setEmailTimer(30);
@@ -143,6 +189,7 @@ export default function VerifyPage() {
                                         value={digit}
                                         onChange={(e) => handleMobileChange(index, e.target.value)}
                                         onKeyDown={(e) => handleMobileKeyDown(index, e)}
+                                        onPaste={index === 0 ? handleMobilePaste : undefined}
                                         className="w-full h-10 sm:h-12 text-center text-lg sm:text-xl font-bold text-gray-900 bg-white border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all duration-200"
                                     />
                                 ))}
@@ -180,6 +227,7 @@ export default function VerifyPage() {
                                         value={digit}
                                         onChange={(e) => handleEmailChange(index, e.target.value)}
                                         onKeyDown={(e) => handleEmailKeyDown(index, e)}
+                                        onPaste={index === 0 ? handleEmailPaste : undefined}
                                         className="w-full h-10 sm:h-12 text-center text-lg sm:text-xl font-bold text-gray-900 bg-white border-2 border-gray-400 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all duration-200"
                                     />
                                 ))}

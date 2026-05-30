@@ -1,26 +1,65 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Home, Eye, MessageSquare, PlusCircle, LayoutDashboard, Settings, LogOut, CheckCircle, XCircle, Clock, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Home, Eye, MessageSquare, PlusCircle, CheckCircle, XCircle, Clock, Edit, Trash2, Loader } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 export default function LandlordDashboard() {
-    const [activeTab, setActiveTab] = useState('overview');
+    const [meetings, setMeetings] = useState([]);
+    const [loadingMeetings, setLoadingMeetings] = useState(true);
+    const [updatingId, setUpdatingId] = useState(null);
+
+    useEffect(() => {
+        async function fetchMeetings() {
+            try {
+                const data = await apiRequest('/meetings/incoming');
+                setMeetings(data.data || []);
+            } catch (err) {
+                console.error('Failed to fetch meetings:', err);
+            } finally {
+                setLoadingMeetings(false);
+            }
+        }
+        fetchMeetings();
+        // Poll every 30 seconds to catch new requests without a page reload
+        const interval = setInterval(fetchMeetings, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleMeetingStatus = async (meetingId, status) => {
+        setUpdatingId(meetingId);
+        try {
+            await apiRequest(`/meetings/${meetingId}/status`, {
+                method: 'PATCH',
+                body: { status }
+            });
+            setMeetings(prev => prev.filter(m => m._id !== meetingId));
+        } catch (err) {
+            alert(err.message || 'Failed to update meeting status.');
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
+    const pendingMeetings = meetings.filter(m => m.status === 'pending');
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
-            {/* Top Navigation Bar Placeholder (Assuming main layout handles this, but adding a localized header) */}
-            <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Landlord Dashboard</h1>
-                    <p className="text-slate-500 text-sm">Manage your listings and viewing requests.</p>
+        <div className="animate-in fade-in duration-500">
+            <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">Landlord Dashboard</h1>
+                        <p className="text-slate-500 text-sm">Manage your listings and viewing requests.</p>
+                    </div>
+                    <Link
+                        href="/dashboard/landlord/post-property"
+                        className="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-all shadow-sm"
+                    >
+                        <PlusCircle size={18} />
+                        List New Property
+                    </Link>
                 </div>
-                <button className="bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-all shadow-sm">
-                    <PlusCircle size={18} />
-                    Post New Property
-                </button>
-            </header>
-
-            <main className="p-8 max-w-7xl mx-auto space-y-8">
 
                 {/* Stats Overview */}
                 <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -32,9 +71,9 @@ export default function LandlordDashboard() {
                         color="bg-blue-50 border-blue-100"
                     />
                     <StatCard
-                        title="Active Leads"
-                        value="48"
-                        trend="12 new today"
+                        title="Visit Requests"
+                        value={loadingMeetings ? '—' : pendingMeetings.length.toString()}
+                        trend={pendingMeetings.length > 0 ? 'Needs attention' : 'All clear'}
                         icon={<MessageSquare size={24} className="text-emerald-600" />}
                         color="bg-emerald-50 border-emerald-100"
                     />
@@ -63,7 +102,7 @@ export default function LandlordDashboard() {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm text-slate-600">
-                                <thead className="bg-slate-50 text-slate-900 uppercase font-semibold text-xs transition-colors">
+                                <thead className="bg-slate-50 text-slate-900 uppercase font-semibold text-xs">
                                     <tr>
                                         <th className="px-6 py-3">Property</th>
                                         <th className="px-6 py-3">Status</th>
@@ -97,47 +136,47 @@ export default function LandlordDashboard() {
                                         price="$2,100/mo"
                                         date="Nov 05, 2024"
                                     />
-                                    <PropertyRow
-                                        image="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&q=80&w=200"
-                                        title="Suburban Family Home"
-                                        location="Austin, TX"
-                                        status="Live"
-                                        price="$850,000"
-                                        date="Sep 15, 2024"
-                                    />
                                 </tbody>
                             </table>
                         </div>
                     </section>
 
-                    {/* Booking Requests */}
+                    {/* Visit Requests (Real Data) */}
                     <section className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
                         <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-slate-800">Booking Requests</h2>
-                            <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs font-bold">5 New</span>
+                            <h2 className="text-lg font-bold text-slate-800">Visit Requests</h2>
+                            {!loadingMeetings && pendingMeetings.length > 0 && (
+                                <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs font-bold">
+                                    {pendingMeetings.length} New
+                                </span>
+                            )}
                         </div>
                         <div className="p-4 space-y-4 flex-1 overflow-y-auto max-h-[500px]">
-                            <BookingRequestCard
-                                name="Sarah Jenkins"
-                                property="Modern Apartment"
-                                time="Tomorrow, 10:00 AM"
-                                avatar="SJ"
-                                bg="bg-purple-100 text-purple-600"
-                            />
-                            <BookingRequestCard
-                                name="Michael Chen"
-                                property="Luxury Villa"
-                                time="Nov 12, 2:00 PM"
-                                avatar="MC"
-                                bg="bg-orange-100 text-orange-600"
-                            />
-                            <BookingRequestCard
-                                name="Priya Patel"
-                                property="Cozy Studio"
-                                time="Nov 14, 11:30 AM"
-                                avatar="PP"
-                                bg="bg-pink-100 text-pink-600"
-                            />
+
+                            {loadingMeetings && (
+                                <div className="flex flex-col items-center justify-center py-8 gap-3 text-slate-400">
+                                    <Loader size={24} className="animate-spin" />
+                                    <span className="text-sm">Loading requests...</span>
+                                </div>
+                            )}
+
+                            {!loadingMeetings && pendingMeetings.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400">
+                                    <CheckCircle size={32} className="text-slate-200" />
+                                    <p className="text-sm font-semibold text-slate-500">No pending visit requests</p>
+                                    <p className="text-xs text-center">When someone schedules a visit, it will appear here.</p>
+                                </div>
+                            )}
+
+                            {!loadingMeetings && pendingMeetings.map((meeting) => (
+                                <VisitRequestCard
+                                    key={meeting._id}
+                                    meeting={meeting}
+                                    isUpdating={updatingId === meeting._id}
+                                    onConfirm={() => handleMeetingStatus(meeting._id, 'confirmed')}
+                                    onReject={() => handleMeetingStatus(meeting._id, 'rejected')}
+                                />
+                            ))}
                         </div>
                         <div className="p-4 border-t border-slate-100 text-center">
                             <button className="text-sm font-semibold text-blue-700 hover:text-blue-800">View All Bookings</button>
@@ -151,7 +190,7 @@ export default function LandlordDashboard() {
 
 function StatCard({ title, value, trend, icon, color }) {
     return (
-        <div className={`p-6 rounded-xl border bg-white shadow-sm flex items-start justify-between transition-transform hover:-translate-y-1 duration-200`}>
+        <div className="p-6 rounded-xl border bg-white shadow-sm flex items-start justify-between transition-transform hover:-translate-y-1 duration-200">
             <div>
                 <h3 className="text-slate-500 text-sm font-medium mb-1">{title}</h3>
                 <p className="text-3xl font-bold text-slate-900 mb-2">{value}</p>
@@ -170,7 +209,6 @@ function PropertyRow({ image, title, location, status, price, date }) {
         Pending: "bg-amber-100 text-amber-700 border-amber-200",
         Rejected: "bg-red-100 text-red-700 border-red-200",
     };
-
     return (
         <tr className="hover:bg-slate-50 transition-colors group">
             <td className="px-6 py-4">
@@ -203,31 +241,69 @@ function PropertyRow({ image, title, location, status, price, date }) {
     );
 }
 
-function BookingRequestCard({ name, property, time, avatar, bg }) {
+function VisitRequestCard({ meeting, isUpdating, onConfirm, onReject }) {
+    const initials = (meeting.requesterName || 'U')
+        .split(' ')
+        .map(w => w[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+
+    const colors = [
+        'bg-purple-100 text-purple-600',
+        'bg-orange-100 text-orange-600',
+        'bg-pink-100 text-pink-600',
+        'bg-teal-100 text-teal-600',
+        'bg-blue-100 text-blue-600'
+    ];
+    const bg = colors[(meeting.requesterName?.charCodeAt(0) || 0) % colors.length];
+
+    const friendlyDate = (d) => {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+
     return (
-        <div className="p-4 rounded-lg border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all bg-slate-50/50 hover:bg-white cursor-pointer">
+        <div className="p-4 rounded-lg border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all bg-slate-50/50 hover:bg-white">
             <div className="flex items-center gap-3 mb-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${bg}`}>
-                    {avatar}
+                    {initials}
                 </div>
                 <div>
-                    <p className="text-sm font-semibold text-slate-900">{name}</p>
+                    <p className="text-sm font-semibold text-slate-900">{meeting.requesterName}</p>
                     <p className="text-xs text-slate-500">Wants to visit</p>
                 </div>
             </div>
-            <div className="text-xs text-slate-600 mb-2">
-                <span className="font-medium">Property:</span> {property}
+            <div className="text-xs text-slate-600 mb-1">
+                <span className="font-medium">Property:</span> {meeting.propertyTitle}
             </div>
-            <div className="flex justify-between items-center">
+            {meeting.message && (
+                <div className="text-xs text-slate-500 mb-2 italic truncate max-w-full">
+                    "{meeting.message}"
+                </div>
+            )}
+            <div className="flex justify-between items-center mt-2">
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">
-                    <Clock size={12} /> {time}
+                    <Clock size={12} />
+                    {friendlyDate(meeting.preferredDate)}
+                    {meeting.preferredTime ? ` · ${meeting.preferredTime}` : ''}
                 </div>
                 <div className="flex gap-1">
-                    <button className="p-1.5 rounded bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors">
-                        <XCircle size={16} />
+                    <button
+                        onClick={onReject}
+                        disabled={isUpdating}
+                        title="Reject"
+                        className="p-1.5 rounded bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-40"
+                    >
+                        {isUpdating ? <Loader size={16} className="animate-spin" /> : <XCircle size={16} />}
                     </button>
-                    <button className="p-1.5 rounded bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-colors">
-                        <CheckCircle size={16} />
+                    <button
+                        onClick={onConfirm}
+                        disabled={isUpdating}
+                        title="Confirm"
+                        className="p-1.5 rounded bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-40"
+                    >
+                        {isUpdating ? <Loader size={16} className="animate-spin" /> : <CheckCircle size={16} />}
                     </button>
                 </div>
             </div>

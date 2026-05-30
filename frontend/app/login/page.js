@@ -5,12 +5,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import CountrySelector from '../../components/CountrySelector';
-
+import { loginUser } from '../../lib/auth';
+import { useEffect } from "react";
 import countryCodes from '../../utils/countryCodes';
 
 export default function LoginPage() {
     const router = useRouter();
+    useEffect(() => {
+    localStorage.removeItem("resetToken");
+    localStorage.removeItem("resetIdentifier");
+}, []);
     const [countryCode, setCountryCode] = useState('+91');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [passwordFocused, setPasswordFocused] = useState(false);
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -27,36 +37,41 @@ export default function LoginPage() {
         }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        // Prepare payload with E.164 format for phone login
-        let finalEmail = formData.email;
-        let finalCountryCode = null;
-
-        if (isPhone) {
-            // Remove any non-digit chars from input
-            const cleanNumber = formData.email.replace(/\D/g, '');
-            if (cleanNumber) {
-                // E.164 format: +<country_code><number>
-                // countryCode has '+'
-                const cleanCountryCode = countryCode.replace('+', '');
-                // We send the combined number as 'email' or a specific 'mobile' field depending on backend
-                // For now, let's keep it in the log as a clear distinction
-                finalEmail = `+${cleanCountryCode}${cleanNumber}`;
-                finalCountryCode = countryCode;
-            }
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && formData.email && formData.password && !loading) {
+            handleSubmit(e);
         }
+    };
 
-        console.log('Logging in user:', {
-            email: finalEmail,
-            password: formData.password,
-            rememberMe: formData.rememberMe,
-            isPhoneLogin: isPhone,
-            countryCode: finalCountryCode
-        });
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
 
-        router.push('/');
+        try {
+            let identifier = formData.email;
+
+            // Convert phone to E.164
+            if (isPhone) {
+                const cleanNumber = formData.email.replace(/\D/g, '');
+                const cleanCountryCode = countryCode.replace('+', '');
+                identifier = `+${cleanCountryCode}${cleanNumber}`;
+            }
+
+            const user = await loginUser(identifier, formData.password);
+
+            // Role-based redirect
+            if (user.role === 'super_admin') router.push('/dashboard/super-admin');
+            else if (user.role === 'admin') router.push('/dashboard/admin');
+            else if (user.role === 'agent') router.push('/dashboard/agent');
+            else if (user.role === 'landlord') router.push('/dashboard/landlord');
+            else router.push('/');
+
+        } catch (err) {
+            setError(err.message || 'Login failed');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleGoogleSignIn = () => {
@@ -66,7 +81,7 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex bg-white">
 
-            {/* LEFT SIDE – LOGIN FORM */}
+            {/* LEFT SIDE */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 bg-[url('/images/subtle-pattern.png')]">
                 <div className="w-full max-w-md space-y-8 bg-white/80 backdrop-blur-lg p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20">
 
@@ -74,14 +89,15 @@ export default function LoginPage() {
                         <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
                             Welcome Back
                         </h2>
-                        <p className="mt-2 text-sm text-gray-600">
-                            Sign in to continue to Elite Estates
+                        <p className="mt-1 text-sm text-gray-600">
+                            Sign in to continue to SPRxElite Estates
                         </p>
                     </div>
 
                     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                         <div className="space-y-4">
 
+                            {/* Email / Phone */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 ml-1">
                                     Email or Mobile Number
@@ -89,7 +105,6 @@ export default function LoginPage() {
 
                                 <div className="relative mt-1 rounded-xl shadow-sm flex items-center border border-gray-300 focus-within:border-blue-600 bg-white h-[50px] transition-colors duration-200">
 
-                                    {/* Country Code Dropdown - Conditionally Rendered */}
                                     {isPhone && (
                                         <div className="relative h-full flex items-center bg-gray-50 border-r border-gray-200 rounded-l-xl">
                                             <CountrySelector
@@ -106,25 +121,52 @@ export default function LoginPage() {
                                         required
                                         value={formData.email}
                                         onChange={handleInputChange}
+                                        onKeyDown={handleKeyDown}
                                         className={`block w-full h-full px-4 border-none text-gray-900 placeholder-gray-400 focus:ring-0 focus:outline-none text-base bg-transparent ${isPhone ? 'rounded-r-xl' : 'rounded-xl'}`}
                                         placeholder="Enter email or phone"
                                     />
                                 </div>
                             </div>
 
+                            {/* Password */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 ml-1">
                                     Password
                                 </label>
-                                <input
-                                    name="password"
-                                    type="password"
-                                    required
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/50"
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative mt-1">
+                                    <input
+                                        name="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        required
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        onFocus={() => setPasswordFocused(true)}
+                                        onBlur={() => setPasswordFocused(false)}
+                                        onKeyDown={handleKeyDown}
+                                        className="block w-full px-4 py-3 pr-12 bg-white border border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 outline-none"
+                                        placeholder="Enter your password"
+                                    />
+                                    {(passwordFocused || formData.password) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            className="absolute inset-y-0 right-0 flex items-center justify-center w-12 text-gray-400 hover:text-blue-600 transition-colors duration-200 focus:outline-none"
+                                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        >
+                                            {showPassword ? (
+                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                    )}
+                                </div>
+
                                 <div className="flex justify-between items-center mt-3">
                                     <div className="flex items-center">
                                         <input
@@ -152,10 +194,17 @@ export default function LoginPage() {
 
                         <button
                             type="submit"
-                            className="w-full py-3.5 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:scale-[1.02] transition"
+                            disabled={loading}
+                            className="w-full py-3.5 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-blue-800 hover:scale-[1.02] transition disabled:opacity-60"
                         >
-                            Sign In
+                            {loading ? 'Signing in...' : 'Sign In'}
                         </button>
+
+                        {error && (
+                            <p className="text-red-500 text-center text-sm mt-2">
+                                {error}
+                            </p>
+                        )}
                     </form>
 
                     <div className="relative">
@@ -168,8 +217,7 @@ export default function LoginPage() {
                             </span>
                         </div>
                     </div>
-
-                    <div className="flex justify-center gap-4">
+                     <div className="flex justify-center gap-4">
                         {/* Google */}
                         <button
                             onClick={handleGoogleSignIn}
@@ -195,12 +243,12 @@ export default function LoginPage() {
                             </svg>
                         </button>
 
-                        {/* Apple */}
                         <button className="flex items-center justify-center w-14 h-14 border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-sm transition-all duration-200">
-                            <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.05 20.28c-.98.95-2.05.88-3.08.36-1.09-.56-2.13-.48-3.08.48.97 4.51 6.01 5.48 7.21.72-.08-.02-.12-.04-.15-.06-.3-.22-.61-.41-.9-.63v-.02-.85c.01.01.01.01.01 0zM12.03 2.52c-.85 1.13-2.01 1.77-3.06 1.72-.05-1.09.43-2.31 1.45-3.14.93-.76 2.22-1.36 3.07-1.12.1.02.21.05.3.09-.34.52-.75.99-1.33 1.25-.15-.22-.32-.47-.43-.8zm5.75 5.56c-1.63 1.34-1.28 3.82 1.63 5.06-.36.98-.82 1.93-1.42 2.82-.67 1.01-1.37 2.01-2.48 2.03-1.07.02-1.42-.64-2.63-.64-1.23 0-1.61.62-2.63.66-1.07.03-1.89-1.08-2.58-2.08-1.4-2.04-2.47-5.77-1.03-8.27.71-1.24 1.98-2.03 3.37-2.05 1.05-.03 2.04.71 2.68.71.64 0 1.83-.87 3.09-.75.52.02 2 .21 2.94 1.58-2.47 1.48-2.07 4.14-2.07 4.14z" />
+                            <svg className="w-6 h-6 text-black" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.96 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.99 3.915-.99 1.832 0 2.383.99 3.96.948 1.605-.06 2.747-1.63 3.766-3.15 1.15-1.745 1.636-3.41 1.66-3.52-.027-.027-3.17-1.218-3.14-4.832.06-3.036 2.503-4.495 2.624-4.596-1.425-2.074-3.64-2.296-4.41-2.356-1.24-.135-2.288-.633-3.045-.633l-.721.036zm3.79-4.734c.85-1.04 1.42-2.486 1.25-3.95-1.22.052-2.72.822-3.604 1.85-.79.907-1.474 2.37-1.29 3.824 1.35.104 2.766-.645 3.645-1.724z" />
                             </svg>
                         </button>
+
 
                         {/* Facebook */}
                         <button className="flex items-center justify-center w-14 h-14 border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-sm transition-all duration-200">
@@ -220,7 +268,7 @@ export default function LoginPage() {
                 </div>
             </div>
 
-            {/* RIGHT SIDE – HERO IMAGE */}
+            {/* RIGHT SIDE */}
             <div className="hidden lg:flex w-1/2 relative">
                 <Image
                     src="/images/login-hero.png"
@@ -243,3 +291,4 @@ export default function LoginPage() {
         </div>
     );
 }
+

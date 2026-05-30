@@ -3,9 +3,12 @@
 import React from 'react';
 import { Heart, MapPin, BedDouble, Bath, Square, Home, CheckCircle } from 'lucide-react';
 
-const PropertyCard = ({ property, onCompare, isSelected }) => {
+const PropertyCard = ({ property, onCompare, isSelected, onClick }) => {
     return (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group flex flex-col md:flex-row h-auto md:h-64">
+        <div
+            className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group flex flex-col md:flex-row h-auto md:h-64 cursor-pointer"
+            onClick={onClick}
+        >
             {/* Image Section - 40% width on Desktop */}
             <div className="w-full md:w-2/5 relative h-56 md:h-full bg-gray-200 overflow-hidden">
                 <img
@@ -117,10 +120,16 @@ const PropertyCard = ({ property, onCompare, isSelected }) => {
                         <span className="text-2xl font-bold text-[#4169E1]">{property.price}</span>
                     </div>
 
-                    <button className="w-full md:w-auto px-6 py-2.5 rounded-lg border-2 border-[#4169E1] text-[#4169E1] font-bold text-sm hover:bg-[#4169E1] hover:text-white transition-all">
+                    <button
+                        className="w-full md:w-auto px-6 py-2.5 rounded-lg border-2 border-[#4169E1] text-[#4169E1] font-bold text-sm hover:bg-[#4169E1] hover:text-white transition-all"
+                        onClick={onClick}
+                    >
                         View Details
                     </button>
-                    <button className="w-full md:w-auto px-6 py-2.5 rounded-lg bg-[#4169E1] text-white font-bold text-sm shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                    <button
+                        className="w-full md:w-auto px-6 py-2.5 rounded-lg bg-[#4169E1] text-white font-bold text-sm shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         Contact Agent
                     </button>
                 </div>
