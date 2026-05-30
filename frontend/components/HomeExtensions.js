@@ -461,11 +461,11 @@ const HomeExtensions = () => {
                         <div className="col-span-1 md:col-span-1">
                             <div className="flex items-center gap-2 mb-6">
                                 <img
-                                    src="/images/Elite_Estates Logo.png"
-                                    alt="SPRxElite Estate Logo"
+                                    src=" "
+                                    alt=" "
                                     className="h-16 w-auto object-contain"
                                 />
-                                <span className="text-2xl font-extrabold text-blue-900 tracking-tight">SPRxElite Estate</span>
+                                <span className="text-2xl font-extrabold text-blue-900 tracking-tight">Elite Estate</span>
                             </div>
                             <p className="text-gray-600 text-sm leading-relaxed mb-8">
                                 Elevating the real estate experience through intelligent technology and user-focused design.
@@ -515,7 +515,7 @@ const HomeExtensions = () => {
                         </div>
                     </div>
                     <div className="pt-10 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6">
-                        <p className="text-slate-400 text-xs">© 2024 SPRxElite Estates. Built with Intelligence.</p>
+                        <p className="text-slate-400 text-xs">© 2026 Elite Estates. Built with Intelligence.</p>
                         <div className="flex gap-8 text-xs text-slate-400">
                             <a className="hover:text-blue-600 transition-colors" href="#">Terms of Service</a>
                             <a className="hover:text-blue-600 transition-colors" href="#">Cookie Policy</a>

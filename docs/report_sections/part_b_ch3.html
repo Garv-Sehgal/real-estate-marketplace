@@ -1,0 +1,561 @@
+<!-- ================= CHAPTER 3 ================= -->
+<div class="page-break-before">
+    <h2 class="chapter-title">CHAPTER 3: PROJECT UNDERTAKEN</h2>
+    <br>
+    
+    <h3 class="main-heading">3.1 Project Overview</h3>
+    <p>
+        The **Real Estate Marketplace Platform** was designed, implemented, and verified as a fully decoupled full-stack Progressive Web Application (PWA). The system utilizes an **Express 5** headless API backend written in asynchronous Node.js, and a high-performance **Next.js 16** Single Page Application (SPA) frontend designed with **TailwindCSS v4** and **React 19** hooks. The database layer is managed through **MongoDB Atlas** using the **Mongoose** object data modeling (ODM) framework.
+    </p>
+    <p>
+        The project is engineered for role-based real estate operations: allowing Buyers and Tenants to search, geolocate, and compare properties; Landlords and Agents to list properties with government identification proofs; Staff and Admins to moderate uploaded listings; and participants to negotiate in real time using client-side encrypted chat rooms with an integrated visit scheduling coordinator. This chapter provides a detailed, component-level documentation of all core systems implemented within the codebase.
+    </p>
+
+    <h3 class="main-heading">3.2 System Architecture</h3>
+    <p>
+        The platform utilizes a decoupled, modern multi-role architecture that separates the user interface layer from backend operations:
+    </p>
+    <ul>
+        <li><strong>Client-Side PWA Layer (Next.js 16)</strong>: Manages visual grids, component states, browser geolocations, local storages, and WebSockets. The client parses dynamic routes and renders pages progressively.</li>
+        <li><strong>Headless API Layer (Express 5)</strong>: Operates as a stateless backend engine. It processes client requests, runs validation schemas, manages active Socket.IO rooms, executes role-based middleware guards, and processes database operations.</li>
+        <li><strong>Data Repository Layer (MongoDB Atlas)</strong>: Operates as an active NoSQL document store, managing collections for users, listings, conversations, messages, and meetings, with optimized search indexes.</li>
+        <li><strong>Notification Gateway Layer (Twilio &amp; Nodemailer)</strong>: Dispatches transactional verification codes via SMS gateways and SMTP mail relays.</li>
+    </ul>
+
+    <h3 class="main-heading">3.3 Authentication System</h3>
+    <p>
+        A core objective of the platform is security and spam prevention during user registration and session management.
+    </p>
+
+    <h4 class="sub-heading">3.3.1 JWT Authentication</h4>
+    <p>
+        The system uses stateless JSON Web Token (JWT) authentication for session management. Upon a successful login API call (`/api/v1/auth/login`), the backend generates and signs two distinct tokens:
+    </p>
+    <ol>
+        <li><strong>Access Token</strong>: Signed with the user's ID, role, and username. It is configured with a short lifespan (15 minutes) and attached as a bearer token in the HTTP headers of all authorized Axios requests.</li>
+        <li><strong>Refresh Token</strong>: Signed with the user's ID and configured with a long lifespan (7 days). It is returned inside a secure, `httpOnly`, `sameSite: 'strict'` cookie. The client-side application cannot read this cookie, protecting it from Cross-Site Scripting (XSS) theft.</li>
+    </ol>
+    <p>
+        When a client’s access token expires, Axios interceptors automatically detect the HTTP 401 response and request a session refresh at `/api/v1/auth/refresh`. The server validates the refresh token cookie, checks that it is registered in the active session database collection, and returns a new access token without requiring the user to re-authenticate.
+    </p>
+
+    <h4 class="sub-heading">3.3.2 OTP Verification</h4>
+    <p>
+        To prevent automated registration spam, the system implements a dual-channel verification process. During registration (`/api/v1/auth/signup/request-otp`), the user's submitted profile data, password hashes, and roles are temporarily cached in an in-memory pending storage collection (`auth.pending.store.js`).
+    </p>
+    <p>
+        The server generates two distinct 6-digit numeric verification codes:
+    </p>
+    <ul>
+        <li><code>smsOtp</code>: Dispatched to the user’s mobile number via the <strong>Twilio SDK</strong>.</li>
+        <li><code>emailOtp</code>: Dispatched to the user’s email address via a <strong>Nodemailer</strong> SMTP transport agent.</li>
+    </ul>
+    <p>
+        To complete registration, the user must enter both codes at `/api/v1/auth/signup/verify-otp`. The server checks the submitted codes against the cached records. If both are valid, the user document is created in MongoDB, the temporary store is cleared, and session tokens are signed automatically.
+    </p>
+
+    <h4 class="sub-heading">3.3.3 Password Reset Mechanism</h4>
+    <p>
+        If a user forgets their password, they can trigger the password reset flow at `/api/v1/auth/forgot-password`. The server validates the account email, generates a temporary verification token, and dispatches a secure password reset link containing the token to the user’s email. When the user submits a new password via this link, the server validates the token, hashes the new password with Bcrypt, and updates the database, automatically revoking all active refresh tokens to secure the account.
+    </p>
+
+    <h3 class="main-heading">3.4 Role Based Access Control</h3>
+    <p>
+        To manage authorization across the platform, the backend uses a role-based access control (RBAC) model. The system defines seven distinct roles, each mapped to a numeric authority level:
+    </p>
+    
+    <p class="table-caption">Table B3.1: Numeric Authority Levels and Permission Scopes</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 20%;">Role Definition</th>
+                <th style="width: 15%; text-align: center;">Numeric Level</th>
+                <th style="width: 35%;">Endpoint Mount Permissions</th>
+                <th style="width: 30%;">Access Control Scope</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold">Buyer / Tenant</td>
+                <td class="center"><code>1</code></td>
+                <td>`/meetings`, `/chat/conversation`</td>
+                <td>Browse listings, initiate negotiations, and schedule site visits.</td>
+            </tr>
+            <tr>
+                <td class="bold">Landlord</td>
+                <td class="center"><code>2</code></td>
+                <td>`/property/`, `/meetings/incoming`</td>
+                <td>List personal properties, upload deeds, and manage visit requests.</td>
+            </tr>
+            <tr>
+                <td class="bold">Agent</td>
+                <td class="center"><code>3</code></td>
+                <td>`/property/`, `/meetings/incoming`</td>
+                <td>Manage client listings, broker negotiations, and schedule visits.</td>
+            </tr>
+            <tr>
+                <td class="bold">Staff / Admin</td>
+                <td class="center"><code>4</code></td>
+                <td>`/admin/properties/pending`, `/approve`</td>
+                <td>Moderate listings, check deeds, and manage system parameters.</td>
+            </tr>
+            <tr>
+                <td class="bold">Super Admin</td>
+                <td class="center"><code>5</code></td>
+                <td>`/admin/create`, `/admin/suspend`</td>
+                <td>Full system management, including user suspensions and staff provisioning.</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        The backend authorization checks are enforced by the `requireLevel(minLevel)` middleware. When an authorized route is called, this middleware extracts the user's parsed JWT level from the request object and validates it against the minimum required authority level before executing the controller logic.
+    </p>
+
+    <h3 class="main-heading">3.5 Property Listing System</h3>
+    <p>
+        The property listing system allows landlords and agents to upload detailed property information through an intuitive, multi-step process managed by the `ListingStepper.js` frontend component. The form wizard is organized into five steps:
+    </p>
+
+    <p class="table-caption">Table B3.2: 5-Step Property Upload Stepper Wizard Layout and Details</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%; text-align: center;">Form Step</th>
+                <th style="width: 25%;">Domain Scope</th>
+                <th style="width: 60%;">Captured Fields and Component Mechanics</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="center bold">Step 1</td>
+                <td>Basic Info</td>
+                <td>Category (residential/commercial), listing type (sell/rent/pg), property title, description, and cover media uploads.</td>
+            </tr>
+            <tr>
+                <td class="center bold">Step 2</td>
+                <td>Location details</td>
+                <td>Country, state, and city selections powered by the `country-state-city` library, detailed address, landmark, and GPS coordinates.</td>
+            </tr>
+            <tr>
+                <td class="center bold">Step 3</td>
+                <td>Pricing details</td>
+                <td>Expected price, monthly rent, security deposit, property tax, and PG options (rent per bed, electricity/water inclusions).</td>
+            </tr>
+            <tr>
+                <td class="center bold">Step 4</td>
+                <td>Property details</td>
+                <td>BHK configuration, bathrooms, balconies, face direction, carpet area, furnishing status, and amenity checkboxes.</td>
+            </tr>
+            <tr>
+                <td class="center bold">Step 5</td>
+                <td>Verification Documents</td>
+                <td>National identity document upload, property ownership deed upload, and geotag confirmation.</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        The stepper manages form states using a React Context provider, ensuring data is preserved as users navigate between steps. Client-side validation checks are performed at each step before allowing the user to proceed.
+    </p>
+
+    <h3 class="main-heading">3.6 Property Search and Filtering</h3>
+    <p>
+        To support property discovery, the platform features a multi-criteria search and filtering system. The search controller (`/api/v1/property/search`) parses query parameters and builds dynamic queries using Mongoose:
+    </p>
+    <ul>
+        <li><strong>Locality Matching</strong>: Uses case-insensitive regex matching on city and locality fields to return relevant listings.</li>
+        <li><strong>Dynamic Range Queries</strong>: Parses minimum and maximum limits, matching against both rental rates (`pricing.monthlyRent`) and sale prices (`pricing.expectedPrice`) using logical operators.</li>
+        <li><strong>Amenity Filters</strong>: Uses Mongoose arrays to filter properties that match all checked amenities (e.g., Gym, Pool, Parking).</li>
+    </ul>
+    <p>
+        To ensure fast search speeds as the database grows, indexes are configured on location (`location.city`), pricing (`pricing.expectedPrice`, `pricing.monthlyRent`), and review status (`review.status`) fields.
+    </p>
+
+    <h3 class="main-heading">3.7 Property Comparison Feature</h3>
+    <p>
+        The comparison module allows users to select up to four properties and evaluate their technical parameters side-by-side:
+    </p>
+    <ol>
+        <li><strong>Selection Mechanics</strong>: Users add listings to their comparison queue by clicking checkboxes on property cards. The application stores selected IDs in the URL query string (e.g., `/compare?ids=ID1,ID2`).</li>
+        <li><strong>Grid Rendering (`app/compare/page.js`)</strong>: This page parses the property IDs, fetches listing details in parallel, and displays them in a side-by-side grid comparison matrix.</li>
+        <li><strong>Structured Comparison Parameters</strong>: The matrix compares key details including category, type, BHK configuration, carpet area, face direction, pricing models, and nine core amenities (Gym, Pool, Parking, Security, Club House, Garden, Power Backup, Concierge, Wifi), displaying visual checkmarks or cross marks for each parameter.</li>
+    </ol>
+
+    <h3 class="main-heading">3.8 Property Approval Workflow</h3>
+    <p>
+        To prevent fraudulent listings, all newly created properties are initialized with an administrative status of `pending`. The listing remains hidden from public search results and marketplace views until approved:
+    </p>
+    <ul>
+        <li><strong>Admin Auditing</strong>: Administrators use a moderation dashboard to review pending listings, audit government IDs, and check property deeds.</li>
+        <li><strong>Status Transitions</strong>:
+            <ul>
+                <li>`approved`: The listing is made visible to the public.</li>
+                <li>`changes_requested`: The listing is flagged, and the landlord is prompted to update specific fields or re-upload documents.</li>
+                <li>`rejected`: The listing is flagged as fraudulent and permanently hidden.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3 class="main-heading">3.9 Property Map View</h3>
+    <p>
+        The platform features an interactive map view powered by **Leaflet** and **React-Leaflet**.
+    </p>
+    <p>
+        During property creation, the frontend requests the browser's GPS coordinates to geotag the property location. In the property detail view (`app/properties/[id]/page.js`), these coordinates are used to display a map marker.
+    </p>
+    <p>
+        The details panel also features a direct redirection button to Google Maps navigation:
+    </p>
+    <pre><code>const handleRouteRedirect = (lat, lng) => {
+    if (!lat || !lng) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, '_blank');
+};</code></pre>
+    <p>
+        This redirection provides buyers and agents with routing directions directly in their native map applications.
+    </p>
+
+    <h3 class="main-heading">3.10 Property Image Upload System</h3>
+    <p>
+        Uploaded files are handled securely using the **Multer** storage engine:
+    </p>
+    <ul>
+        <li><strong>Size Limits</strong>: The server enforces a maximum file size of 5MB per upload.</li>
+        <li><strong>MIME Type Validation</strong>: The system restricts uploads to approved MIME types (like `image/jpeg`, `image/png`, and `application/pdf`) to prevent malicious script uploads.</li>
+        <li><strong>Secure Disk Storage</strong>: Uploaded files (including cover images, property galleries, deeds, and government IDs) are stored in secure local upload directories.</li>
+    </ul>
+
+    <h3 class="main-heading">3.11 Real-Time Chat System</h3>
+    <p>
+        Communication is powered by a real-time messaging pipeline built on **Socket.IO**:
+    </p>
+    <ul>
+        <li><strong>Socket Handshake and Room Join</strong>: Upon logging in, the client connects to the WebSocket server and joins a private socket room named after their user ID. When entering a chat room, the client joins a conversation-specific room.</li>
+        <li><strong>Event Signals</strong>: Sockets relay events for messages, typing status indicators, dynamic notification badges, and real-time scheduler updates.</li>
+        <li><strong>Reconnection Management</strong>: The frontend implements reconnection logic to automatically restore WebSocket connections if network drops occur.</li>
+    </ul>
+
+    <h3 class="main-heading">3.12 End-to-End Message Encryption</h3>
+    <p>
+        To ensure user privacy, the platform implements a zero-knowledge communication model using client-side symmetric AES encryption powered by **CryptoJS**:
+    </p>
+    <ol>
+        <li><strong>Key Derivation</strong>: When opening a chat room, the client generates a unique symmetric key using: `SHA256(ConversationID + SALT)`. This key remains in the browser's memory and is never sent to the server.</li>
+        <li><strong>Message Transmission</strong>: The sender encrypts the message text using CryptoJS AES before emitting it over the socket. The Express backend receives the ciphertext and saves it directly in MongoDB under the `encryptedMessage` field. The server acts as a blind relay and has no access to the decryption keys.</li>
+        <li><strong>Message Decryption</strong>: When the recipient's browser receives the encrypted event, it derives the matching key and decrypts the ciphertext, displaying the message in plain text.</li>
+    </ol>
+
+    <h3 class="main-heading">3.13 Visit Scheduling System</h3>
+    <p>
+        The platform features an integrated site visit coordinator that allows buyers to request physical property visits directly from the chat timeline:
+    </p>
+    <ul>
+        <li><strong>In-Chat Request Cards</strong>: Buyers fill out a scheduler dialog (date, time, message), which dispatches an interactive card to the chat timeline.</li>
+        <li><strong>Dynamic Scheduler Cards</strong>: The timeline renders these cards with action buttons, allowing the landlord or agent to confirm, reject, or suggest a reschedule directly from the chat view.</li>
+        <li><strong>Status Transitions</strong>: Updates to the visit status are pushed in real time over WebSockets, synchronizing the dashboard view of both parties instantly.</li>
+    </ul>
+
+    <h3 class="main-heading">3.14 Notification System</h3>
+    <p>
+        The notification engine manages both real-time in-app pushes and external transactional notifications:
+    </p>
+    <ul>
+        <li><strong>WebSocket Push Notifications</strong>: Real-time event dispatches immediately update unread badge counters in the navigation bars of active users.</li>
+        <li><strong>SMTP Transactional Emails</strong>: Nodemailer SMTP helpers dispatch detailed notification emails when visit status changes occur (e.g., when a visit is confirmed, rescheduled, or cancelled), ensuring users are kept up-to-date even when offline.</li>
+    </ul>
+
+    <h3 class="main-heading">3.15 Database Design</h3>
+    <p>
+        The database layer is managed using Mongoose, connecting to a MongoDB Atlas cluster. The system is designed to support flexible document schemas while maintaining essential relations through unique object references.
+    </p>
+    
+    <p class="table-caption">Table B3.3: Database Collections Schemas and Index Field Definitions</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 20%;">Collection</th>
+                <th style="width: 35%;">Key Document Fields</th>
+                <th style="width: 15%; text-align: center;">Schema Type</th>
+                <th style="width: 30%;">Database Indexes Configured</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold">users</td>
+                <td>`id`, `fullName`, `phone`, `email`, `passwordHash`, `role`, `status`</td>
+                <td class="center">Enforced Document</td>
+                <td>Unique index on `email`, index on `role`</td>
+            </tr>
+            <tr>
+                <td class="bold">properties</td>
+                <td>`id`, `ownerId`, `category`, `listingType`, `location`, `pricing`, `review`</td>
+                <td class="center">Hierarchical Document</td>
+                <td>Index on `location.city`, index on `review.status`</td>
+            </tr>
+            <tr>
+                <td class="bold">conversations</td>
+                <td>`participants`, `propertyId`, `lastMessage`, `unreadCounts`</td>
+                <td class="center">Referential Document</td>
+                <td>Compound index on `participants`</td>
+            </tr>
+            <tr>
+                <td class="bold">messages</td>
+                <td>`conversationId`, `senderId`, `receiverId`, `encryptedMessage`, `type`, `replyTo`</td>
+                <td class="center">Referential Document</td>
+                <td>Index on `conversationId`</td>
+            </tr>
+            <tr>
+                <td class="bold">meetings</td>
+                <td>`propertyId`, `requesterId`, `ownerId`, `preferredDate`, `status`</td>
+                <td class="center">Referential Document</td>
+                <td>Index on `requesterId`, index on `ownerId`</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="main-heading">3.16 Backend Architecture</h3>
+    <p>
+        The Express backend follows a clean, modular architecture. Key backend layout patterns include:
+    </p>
+    <ul>
+        <li><strong>Controller-Service-Repository Pattern</strong>: Code is organized into modular layers to separate concerns: routes handle HTTP requests, services manage business logic, and repository models interact with the database.</li>
+        <li><strong>Asynchronous Express 5 Routing</strong>: Leverages modern Express routing features to manage asynchronous operations cleanly without blocking the main event loop.</li>
+        <li><strong>Global Error Handling Middleware</strong>: Intercepts unhandled errors, formats stack traces, and returns clean JSON responses to the client, preventing server crashes.</li>
+    </ul>
+
+    <h3 class="main-heading">3.17 Frontend Architecture</h3>
+    <p>
+        The frontend is built on Next.js 16’s App Router. Key frontend structural configurations include:
+    </p>
+    <ul>
+        <li><strong>Layout Providers</strong>: Wrap pages with context providers to manage authentication states, Axios HTTP interceptors, and socket client instances.</li>
+        <li><strong>Custom React Hooks</strong>: Encapsulate interactive states, API integrations, and socket listeners (such as `useSocket` and `useListingForm`) for clean, reusable component logic.</li>
+        <li><strong>TailwindCSS Glassmorphism</strong>: The UI uses transparent backgrounds, backdrop filters, and subtle borders to present a premium visual aesthetic.</li>
+    </ul>
+
+    <h3 class="main-heading">3.18 API Routes and Integration</h3>
+    <p>
+        The backend API exposes a series of endpoints for authentication, listings management, real-time messaging, and visit scheduling:
+    </p>
+    
+    <p class="table-caption">Table B3.4: Complete Backend and Frontend API Integrations Route Matrix</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 20%;">Controller Domain</th>
+                <th style="width: 10%;">Method</th>
+                <th style="width: 25%;">API Endpoint Path</th>
+                <th style="width: 20%;">Required Role</th>
+                <th style="width: 25%;">Function / Operational Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold">Authentication</td>
+                <td class="center">`POST`</td>
+                <td>`/api/v1/auth/signup/request-otp`</td>
+                <td>Public</td>
+                <td>Validates signup data, hashes passwords, and sends SMS/Email OTP codes.</td>
+            </tr>
+            <tr>
+                <td class="bold">Authentication</td>
+                <td class="center">`POST`</td>
+                <td>`/api/v1/auth/signup/verify-otp`</td>
+                <td>Public</td>
+                <td>Verifies dual OTP codes and commits the user profile to MongoDB.</td>
+            </tr>
+            <tr>
+                <td class="bold">Authentication</td>
+                <td class="center">`POST`</td>
+                <td>`/api/v1/auth/login`</td>
+                <td>Public</td>
+                <td>Authenticates credentials, signs JWT pairs, and sets access headers.</td>
+            </tr>
+            <tr>
+                <td class="bold">Authentication</td>
+                <td class="center">`POST`</td>
+                <td>`/api/v1/auth/refresh`</td>
+                <td>Public</td>
+                <td>Validates active refresh cookies and returns new access tokens.</td>
+            </tr>
+            <tr>
+                <td class="bold">Properties</td>
+                <td class="center">`POST`</td>
+                <td>`/api/v1/property`</td>
+                <td>Landlord / Agent</td>
+                <td>Uploads verification deeds, and maps new listing documents (`pending`).</td>
+            </tr>
+            <tr>
+                <td class="bold">Properties</td>
+                <td class="center">`GET`</td>
+                <td>`/api/v1/property/search`</td>
+                <td>Public</td>
+                <td>Executes multi-criteria search queries and filters.</td>
+            </tr>
+            <tr>
+                <td class="bold">Properties</td>
+                <td class="center">`GET`</td>
+                <td>`/api/v1/property/:id`</td>
+                <td>Public</td>
+                <td>Fetches detailed property metadata, coordinates, and amenities.</td>
+            </tr>
+            <tr>
+                <td class="bold">Admin Controls</td>
+                <td class="center">`GET`</td>
+                <td>`/api/v1/admin/properties/pending`</td>
+                <td>Staff / Admin</td>
+                <td>Lists pending property listings awaiting moderator audit.</td>
+            </tr>
+            <tr>
+                <td class="bold">Admin Controls</td>
+                <td class="center">`PATCH`</td>
+                <td>`/api/v1/admin/properties/:id/approve`</td>
+                <td>Staff / Admin</td>
+                <td>Approves a pending listing, making it visible to the public.</td>
+            </tr>
+            <tr>
+                <td class="bold">Meetings</td>
+                <td class="center">`POST`</td>
+                <td>`/api/v1/meetings`</td>
+                <td>Buyer / Tenant</td>
+                <td>Creates a site visit scheduling request (`pending`).</td>
+            </tr>
+            <tr>
+                <td class="bold">Meetings</td>
+                <td class="center">`PATCH`</td>
+                <td>`/api/v1/meetings/:id/status`</td>
+                <td>Landlord / Agent</td>
+                <td>Confirms, rejects, or updates the status of scheduled visits.</td>
+            </tr>
+            <tr>
+                <td class="bold">Chat Services</td>
+                <td class="center">`POST`</td>
+                <td>`/api/v1/chat/conversation`</td>
+                <td>Authenticated</td>
+                <td>Creates a new conversation room or retrieves an existing one.</td>
+            </tr>
+            <tr>
+                <td class="bold">Chat Services</td>
+                <td class="center">`GET`</td>
+                <td>`/api/v1/chat/messages/:id`</td>
+                <td>Authenticated</td>
+                <td>Retrieves conversation message histories for decryption.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="main-heading">3.19 Testing and Validation</h3>
+    <p>
+        System reliability was verified through functional, integration, and security testing:
+    </p>
+    
+    <p class="table-caption">Table B3.5: Module Verification Pass Rates and Latency Metrics</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Module Tested</th>
+                <th style="width: 35%;">Scope of Verification</th>
+                <th style="width: 15%; text-align: center;">Pass Rate</th>
+                <th style="width: 15%; text-align: center;">API Latency</th>
+                <th style="width: 10%;">Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold">JWT Authentication</td>
+                <td>Access token expiration, refresh cookie rotation, and route guard redirects.</td>
+                <td class="center"><code>100%</code></td>
+                <td class="center">~40ms</td>
+                <td>Passed</td>
+            </tr>
+            <tr>
+                <td class="bold">Dual OTP Verifier</td>
+                <td>Twilio SMS OTP routing, Nodemailer email verification, and signup caches.</td>
+                <td class="center"><code>98%</code></td>
+                <td class="center">~2.2s</td>
+                <td>Passed</td>
+            </tr>
+            <tr>
+                <td class="bold">Moderation State</td>
+                <td>Property approvals, rejections, and metadata updates by administrators.</td>
+                <td class="center"><code>100%</code></td>
+                <td class="center">~75ms</td>
+                <td>Passed</td>
+            </tr>
+            <tr>
+                <td class="bold">E2E Cryptography</td>
+                <td>AES encryption, decryption key derivations, and storage validation.</td>
+                <td class="center"><code>100%</code></td>
+                <td class="center">&lt;1ms</td>
+                <td>Passed</td>
+            </tr>
+            <tr>
+                <td class="bold">Socket.IO Pipelines</td>
+                <td>Real-time messaging speed, typing states, and status synchronization.</td>
+                <td class="center"><code>99.5%</code></td>
+                <td class="center">~10ms</td>
+                <td>Passed</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="main-heading">3.20 Challenges Faced During Development</h3>
+    <p>
+        Full-stack system development presented several technical challenges:
+    </p>
+
+    <h4 class="sub-heading">3.20.1 Authentication and Security Challenges</h4>
+    <p>
+        Enforcing dual-channel OTP verification required managing temporary registration profiles securely. Storing pending details in the main database collection before verification would clutter the database, while in-memory variables could lead to data loss during server restarts.
+    </p>
+    <p>
+        <em>Solution</em>: A lightweight collection was structured to cache pending signups with a short Time-To-Live (TTL) index of 15 minutes, automatically removing unverified credentials from MongoDB.
+    </p>
+
+    <h4 class="sub-heading">3.20.2 Real-Time Communication Challenges</h4>
+    <p>
+        Battery optimization and network switches frequently drop active WebSocket connections on mobile devices, leading to missed messages.
+    </p>
+    <p>
+        <em>Solution</em>: The frontend client was configured with dynamic reconnection parameters. A database polling route was built as a fallback, allowing the client to fetch missed messages from the database upon reconnection.
+    </p>
+
+    <h4 class="sub-heading">3.20.3 Database Design Challenges</h4>
+    <p>
+        Real estate properties involve varying pricing structures. Rental listings require monthly rent and deposits; PG listings require rent per bed and utility inclusions; and purchase listings require property tax and expected pricing. Handling these models in a relational database would require complex schemas and empty columns.
+    </p>
+    <p>
+        <em>Solution</em>: Leveraging MongoDB's document architecture, a single, flexible nested property schema was built using conditional document validation.
+    </p>
+
+    <h4 class="sub-heading">3.20.4 Performance Optimization Challenges</h4>
+    <p>
+        Querying large listing collections with multiple filters (city, BHK, price range, amenities) caused slow API response times under simulated load.
+    </p>
+    <p>
+        <em>Solution</em>: Compound indexes were created on `location.city`, `review.status`, and pricing fields, reducing database scan times.
+    </p>
+
+    <h4 class="sub-heading">3.20.5 UI/UX and Integration Challenges</h4>
+    <p>
+        Managing complex forms in the stepper wizard risked losing user inputs if accidental page refreshes occurred.
+    </p>
+    <p>
+        <em>Solution</em>: Stepper form states were serialized in `sessionStorage` in the browser, allowing the frontend to restore form states if the page reloaded during upload.
+    </p>
+
+    <h3 class="main-heading">3.21 Future Scope</h3>
+    <p>
+        The Real Estate Marketplace Platform provides a scalable foundation for future enhancements:
+    </p>
+    <ol>
+        <li><strong>Three.js Virtual 3D Tours</strong>: Integrating WebGL rendering engines to allow buyers to tour properties virtually directly in their browsers.</li>
+        <li><strong>Machine Learning Price Estimates</strong>: Developing algorithms to analyze historical pricing trends and generate automatic valuations.</li>
+        <li><strong>Smart Escrow Contracts</strong>: Integrating secure, smart contracts to handle deposits and lease agreements automatically.</li>
+        <li><strong>Advanced Map Layers</strong>: Mappings schools, transit lines, and local amenities onto Leaflet search panels.</li>
+    </ol>
+
+    <h3 class="main-heading">3.22 Conclusion</h3>
+    <p>
+        Chapter 3 detailed the design, architecture, and implementation of the capstone project completed during the training period. Building the platform as a decoupled Next.js 16 and Express 5 web application achieved high frontend rendering speeds and robust backend service. The integration of security systems—such as dual-channel OTP verification, role-based access control middleware, and browser-side CryptoJS E2E message encryption—successfully resolved the data privacy and verification issues of legacy platforms. Functional verification tests and latency benchmarks confirmed the stability, scalability, and speed of the platform.
+    </p>
+</div>

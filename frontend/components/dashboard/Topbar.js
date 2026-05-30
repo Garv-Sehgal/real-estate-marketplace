@@ -47,8 +47,8 @@ export default function Topbar({ setMobileOpen }) {
                 {/* Mobile Logo */}
                 <Link href="/" className="lg:hidden flex items-center gap-2">
                     <img
-                        src="/images/Elite_Estates Logo.png"
-                        alt="SPRxElite Estate Logo"
+                        src=" "
+                        alt=" "
                         className="h-8 w-auto object-contain"
                     />
                 </Link>

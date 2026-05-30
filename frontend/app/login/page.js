@@ -90,7 +90,7 @@ export default function LoginPage() {
                             Welcome Back
                         </h2>
                         <p className="mt-1 text-sm text-gray-600">
-                            Sign in to continue to SPRxElite Estates
+                            Sign in to continue to Elite Estates
                         </p>
                     </div>
 

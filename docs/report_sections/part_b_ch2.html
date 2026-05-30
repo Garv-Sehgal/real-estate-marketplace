@@ -1,0 +1,180 @@
+<!-- ================= CHAPTER 2 ================= -->
+<div class="page-break-before">
+    <h2 class="chapter-title">CHAPTER 2: INTRODUCTION TO SOFTWARE</h2>
+    <br>
+    
+    <h3 class="main-heading">2.1 Project Introduction</h3>
+    <p>
+        The **Real Estate Marketplace Platform** is a modern, high-performance web platform designed to digitize, secure, and streamline property transactions and user interactions. Built as a mobile-installable Progressive Web Application (PWA) with a decoupled backend API architecture, the software provides a fast, native-app-like experience on web and mobile devices.
+    </p>
+    <p>
+        Unlike legacy real estate portals that act merely as passive advertising directories, this system introduces active, real-time engagement and secure communication channels:
+    </p>
+    <ol>
+        <li><strong>Interactive Multi-Step Listing Stepper</strong>: Landlords and agents are guided through a structured form validation flow, capturing property pricing, amenities, GPS coordinates, and verification proofs.</li>
+        <li><strong>Direct Google Maps Navigation</strong>: Properties are mapped using exact latitudes and longitudes, offering immediate spatial context.</li>
+        <li><strong>Grid Comparison Matrix</strong>: Users can select up to four properties and compare their pricing models, carpet area, BHK configurations, and nine core amenities side-by-side.</li>
+        <li><strong>Client-Side CryptoJS Cryptography</strong>: Communication between buyers and owners is processed using a zero-knowledge architectural model. Chats are encrypted in the browser, ensuring the central database stores only encrypted ciphertext.</li>
+        <li><strong>Integrated Visit Scheduler</strong>: Enforces a structured scheduling workflow, allowing buyers to request physical site visits directly from the chat timeline, with real-time status transitions.</li>
+    </ol>
+
+    <h3 class="main-heading">2.2 Problem Statement</h3>
+    <p>
+        Traditional real estate portals in the regional Indian market suffer from several structural, technological, and security limitations:
+    </p>
+    <ul>
+        <li><strong>Listing Fraud and Fake Accounts</strong>: Legacy platforms rarely enforce identification checks or property deed verification. Fraudulent agents frequently upload fake listings using copied images, leading to bait-and-switch scams.</li>
+        <li><strong>Passive, High-Friction Communication Systems</strong>: Communications are usually routed through public email addresses or shared phone numbers, exposing users to unsolicited calls and spam. Instant negotiations are hard to manage within the platform, forcing users to external applications like WhatsApp where context is lost.</li>
+        <li><strong>Privacy and Database Security Breaches</strong>: Central databases store private chat logs, negotiation records, and scheduling details in plain text. A database breach could expose sensitive user data, transaction records, and communication histories.</li>
+        <li><strong>Rigid Layout Structures and Slow Search Speeds</strong>: Lack of fluid mobile interfaces, sluggish search times under high database volumes, and the absence of interactive property comparison grids increase transaction friction.</li>
+    </ul>
+
+    <h3 class="main-heading">2.3 Proposed System</h3>
+    <p>
+        The proposed software addresses these challenges by introducing a secure, verified, and real-time PWA marketplace:
+    </p>
+    
+    <p class="center" style="font-weight: bold; margin-top: 15px;">[Figure B2.1: Decoupled Multi-Role Software Platform Architecture]</p>
+    <div class="figure-placeholder" style="margin-bottom: 25px;">
+        <h4 style="font-weight: bold;">[Figure B2.1: Full-Stack Architecture Block Diagram]</h4>
+        <p style="font-style: italic; font-size: 10pt; margin-top: 10px;">
+            Diagram displays Port 3000 (Next.js PWA Client) and Port 5000 (Express API Server Engine) interacting via REST APIs (JSON JWTs) and WebSockets, writing queries to MongoDB Atlas, and dispatching OTP notifications via Twilio &amp; Nodemailer.
+        </p>
+    </div>
+    
+    <ul>
+        <li><strong>Strict Identity and Document Verification</strong>: Landlords and agents must upload government IDs and ownership proofs, which are audited through an Admin moderation panel. Listings remain "pending" until approved by an administrator, mitigating fraud.</li>
+        <li><strong>Decoupled Next.js 16 and Express 5 Architecture</strong>: The client is built using Next.js 16, utilizing optimized client-side state handling and TailwindCSS v4. The backend is built on Express 5, using MongoDB as a flexible schema-enforced NoSQL document store.</li>
+        <li><strong>Symmetric Client-Side AES Cryptography</strong>: The platform uses client-side encryption for private messaging. The backend only acts as a zero-knowledge relay, storing encrypted ciphertext. Decryption occurs only in the authorized clients' browsers.</li>
+        <li><strong>Integrated Visit Scheduler</strong>: Enables immediate booking of site visits within the chat room. The state transition flow (pending -&gt; confirmed/rejected/rescheduled) is dynamically updated on both parties' dashboards.</li>
+    </ul>
+
+    <h3 class="main-heading">2.4 Objectives</h3>
+    <p>
+        The primary engineering and operational objectives of the platform are to:
+    </p>
+    <ol>
+        <li><strong>Prevent Listing Fraud</strong>: Implement robust multi-step listing uploads, requiring deeds and identification documents, and configure an administrative moderation workflow to screen properties before they go public.</li>
+        <li><strong>Protect User Privacy</strong>: Build a zero-knowledge message broker where chat contents are encrypted in the client’s browser, preventing database operators from reading negotiations.</li>
+        <li><strong>Reduce Communication Friction</strong>: Integrate persistent WebSocket connections (Socket.IO) to support instant chat, typing states, and in-chat visit scheduling workflows.</li>
+        <li><strong>Simplify Discovery and Comparison</strong>: Build multi-criteria search filters and an interactive side-by-side grid comparison matrix to help buyers evaluate listings.</li>
+        <li><strong>Deliver PWA Performance</strong>: Optimize client-side rendering speed, implement responsive mobile layouts, and ensure quick API response times.</li>
+    </ol>
+
+    <h3 class="main-heading">2.5 Functional and Non-Functional Requirements</h3>
+    <p>
+        The software is designed to satisfy strict functional and non-functional requirements to ensure reliability, security, and performance.
+    </p>
+
+    <p class="table-caption">Table B2.2: Functional Requirements Matrix</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">ID</th>
+                <th style="width: 25%;">Requirement Domain</th>
+                <th style="width: 45%;">Detailed Functional Specification</th>
+                <th style="width: 20%;">Verification Target</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold center">FR-01</td>
+                <td>User Registration &amp; OTP</td>
+                <td>Users must register and verify both their phone (Twilio SMS OTP) and email (SMTP OTP) before database entry creation.</td>
+                <td>API endpoint `/signup/verify-otp` test.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-02</td>
+                <td>Stateless Authentication</td>
+                <td>Enforce JWT access token validation in headers and automatic token refreshes via HTTP cookies.</td>
+                <td>Access middleware guards verification.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-03</td>
+                <td>Role-Based Gates (RBAC)</td>
+                <td>API routes must validate stateless JWT levels and verify roles before executing backend controllers.</td>
+                <td>HTTP 403 authorization fallback tests.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-04</td>
+                <td>Multi-Step Property Form</td>
+                <td>Allow landlords/agents to submit property specs, details, geocodes, and verification documents.</td>
+                <td>Multi-file Multer upload tests.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-05</td>
+                <td>Admin Moderation</td>
+                <td>Enforce a moderation workflow (pending, approved, changes_requested, rejected) managed by administrators.</td>
+                <td>Property collection status audits.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-06</td>
+                <td>Multi-Criteria Search</td>
+                <td>Search and filter approved properties by city, pricing, BHK, category, and amenities.</td>
+                <td>Mongoose query search speed checks.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-07</td>
+                <td>Symmetric E2E Chat</td>
+                <td>Private messages must be encrypted client-side using CryptoJS AES before transmission.</td>
+                <td>Database ciphertext field audits.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-08</td>
+                <td>WebSocket Chat Rooms</td>
+                <td>Manage persistent, bi-directional socket rooms for real-time messaging and notifications.</td>
+                <td>Socket.IO transmission latency tests.</td>
+            </tr>
+            <tr>
+                <td class="bold center">FR-09</td>
+                <td>Visit Scheduling System</td>
+                <td>Allow buyers to request visits from the chat timeline, with landlord confirmation and status flows.</td>
+                <td>Meeting collection status transition audits.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="table-caption">Table B2.3: Non-Functional Security &amp; Performance Objectives</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">ID</th>
+                <th style="width: 25%;">NFR Domain</th>
+                <th style="width: 40%;">Performance &amp; Engineering Target</th>
+                <th style="width: 20%;">Implementation Scope</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold center">NFR-01</td>
+                <td>Data Cryptography</td>
+                <td>Hash passwords with Bcrypt (10 rounds) and encrypt private messages with AES-256 in the browser.</td>
+                <td>`bcryptjs` on backend; `CryptoJS` on client.</td>
+            </tr>
+            <tr>
+                <td class="bold center">NFR-02</td>
+                <td>Transaction Speed</td>
+                <td>REST API response times under 200ms; socket relays under 30ms.</td>
+                <td>Mongoose indexes on `email`, `propertyId`, and `status`.</td>
+            </tr>
+            <tr>
+                <td class="bold center">NFR-03</td>
+                <td>System Scalability</td>
+                <td>Stateless authorization structures and decoupled architectural layouts.</td>
+                <td>Vercel client hosting; PM2 backend clusters.</td>
+            </tr>
+            <tr>
+                <td class="bold center">NFR-04</td>
+                <td>Layout Usability</td>
+                <td>Glassmorphic visual designs, responsive grids, and clean navigation elements.</td>
+                <td>TailwindCSS v4 responsive breakpoints.</td>
+            </tr>
+            <tr>
+                <td class="bold center">NFR-05</td>
+                <td>Asset Storage Limits</td>
+                <td>Enforce a maximum upload size of 5MB per file, restricting uploads to approved MIME types.</td>
+                <td>Multer storage limit middlewares.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

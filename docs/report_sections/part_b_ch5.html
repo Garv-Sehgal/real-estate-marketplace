@@ -1,0 +1,367 @@
+<!-- ================= CHAPTER 5 ================= -->
+<div class="page-break-before">
+    <h2 class="chapter-title">CHAPTER 5: APPENDIX</h2>
+    <br>
+    
+    <h3 class="main-heading">5.1 Project Commands</h3>
+    <p>
+        To set up, configure, build, and run the Real Estate Marketplace platform locally, the following commands were used:
+    </p>
+
+    <h4 class="sub-heading">5.1.1 Backend Service Initialization</h4>
+    <pre><code># Navigate into backend workspace directory
+cd backend
+
+# Install package dependencies
+npm install
+
+# Run backend Express server with nodemon reloading
+npm run dev
+
+# Start server in production mode
+npm start</code></pre>
+
+    <h4 class="sub-heading">5.1.2 Frontend PWA Client Setup</h4>
+    <pre><code># Navigate into frontend workspace directory
+cd frontend
+
+# Install package dependencies
+npm install
+
+# Start Next.js development server
+npm run dev
+
+# Compile and optimize production build
+npm run build
+
+# Start compiled build locally
+npm start</code></pre>
+
+    <h3 class="main-heading">5.2 Backend Code Snippets</h3>
+    <p>
+        The core implementations below demonstrate the cryptographic and WebSocket systems of the platform:
+    </p>
+
+    <h4 class="sub-heading">5.2.1 Client Cryptography Hook (`frontend/utils/encryption.js`)</h4>
+    <pre><code>import CryptoJS from 'crypto-js';
+
+const SALT = 'real_estate_marketplace_salt_2026';
+
+// Derive symmetric AES key from conversation ID
+export const generateEncryptionKey = (conversationId) => {
+    return CryptoJS.SHA256(conversationId + SALT).toString();
+};
+
+// Encrypt plaintext before sending
+export const encryptMessage = (message, conversationId) => {
+    if (!message) return '';
+    try {
+        const key = generateEncryptionKey(conversationId);
+        return CryptoJS.AES.encrypt(message, key).toString();
+    } catch (error) {
+        console.error('Encryption error:', error);
+        return '';
+    }
+};
+
+// Decrypt ciphertext inside browser
+export const decryptMessage = (encryptedMessage, conversationId) => {
+    if (!encryptedMessage) return '';
+    try {
+        const key = generateEncryptionKey(conversationId);
+        const bytes = CryptoJS.AES.decrypt(encryptedMessage, key);
+        if (!bytes || bytes.sigBytes &lt;= 0) return encryptedMessage;
+        const result = bytes.toString(CryptoJS.enc.Utf8);
+        return result || encryptedMessage;
+    } catch (error) {
+        return encryptedMessage;
+    }
+};</code></pre>
+
+    <h4 class="sub-heading">5.2.2 WebSocket Message Handler (`backend/src/modules/chat/chat.socket.js`)</h4>
+    <pre><code>const Message = require('./models/message.model');
+const Conversation = require('./models/conversation.model');
+const User = require('../auth/auth.user.model');
+
+module.exports = (io) => {
+    io.on('connection', (socket) => {
+        console.log('Socket client active:', socket.id);
+
+        socket.on('setup_user', (userId) => {
+            socket.join(userId);
+            console.log(`Socket associated with user: ${userId}`);
+        });
+
+        socket.on('join_conversation', (conversationId) => {
+            socket.join(conversationId);
+            console.log(`Socket joined conversation room: ${conversationId}`);
+        });
+
+        socket.on('send_message', async (data) => {
+            try {
+                const { conversationId, senderId, receiverId, encryptedMessage, type, replyTo } = data;
+
+                const message = await Message.create({
+                    conversationId,
+                    senderId,
+                    receiverId,
+                    encryptedMessage,
+                    type: type || 'text',
+                    replyTo: replyTo || null
+                });
+
+                const conversation = await Conversation.findById(conversationId);
+                if (conversation) {
+                    conversation.lastMessage = encryptedMessage;
+                    conversation.updatedAt = Date.now();
+                    
+                    const currentCount = conversation.unreadCounts?.get(receiverId) || 0;
+                    conversation.unreadCounts.set(receiverId, currentCount + 1);
+                    await conversation.save();
+                }
+
+                // Broadcast message to room and notify recipient
+                io.to(conversationId).emit('receive_message', message);
+                io.to(receiverId).emit('update_unread_count');
+
+            } catch (error) {
+                console.error('Socket relay error:', error);
+                socket.emit('message_error', { error: 'Relay failure' });
+            }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket client disconnected:', socket.id);
+        });
+    });
+};</code></pre>
+
+    <h3 class="main-heading">5.3 Database Schema Snippets</h3>
+    <p>
+        The following snippet details the Mongoose schema structured for properties, supporting flexible details, nested objects, and review states:
+    </p>
+
+    <h4 class="sub-heading">5.3.1 Property Model Schema (`backend/src/modules/property/property.model.js`)</h4>
+    <pre><code>const mongoose = require('mongoose');
+
+const propertySchema = new mongoose.Schema(
+    {
+        id: { type: String, required: true, unique: true, index: true },
+        ownerId: { type: String, required: true, index: true },
+        category: { type: String, enum: ['residential', 'commercial'], required: true },
+        listingType: { type: String, enum: ['sell', 'rent', 'pg'], required: true },
+        title: { type: String, required: true, trim: true },
+        description: { type: String, default: '' },
+        location: {
+            country: String,
+            state: String,
+            city: String,
+            locality: String,
+            address: String,
+            latitude: Number,
+            longitude: Number
+        },
+        pricing: {
+            expectedPrice: Number,
+            monthlyRent: Number,
+            securityDeposit: Number,
+            propertyTax: Number,
+            rentPerBed: Number
+        },
+        details: {
+            propertyType: String,
+            bhk: String,
+            bedrooms: Number,
+            bathrooms: Number,
+            balconies: Number,
+            furnishingStatus: String,
+            carpetArea: Number
+        },
+        amenities: [String],
+        images: [String],
+        coverImage: String,
+        verification: {
+            govtId: String,
+            ownershipProof: String,
+            geoTagConfirmed: { type: Boolean, default: false }
+        },
+        review: {
+            status: { 
+                type: String, 
+                enum: ['pending', 'approved', 'rejected', 'changes_requested'], 
+                default: 'pending',
+                index: true
+            },
+            message: { type: String, default: '' },
+            reviewedBy: String,
+            reviewedAt: Date
+        }
+    },
+    { timestamps: true }
+);
+
+module.exports = mongoose.model('Property', propertySchema);</code></pre>
+
+    <h3 class="main-heading">5.4 API Endpoint Summary</h3>
+    <p>
+        The table below provides a summary of all REST API routes implemented on the Express backend:
+    </p>
+    
+    <p class="table-caption">Table B5.1: Backend REST API Endpoint Specifications</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">API Router Path</th>
+                <th style="width: 15%;">HTTP Method</th>
+                <th style="width: 20%;">Required Role</th>
+                <th style="width: 40%;">Function / Operation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold">`/auth/signup/request-otp`</td>
+                <td class="center">`POST`</td>
+                <td>Public</td>
+                <td>Validates details and dispatches dual verification OTP codes.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/auth/signup/verify-otp`</td>
+                <td class="center">`POST`</td>
+                <td>Public</td>
+                <td>Verifies dual OTP codes and saves the user to MongoDB.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/auth/login`</td>
+                <td class="center">`POST`</td>
+                <td>Public</td>
+                <td>Authenticates credentials and generates session tokens.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/auth/refresh`</td>
+                <td class="center">`POST`</td>
+                <td>Public</td>
+                <td>Validates refresh cookie and issues a new access token.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/property/`</td>
+                <td class="center">`POST`</td>
+                <td>Landlord / Agent</td>
+                <td>Uploads listing details and verification files.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/property/search`</td>
+                <td class="center">`GET`</td>
+                <td>Public</td>
+                <td>Performs multi-criteria search and filter queries.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/admin/properties/pending`</td>
+                <td class="center">`GET`</td>
+                <td>Staff / Admin</td>
+                <td>Lists properties awaiting moderation review.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/admin/properties/:id/approve`</td>
+                <td class="center">`PATCH`</td>
+                <td>Staff / Admin</td>
+                <td>Approves a listing, making it visible to the public.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/meetings/`</td>
+                <td class="center">`POST`</td>
+                <td>Buyer / Tenant</td>
+                <td>Submits a site visit scheduling request.</td>
+            </tr>
+            <tr>
+                <td class="bold">`/meetings/:id/status`</td>
+                <td class="center">`PATCH`</td>
+                <td>Landlord / Agent</td>
+                <td>Confirms, declines, or updates scheduled visits.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="main-heading">5.5 Screenshot Placeholders</h3>
+    <p>
+        The following placeholders indicate where visual screen captures of the frontend application should be inserted in the final printed report:
+    </p>
+
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure B5.1: Marketplace Home Page Interface Mockup</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Mockup should display the main landing page, showing the search bar, category buttons, and featured property cards in a glassmorphic layout.
+        </span>
+    </div>
+    <p class="figure-caption">Figure B5.1: Marketplace Home Page Interface Mockup</p>
+
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure B5.2: User Signup and Verification Screen Mockup</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Mockup should display the registration screen showing fields for personal details, alongside the dual SMS/Email OTP input verification box.
+        </span>
+    </div>
+    <p class="figure-caption">Figure B5.2: User Signup and Verification Screen Mockup</p>
+
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure B5.3: Property Stepper Wizard Mockup</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Mockup should display the property creation stepper showing step 5, capturing deeds and identification documents.
+        </span>
+    </div>
+    <p class="figure-caption">Figure B5.3: Property Stepper Wizard Mockup</p>
+
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure B5.4: Landlord Management Dashboard Mockup</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Mockup should display the active landlord panel, showing owned listings, moderation statuses, and incoming visit requests.
+        </span>
+    </div>
+    <p class="figure-caption">Figure B5.4: Landlord Management Dashboard Mockup</p>
+
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure B5.5: Side-by-Side Property Comparison Mockup</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Mockup should display the side-by-side comparison page comparing the details and amenities of multiple properties.
+        </span>
+    </div>
+    <p class="figure-caption">Figure B5.5: Side-by-Side Property Comparison Mockup</p>
+
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure B5.6: Encrypted Chat and Visit Booking Mockup</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Mockup should display the active chat room showing the encrypted messaging timeline, alongside the in-chat visit booking card.
+        </span>
+    </div>
+    <p class="figure-caption">Figure B5.6: Encrypted Chat and Visit Booking Mockup</p>
+
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure B5.7: Admin Property Moderation Dashboard Mockup</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Mockup should display the administrator moderation screen showing a list of pending listings, uploaded documents, and approval action buttons.
+        </span>
+    </div>
+    <p class="figure-caption">Figure B5.7: Admin Property Moderation Dashboard Mockup</p>
+
+    <h3 class="main-heading">5.6 Glossary</h3>
+    <p>
+        Below is a glossary of key computer science and web engineering terms used in this project report:
+    </p>
+    <ul>
+        <li><strong>Blowfish (Bcrypt)</strong>: A symmetric block cipher developed by Bruce Schneier, implemented in Bcrypt for secure, slow password hashing to prevent brute-force attacks.</li>
+        <li><strong>Ciphertext</strong>: Encrypted text that is unreadable without the corresponding decryption key.</li>
+        <li><strong>Cross-Origin Resource Sharing (CORS)</strong>: A browser security mechanism that restricts resources on a web page from being requested from another domain.</li>
+        <li><strong>Decoupled Architecture</strong>: An architectural pattern that separates frontend interfaces from backend APIs, allowing them to scale and be maintained independently.</li>
+        <li><strong>JSON Web Token (JWT)</strong>: A stateless cryptographic token standard used for secure session authorization over HTTP headers.</li>
+        <li><strong>Leaflet Map</strong>: A lightweight, open-source JavaScript library used for mobile-friendly interactive maps.</li>
+        <li><strong>Mongoose ODM</strong>: An Object Data Modeling library for MongoDB and Node.js, providing schema validation and relation mapping.</li>
+        <li><strong>Single Page Application (SPA)</strong>: A web application design that dynamically rewrites the current page rather than loading entire new pages, improving speed and performance.</li>
+        <li><strong>Zero-Knowledge Architecture</strong>: A security model where a server brokers and stores encrypted information without having access to the decryption keys, ensuring user privacy.</li>
+    </ul>
+</div>

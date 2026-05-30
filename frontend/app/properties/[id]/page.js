@@ -48,17 +48,26 @@ const mapProperty = (backendProperty) => {
         landmark: backendProperty.location?.landmark || 'N/A',
         nearbyFacilities: Array.isArray(backendProperty.location?.nearbyFacilities) ? backendProperty.location.nearbyFacilities : [],
 
-        // Pricing
-        expectedPrice: backendProperty.pricing?.monthlyRent
-            ? `₹${backendProperty.pricing.monthlyRent}/month`
-            : backendProperty.pricing?.expectedPrice
-                ? `₹${backendProperty.pricing.expectedPrice}`
-                : backendProperty.pricing?.rentPerBed
-                    ? `₹${backendProperty.pricing.rentPerBed}/bed`
-                    : 'N/A',
-        securityDeposit: backendProperty.pricing?.securityDeposit ? `₹${backendProperty.pricing.securityDeposit}` : null,
-        bookingAmount: backendProperty.pricing?.bookingAmount ? `₹${backendProperty.pricing.bookingAmount}` : null,
-        propertyTax: backendProperty.pricing?.propertyTax ? `₹${backendProperty.pricing.propertyTax}/year` : null,
+        // Pricing — build display string based on listingType so rent always shows /mo, pg shows /bed, sell shows plain price
+        expectedPrice: (() => {
+            const lt = (backendProperty.listingType || '').toLowerCase();
+            const p = backendProperty.pricing || {};
+            if (lt === 'rent') {
+                // rent properties may store the price in monthlyRent OR expectedPrice
+                const amount = p.monthlyRent || p.expectedPrice;
+                return amount ? `₹${amount.toLocaleString('en-IN')}/mo` : 'N/A';
+            } else if (lt === 'pg') {
+                const amount = p.rentPerBed || p.monthlyRent || p.expectedPrice;
+                return amount ? `₹${amount.toLocaleString('en-IN')}/bed` : 'N/A';
+            } else {
+                // sell / commercial sell
+                const amount = p.expectedPrice || p.monthlyRent;
+                return amount ? `₹${amount.toLocaleString('en-IN')}` : 'N/A';
+            }
+        })(),
+        securityDeposit: backendProperty.pricing?.securityDeposit ? `₹${backendProperty.pricing.securityDeposit.toLocaleString('en-IN')}` : null,
+        bookingAmount: backendProperty.pricing?.bookingAmount ? `₹${backendProperty.pricing.bookingAmount.toLocaleString('en-IN')}` : null,
+        propertyTax: backendProperty.pricing?.propertyTax ? `₹${backendProperty.pricing.propertyTax.toLocaleString('en-IN')}/year` : null,
         maintenanceIncluded: backendProperty.pricing?.maintenanceIncluded || null,
         electricityCharges: backendProperty.pricing?.electricityCharges || null,
         waterCharges: backendProperty.pricing?.waterCharges || null,
@@ -345,6 +354,13 @@ function LocationCard({ property }) {
 }
 
 function PricingCard({ property }) {
+    const lt = property.listingType?.toLowerCase();
+    const isRent = lt === 'rent';
+    const isPG = lt === 'pg';
+    const isSell = lt === 'sell';
+
+    const priceLabel = isRent ? 'Monthly Rent' : isPG ? 'Rent Per Bed' : 'Expected Price';
+
     return (
         <Card>
             <SectionHeading icon={<IndianRupee className="text-emerald-500" size={20} />} title="Pricing Details" />
@@ -352,8 +368,7 @@ function PricingCard({ property }) {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-100 mb-6">
                 <div>
                     <span className="text-xs font-bold text-emerald-800 uppercase tracking-wide">
-                        {property.listingType?.toLowerCase() === 'rent' ? 'Monthly Rent' :
-                            property.listingType?.toLowerCase() === 'pg' ? 'Rent Per Bed' : 'Expected Price'}
+                        {priceLabel}
                     </span>
                     <h2 className="text-3xl font-extrabold text-emerald-600 mt-1">{property.expectedPrice}</h2>
                 </div>
@@ -363,30 +378,56 @@ function PricingCard({ property }) {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {property.securityDeposit && <InfoItem label="Security Deposit" value={property.securityDeposit} />}
-                {property.bookingAmount && <InfoItem label="Booking Amount" value={property.bookingAmount} />}
-                {property.propertyTax && <InfoItem label="Property Tax" value={property.propertyTax} />}
-                {property.maintenanceIncluded && <InfoItem label="Maintenance" value={property.maintenanceIncluded} />}
-                {property.electricityCharges && <InfoItem label="Electricity" value={property.electricityCharges} />}
-                {property.waterCharges && <InfoItem label="Water" value={property.waterCharges} />}
+                {/* Rent / PG specific fields */}
+                {(isRent || isPG) && property.securityDeposit && <InfoItem label="Security Deposit" value={property.securityDeposit} />}
+                {isPG && property.maintenanceIncluded && <InfoItem label="Maintenance Included" value={property.maintenanceIncluded} />}
+                {(isRent || isPG) && property.electricityCharges && <InfoItem label="Electricity Charges" value={property.electricityCharges} />}
+                {(isRent || isPG) && property.waterCharges && <InfoItem label="Water Charges" value={property.waterCharges} />}
+
+                {/* Sell specific fields */}
+                {isSell && property.bookingAmount && <InfoItem label="Booking Amount" value={property.bookingAmount} />}
+                {isSell && property.propertyTax && <InfoItem label="Property Tax" value={property.propertyTax} />}
+
+                {/* Common fields */}
+                {property.priceNegotiable && property.priceNegotiable !== 'N/A' && (
+                    <InfoItem label="Price Negotiable" value={property.priceNegotiable} />
+                )}
             </div>
         </Card>
     );
 }
 
 function ConditionalCard({ property }) {
-    if (property.listingType?.toLowerCase() === 'sell' && (property.propertyOwnership || property.possessionDate)) {
+    const lt = property.listingType?.toLowerCase();
+
+    // Sell: show ownership / possession details
+    if (lt === 'sell' && (property.propertyOwnership || property.possessionDate)) {
         return (
             <Card>
                 <SectionHeading icon={<FileText className="text-indigo-500" size={20} />} title="Sale Details" />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {property.propertyOwnership && <InfoItem label="Ownership" value={property.propertyOwnership} />}
                     {property.possessionDate && <InfoItem label="Possession Date" value={property.possessionDate} />}
-                    <InfoItem label="Price Negotiable" value={property.priceNegotiable} />
                 </div>
             </Card>
         );
     }
+
+    // Rent: show availability details
+    if (lt === 'rent' && (property.availabilityStatus && property.availabilityStatus !== 'N/A')) {
+        return (
+            <Card>
+                <SectionHeading icon={<FileText className="text-indigo-500" size={20} />} title="Rental Details" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <InfoItem label="Available From" value={property.availabilityStatus} />
+                    {property.furnishingStatus && property.furnishingStatus !== 'N/A' && (
+                        <InfoItem label="Furnishing" value={property.furnishingStatus} />
+                    )}
+                </div>
+            </Card>
+        );
+    }
+
     return null;
 }
 

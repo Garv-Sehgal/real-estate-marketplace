@@ -1,0 +1,141 @@
+<!-- ================= CHAPTER 5 ================= -->
+<div class="page-break-before">
+    <h2 class="chapter-title">CHAPTER 5: APPENDIX</h2>
+    <br>
+    
+    <h3 class="main-heading">5.1 Development Commands Used During Training</h3>
+    <p>
+        During the onboarding and integration phases at SPRWork Infosolutions, several command-line tools were utilized to initialize environments, orchestrate servers, and manage package modules. The core commands are detailed below:
+    </p>
+
+    <h4 class="sub-heading">5.1.1 Environment Setup and Package Management</h4>
+    <p>
+        To initialize a clean local workspace and manage framework dependencies, the Node Package Manager (NPM) was used:
+    </p>
+    <pre><code># Initialize a new package manifest in a directory
+npm init -y
+
+# Install production-ready modules (Express, Mongoose, Socket.IO)
+npm install express mongoose socket.io bcryptjs jsonwebtoken dotenv cors
+
+# Install client-side styling and icon modules
+npm install lucide-react country-state-city crypto-js
+
+# Install development helpers (Nodemon for server hot-reloading)
+npm install --save-dev nodemon</code></pre>
+
+    <h4 class="sub-heading">5.1.2 Database and Server Execution</h4>
+    <p>
+        To run development instances and verify cluster connections, standard script commands were executed:
+    </p>
+    <pre><code># Start the Express server locally in development mode (hot-reloading)
+npm run dev
+
+# Start the server in production mode
+npm start
+
+# Run the local Next.js development server
+npm run dev</code></pre>
+
+    <h3 class="main-heading">5.2 Screenshot Placeholders</h3>
+    <p>
+        The following placeholders indicate where active screen captures should be inserted in the final printed report to verify the execution of training modules:
+    </p>
+
+    <h4 class="sub-heading">5.2.1 Local Server Initialization</h4>
+    <p class="no-indent">
+        The image below displays the command terminal output verifying the boot sequence of the Express server on local Port 5000 and the establishment of the MongoDB Atlas connection:
+    </p>
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure A5.1: Local Development Server Boot Verification</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Capture should display the Node.js terminal showing the 'Server running on port 5000' and 'MongoDB connection established' messages.
+        </span>
+    </div>
+    <p class="figure-caption">Figure A5.1: Local Development Server Boot Verification</p>
+
+    <h4 class="sub-heading">5.2.2 Database Management Connections</h4>
+    <p class="no-indent">
+        The image below shows the MongoDB Compass UI connected to the local development cluster, displaying the custom collections:
+    </p>
+    <div class="figure-placeholder" style="margin-top: 15px;">
+        <strong>Figure A5.2: MongoDB Compass Local Cluster Connections</strong><br><br>
+        [INSERT SCREENSHOT HERE]<br><br>
+        <span style="font-size: 10pt; color: #555555; font-style: italic;">
+            Capture should display MongoDB Compass showing the 'real-estate-marketplace' database and its collections: 'users', 'properties', 'conversations', and 'meetings'.
+        </span>
+    </div>
+    <p class="figure-caption">Figure A5.2: MongoDB Compass Local Cluster Connections</p>
+
+    <h3 class="main-heading">5.3 Abbreviations and Acronyms</h3>
+    <p>
+        The table below provides a comprehensive list of technical abbreviations and acronyms used throughout this industrial training report:
+    </p>
+    
+    <p class="table-caption">Table A5.1: Abbreviations and Acronyms</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Abbreviation</th>
+                <th style="width: 35%;">Full Expansion</th>
+                <th style="width: 40%;">Technical Context</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bold">API</td>
+                <td>Application Programming Interface</td>
+                <td>A structured interface defining communication protocols between software systems.</td>
+            </tr>
+            <tr>
+                <td class="bold">PWA</td>
+                <td>Progressive Web Application</td>
+                <td>A modern web app development pattern enabling mobile installation and native-app feel.</td>
+            </tr>
+            <tr>
+                <td class="bold">REST</td>
+                <td>Representational State Transfer</td>
+                <td>An architectural style for designing stateless, decoupled network-based APIs.</td>
+            </tr>
+            <tr>
+                <td class="bold">JWT</td>
+                <td>JSON Web Token</td>
+                <td>A stateless cryptographic token standard used for secure session authorization.</td>
+            </tr>
+            <tr>
+                <td class="bold">OTP</td>
+                <td>One-Time Password</td>
+                <td>A dynamically generated, short-lived numeric passkey used for identity verification.</td>
+            </tr>
+            <tr>
+                <td class="bold">AES</td>
+                <td>Advanced Encryption Standard</td>
+                <td>A symmetric-key cryptographic block cipher used to secure private data.</td>
+            </tr>
+            <tr>
+                <td class="bold">RBAC</td>
+                <td>Role-Based Access Control</td>
+                <td>An authorization model that restricts access based on a user's role hierarchy level.</td>
+            </tr>
+            <tr>
+                <td class="bold">SDLC</td>
+                <td>Software Development Life Cycle</td>
+                <td>A structured framework outlining the phases of a software engineering project.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="main-heading">5.4 Glossary</h3>
+    <p>
+        Below is a glossary of key software engineering terms referenced throughout the training report:
+    </p>
+    <ul>
+        <li><strong>Asynchronous Programming</strong>: A design pattern where execution is non-blocking, allowing long-running requests (like database queries or API fetches) to run in the background.</li>
+        <li><strong>Client-Side Rendering (CSR)</strong>: A web development process where page layouts are rendered directly in the user’s browser using client-side JavaScript, improving interaction speeds.</li>
+        <li><strong>Decoupled Architecture</strong>: An architectural pattern that separates frontend interfaces from backend APIs, allowing them to scale and be maintained independently.</li>
+        <li><strong>Key Derivation Function (KDF)</strong>: A cryptographic process that derives highly secure keys from input parameters (such as conversation IDs and salts) for use in encryption.</li>
+        <li><strong>NoSQL Database</strong>: A non-relational database engine (such as MongoDB) that stores data in flexible, document-based schemas rather than static tables.</li>
+        <li><strong>Zero-Knowledge Architecture</strong>: A security model where a server brokers and stores encrypted information without having access to the decryption keys, ensuring user privacy.</li>
+    </ul>
+</div>

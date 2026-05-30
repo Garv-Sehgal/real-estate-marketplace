@@ -123,7 +123,7 @@ const handleSubmit = async (e) => {
                             Create Account
                         </h2>
                         <p className="mt-1 text-sm text-gray-600">
-                            Start your journey with SPRxElite Estates
+                            Start your journey with Elite Estates
                         </p>
                     </div>
 

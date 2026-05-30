@@ -467,10 +467,10 @@ export default function PropertiesPage() {
             {/* Main Content Area */}
             {viewMode === 'list' ? (
                 // LIST LIST LIST LIST LIST
-                <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 flex gap-8">
+                <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 flex gap-8 h-[calc(100vh-112px)]">
                     {/* Desktop Sidebar */}
-                    <aside className="hidden lg:block w-[280px] flex-shrink-0">
-                        <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 sticky top-36">
+                    <aside className="hidden lg:flex lg:flex-col w-[280px] flex-shrink-0 overflow-y-auto">
+                        <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                             <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
                                 <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
                                     <Filter className="w-4 h-4" /> Filters
@@ -482,7 +482,7 @@ export default function PropertiesPage() {
                     </aside>
 
                     {/* Results Grid */}
-                    <main className="flex-1 min-w-0">
+                    <main className="flex-1 min-w-0 overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
                             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                                 {loadingProps ? 'Loading properties…' : `${filteredProperties.length} ${filteredProperties.length === 1 ? 'Property' : 'Properties'} Available`}

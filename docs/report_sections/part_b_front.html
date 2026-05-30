@@ -1,0 +1,592 @@
+<!-- ================= PART B COVER PAGE ================= -->
+<div class="cover-container page-break">
+    <h1 style="font-size: 22pt; font-weight: bold; margin-top: 10px;">PROJECT REPORT</h1>
+    <h3 style="font-size: 13pt; margin-bottom: 25px; font-weight: bold;">ON</h3>
+    <h1 style="font-size: 26pt; font-weight: bold; margin-bottom: 5px; color: #000000; text-decoration: none;">REAL ESTATE MARKETPLACE PLATFORM</h1>
+    <p class="center" style="font-size: 11pt; font-weight: bold; margin-bottom: 35px;">
+        Submitted in partial fulfillment of the requirements for the award of the degree of
+    </p>
+    <h2 style="font-size: 16pt; font-weight: bold; margin-bottom: 5px;">BACHELOR OF TECHNOLOGY</h2>
+    <h3 style="margin-bottom: 35px; font-size: 12pt; font-weight: bold;">IN<br>COMPUTER SCIENCE AND ENGINEERING</h3>
+    
+    <div style="margin: 25px 0;">
+        <img src="https://raw.githubusercontent.com/RealEstateGGI/logo/main/ggi_logo.png" alt="GGI Logo" width="130" height="130" style="display: block; margin: 0 auto;" />
+    </div>
+
+    <table class="role-table">
+        <tr>
+            <td style="text-align: left; width: 50%; font-weight: bold;">
+                SUBMITTED BY:<br>
+                <span style="font-size: 11pt; font-weight: bold;">[Student Name]</span><br>
+                University Roll No: [Roll Number]<br>
+                8th Semester / 4th Year
+            </td>
+            <td style="text-align: right; width: 50%; font-weight: bold;">
+                UNDER THE GUIDANCE OF:<br>
+                <span style="font-size: 11pt; font-weight: bold;">[Mentor Name]</span><br>
+                Assistant Professor<br>
+                Dept. of Computer Science &amp; Engineering
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 35px;">
+        <h3 style="margin-bottom: 5px; font-size: 12pt; font-weight: bold;">DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING</h3>
+        <h2 style="margin-top: 5px; font-size: 14pt; font-weight: bold;">GULZAR GROUP OF INSTITUTES, LUDHIANA, PUNJAB</h2>
+        <p class="center" style="font-weight: bold; margin-top: 8px;">MAY 2026</p>
+    </div>
+</div>
+
+<!-- ================= PART B DECLARATION ================= -->
+<div class="page-break">
+    <h2 class="chapter-title" style="text-align: center;">DECLARATION</h2>
+    <br>
+    <p>
+        I hereby declare that the capstone engineering project work entitled <strong>"Real Estate Marketplace Platform"</strong> is an authentic record of my own project development work completed under the academic framework of the Department of Computer Science and Engineering at Gulzar Group of Institutes, Ludhiana, Punjab.
+    </p>
+    <p>
+        The software platform was designed, developed, integrated, and tested independently by me during the 8th semester of the Bachelor of Technology program. All core modules—including JWT session authentication, Twilio and Nodemailer dual-channel OTP verification, role-based access middleware guards, the 5-step property listing wizard, comparative grid filters, leaflet map geocodes, Socket.IO chat setups, and browser-side CryptoJS E2E message encryption—were implemented by me.
+    </p>
+    <p>
+        I further declare that this project work has not previously formed the basis for the award of any other degree, diploma, fellowship, or similar academic title at this or any other university. Wherever technical concepts, libraries, third-party packages, or open-source solutions have been integrated, they have been cited and referenced appropriately.
+    </p>
+    <br><br><br>
+    <table style="width: 100%; border: none;">
+        <tr style="background: transparent;">
+            <td style="border: none; text-align: left; width: 50%; font-size: 11pt;">
+                <strong>Date:</strong> ____________________
+            </td>
+            <td style="border: none; text-align: right; width: 50%; font-size: 11pt;">
+                <strong>Signature of Student:</strong> ______________________<br><br>
+                <strong>Name:</strong> [Student Name]<br>
+                <strong>Roll Number:</strong> [Roll Number]
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================= PART B CERTIFICATE ================= -->
+<div class="page-break">
+    <h2 class="chapter-title" style="text-align: center;">CERTIFICATE PLACEHOLDER</h2>
+    <br>
+    <p class="no-indent">
+        The project completion certificate issued by the Department of Computer Science and Engineering at **Gulzar Group of Institutes** verifying the successful completion and evaluation of the capstone project must be scanned and inserted inside the dashed box below in the final printed document.
+    </p>
+    <div class="figure-placeholder" style="padding: 100px 40px; margin: 40px 0;">
+        <h3 style="font-size: 12pt; font-weight: bold; margin-bottom: 10px;">[Insert Scanned Copy of GGI Project Evaluation Certificate Here]</h3>
+        <p class="center" style="font-size: 10pt; font-style: italic; color: #555555;">
+            Certificate should be signed by the project supervisor, internal evaluator, and Head of the Computer Science and Engineering Department.
+        </p>
+    </div>
+</div>
+
+<!-- ================= PART B ACKNOWLEDGEMENT ================= -->
+<div class="page-break">
+    <h2 class="chapter-title" style="text-align: center;">ACKNOWLEDGEMENT</h2>
+    <br>
+    <p>
+        I express my sincere gratitude to the academic leadership of **Gulzar Group of Institutes, Ludhiana**, for providing the laboratory facilities, computing infrastructure, and support services required to complete this B.Tech Capstone Project. I am deeply thankful to the **Department of Computer Science and Engineering** for establishing a highly structured project framework that coordinates software engineering theory with practical full-stack implementation.
+    </p>
+    <p>
+        I extend my heartfelt appreciation to my project supervisor, **[Mentor Name]**, Assistant Professor, Department of Computer Science and Engineering, for their regular guidance, design reviews, and valuable feedback. Their technical guidance on asynchronous system architecture, middleware logic, database schema design, and cryptography was invaluable in ensuring the software met professional engineering standards.
+    </p>
+    <p>
+        I also thank my academic advisors and the head of the CSE department for their checkpoints and structural evaluations throughout the semester. These reviews kept the project on track and aligned with GGI’s academic guidelines.
+    </p>
+    <p>
+        Finally, I thank my peers, project teammates, and family members for their motivation, support, and feedback during the development, testing, and documentation phases of this Real Estate Marketplace Platform.
+    </p>
+</div>
+
+<!-- ================= PART B TOC ================= -->
+<div class="page-break">
+    <h2 class="chapter-title" style="text-align: center;">TABLE OF CONTENTS</h2>
+    <br>
+    <table class="toc-table">
+        <tr>
+            <td style="width: 85%;"><strong>PART – B: REAL ESTATE MARKETPLACE PROJECT REPORT</strong></td>
+            <td style="width: 10%; text-align: right;"><span class="toc-dots"></span></td>
+            <td style="width: 5%; text-align: right;"><strong>31</strong></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 15px;">Front Cover Page</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">31</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 15px;">Declaration</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">32</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 15px;">Certificate Placeholder</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">33</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 15px;">Acknowledgement</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">34</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 15px;">Table of Contents</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">35</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 15px;">List of Figures</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">37</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 15px;">List of Tables</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">38</td>
+        </tr>
+        <tr>
+            <td style="padding-top: 10px;"><strong>CHAPTER 1: PROFILE OF INSTITUTE</strong></td>
+            <td style="padding-top: 10px;"><span class="toc-dots"></span></td>
+            <td style="text-align: right; padding-top: 10px;"><strong>39</strong></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">1.1 Introduction to the Institute</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">39</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">1.2 Training Objectives</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">40</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">1.2.1 Apply the full software development lifecycle to a real project</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">40</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">1.2.2 Build a domain-specific application, not a generic CRUD project</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">40</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">1.2.3 Gain practical confidence with modern development tools</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">41</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">1.2.4 Develop professional documentation and software engineering skills</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">41</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">1.3 Technologies Practiced</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">41</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">1.4 Summary</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">42</td>
+        </tr>
+        
+        <tr>
+            <td style="padding-top: 10px;"><strong>CHAPTER 2: INTRODUCTION TO SOFTWARE</strong></td>
+            <td style="padding-top: 10px;"><span class="toc-dots"></span></td>
+            <td style="text-align: right; padding-top: 10px;"><strong>43</strong></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">2.1 Project Introduction</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">43</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">2.2 Problem Statement</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">43</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">2.3 Proposed System</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">43</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">2.4 Objectives</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">44</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">2.5 Functional and Non-Functional Requirements</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">44</td>
+        </tr>
+
+        <tr>
+            <td style="padding-top: 10px;"><strong>CHAPTER 3: PROJECT UNDERTAKEN</strong></td>
+            <td style="padding-top: 10px;"><span class="toc-dots"></span></td>
+            <td style="text-align: right; padding-top: 10px;"><strong>45</strong></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.1 Project Overview</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">45</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.2 System Architecture</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">46</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.3 Authentication System</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">46</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.3.1 JWT Authentication</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">46</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.3.2 OTP Verification</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">47</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.3.3 Password Reset Mechanism</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">47</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.4 Role Based Access Control</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">47</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.5 Property Listing System</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">48</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.6 Property Search and Filtering</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">48</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.7 Property Comparison Feature</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">48</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.8 Property Approval Workflow</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">49</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.9 Property Map View</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">49</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.10 Property Image Upload System</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">50</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.11 Real-Time Chat System</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">50</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.12 End-to-End Message Encryption</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">51</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.13 Visit Scheduling System</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">51</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.14 Notification System</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">52</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.15 Database Design</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">52</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.16 Backend Architecture</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">53</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.17 Frontend Architecture</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">53</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.18 API Routes and Integration</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">54</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.19 Testing and Validation</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">55</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.20 Challenges Faced During Development</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">55</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.20.1 Authentication and Security Challenges</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">55</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.20.2 Real-Time Communication Challenges</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">55</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.20.3 Database Design Challenges</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">56</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.20.4 Performance Optimization Challenges</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">56</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 30px;">3.20.5 UI/UX and Integration Challenges</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">56</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.21 Future Scope</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">57</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">3.22 Conclusion</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">57</td>
+        </tr>
+        
+        <tr>
+            <td style="padding-top: 10px;"><strong>CHAPTER 4: REFERENCES</strong></td>
+            <td style="padding-top: 10px;"><span class="toc-dots"></span></td>
+            <td style="text-align: right; padding-top: 10px;"><strong>58</strong></td>
+        </tr>
+        
+        <tr>
+            <td style="padding-top: 10px;"><strong>CHAPTER 5: APPENDIX</strong></td>
+            <td style="padding-top: 10px;"><span class="toc-dots"></span></td>
+            <td style="text-align: right; padding-top: 10px;"><strong>59</strong></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">5.1 Project Commands</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">59</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">5.2 Backend Code Snippets</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">59</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">5.3 Database Schema Snippets</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">59</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">5.4 API Endpoint Summary</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">59</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">5.5 Screenshot Placeholders</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+        <tr>
+            <td style="padding-left: 20px;">5.6 Glossary</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================= PART B LIST OF FIGURES ================= -->
+<div class="page-break">
+    <h2 class="chapter-title" style="text-align: center;">LIST OF FIGURES</h2>
+    <br>
+    <table class="toc-table">
+        <tr>
+            <td style="width: 85%;">Figure B2.1: Decoupled Multi-Role Software Platform Architecture</td>
+            <td style="width: 10%; text-align: right;"><span class="toc-dots"></span></td>
+            <td style="width: 5%; text-align: right;">43</td>
+        </tr>
+        <tr>
+            <td>Figure B3.1: JWT stateless session lifecycle showing token swap mechanisms</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">46</td>
+        </tr>
+        <tr>
+            <td>Figure B3.2: Dual SMS &amp; Email OTP validation flow sequences</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">47</td>
+        </tr>
+        <tr>
+            <td>Figure B3.3: Numeric RBAC hierarchy validation middleware</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">48</td>
+        </tr>
+        <tr>
+            <td>Figure B3.4: 5-Step interactive stepper wizard state transition hooks</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">48</td>
+        </tr>
+        <tr>
+            <td>Figure B3.5: Mongoose dynamic query index execution paths</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">49</td>
+        </tr>
+        <tr>
+            <td>Figure B3.6: Side-by-side comparison comparative matrix layout grids</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">49</td>
+        </tr>
+        <tr>
+            <td>Figure B3.7: Moderation engine status transitions and state records</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">50</td>
+        </tr>
+        <tr>
+            <td>Figure B3.8: Leaflet geocodes and Google Maps routes redirections</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">50</td>
+        </tr>
+        <tr>
+            <td>Figure B3.9: Multer storage filters and directory paths for uploads</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">51</td>
+        </tr>
+        <tr>
+            <td>Figure B3.10: Bi-directional socket rooms and active connection pathways</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">51</td>
+        </tr>
+        <tr>
+            <td>Figure B3.11: Symmetric client key derivations and AES message encryptions</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">52</td>
+        </tr>
+        <tr>
+            <td>Figure B3.12: Visit scheduler status loops and chat cards integration</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">52</td>
+        </tr>
+        <tr>
+            <td>Figure B3.13: SMTP email transactional alerts and server pushes</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">53</td>
+        </tr>
+        <tr>
+            <td>Figure B3.14: Mongoose ERD and collections relations map</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">53</td>
+        </tr>
+        <tr>
+            <td>Figure B5.1: Marketplace Home Page UI Mockup</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+        <tr>
+            <td>Figure B5.2: User Signup and Verification Screen Mockup</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+        <tr>
+            <td>Figure B5.3: Property Stepper Wizard Mockup</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+        <tr>
+            <td>Figure B5.4: Landlord Management Dashboard Mockup</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+        <tr>
+            <td>Figure B5.5: Side-by-Side Property Comparison Mockup</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+        <tr>
+            <td>Figure B5.6: Encrypted Chat and Visit Booking Mockup</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+        <tr>
+            <td>Figure B5.7: Admin Property Moderation Dashboard Mockup</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">60</td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================= PART B LIST OF TABLES ================= -->
+<div class="page-break">
+    <h2 class="chapter-title" style="text-align: center;">LIST OF TABLES</h2>
+    <br>
+    <table class="toc-table">
+        <tr>
+            <td style="width: 85%;">Table B1.1: Academic Project Deliverables and Implementation Contexts</td>
+            <td style="width: 10%; text-align: right;"><span class="toc-dots"></span></td>
+            <td style="width: 5%; text-align: right;">41</td>
+        </tr>
+        <tr>
+            <td>Table B2.1: Key Stakeholder Operational Requirements and Capabilities</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">43</td>
+        </tr>
+        <tr>
+            <td>Table B2.2: Functional Requirements Matrix</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">44</td>
+        </tr>
+        <tr>
+            <td>Table B2.3: Non-Functional Security &amp; Performance Objectives</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">44</td>
+        </tr>
+        <tr>
+            <td>Table B3.1: Numeric Authority Levels and Permission Scopes</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">47</td>
+        </tr>
+        <tr>
+            <td>Table B3.2: 5-Step Property Upload Stepper Wizard Layout and Details</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">48</td>
+        </tr>
+        <tr>
+            <td>Table B3.3: Database Collections Schemas and Index Field Definitions</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">53</td>
+        </tr>
+        <tr>
+            <td>Table B3.4: Complete Backend and Frontend API Integrations Route Matrix</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">54</td>
+        </tr>
+        <tr>
+            <td>Table B3.5: Module Verification Pass Rates and Latency Metrics</td>
+            <td><span class="toc-dots"></span></td>
+            <td style="text-align: right;">56</td>
+        </tr>
+    </table>
+</div>

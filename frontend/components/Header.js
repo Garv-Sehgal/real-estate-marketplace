@@ -131,12 +131,12 @@ const Header = () => {
                     {/* Logo Section */}
                     <Link href="/" className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveSection('')}>
                         <img
-                            src="/images/Elite_Estates Logo.png"
-                            alt="SPRxElite Estate Logo"
+                            src=" "
+                            alt=" "
                             className="h-16 w-auto object-contain"
                         />
                         <span className="text-xl font-extrabold tracking-tight text-gray-900 whitespace-nowrap">
-                            SPRxElite Estates
+                            Elite Estates
                         </span>
                     </Link>
 

@@ -119,12 +119,12 @@ export default function Sidebar({ isMobileOpen, setMobileOpen }) {
                 <div className="h-20 flex items-center justify-between lg:justify-start px-8 border-b border-slate-100/50 bg-white/80 backdrop-blur-xl">
                     <Link href="/" className="flex items-center gap-2 group shrink-0">
                         <img
-                            src="/images/Elite_Estates Logo.png"
-                            alt="SPRxElite Estate Logo"
+                            src=" "
+                            alt=" "
                             className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                         />
                         <span className="text-lg font-extrabold tracking-tight text-slate-900 whitespace-nowrap">
-                            SPRxElite Estates
+                            Elite Estates
                         </span>
                     </Link>
                     <button className="lg:hidden text-slate-400 hover:text-slate-900 transition-colors p-2 rounded-lg hover:bg-slate-50" onClick={() => setMobileOpen(false)}>

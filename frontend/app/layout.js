@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-    title: 'SPRxElite Estates',
+    title: 'Elite Estates',
     description: 'AI-powered Real Estate Marketplace PWA',
     manifest: '/manifest.json',
 };
